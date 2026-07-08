@@ -50,7 +50,7 @@ class AppTheme {
       ),
 
       // ===== Card =====
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: AppColors.cardBg,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -108,7 +108,7 @@ class AppTheme {
       ),
 
       // ===== Dialog =====
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         backgroundColor: AppColors.bgColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         titleTextStyle: const TextStyle(
