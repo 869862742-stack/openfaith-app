@@ -31,7 +31,7 @@ class _PublishVideoScreenState extends State<PublishVideoScreen> {
       Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A),
       Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD),
     ],
-  transform: GradientRotation(0.125),
+  transform: GradientRotation(0.35),
   );
 
   Future<void> _publish() async {

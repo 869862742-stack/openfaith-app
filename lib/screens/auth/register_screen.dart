@@ -13,7 +13,7 @@ const LinearGradient _rainbowGradient = LinearGradient(
     Color(0xFF3A86FF),
     Color(0xFF9D4EDD),
   ],
-  transform: GradientRotation(0.125),
+  transform: GradientRotation(0.35),
 );
 
 /// 七彩渐变文字（aurora-text 效果）

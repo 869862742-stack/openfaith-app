@@ -177,7 +177,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   gradient: const LinearGradient(
                     colors: [Color(0xFFFF4D6D), Color(0xFF9D4EDD)],
                     begin: Alignment.topLeft, end: Alignment.bottomRight,
-                    transform: GradientRotation(0.125),
+                    transform: GradientRotation(0.35),
                   ),
                 ),
                 child: const Icon(Icons.menu_book, color: Colors.white, size: 24),
