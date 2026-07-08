@@ -1,0 +1,15 @@
+// Global init script to provide flutter properties for all plugins
+allprojects {
+    beforeEvaluate { project ->
+        if (!project.hasProperty('flutter')) {
+            project.ext.flutter = [
+                compileSdkVersion: 34,
+                minSdkVersion: 24,
+                targetSdkVersion: 34,
+                ndkVersion: '26.1.10909125',
+                versionCode: 1,
+                versionName: '1.0.0'
+            ]
+        }
+    }
+}
