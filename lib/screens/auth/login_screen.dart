@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 import '../../theme/colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -45,20 +46,34 @@ class _LoginScreenState extends State<LoginScreen> {
     _emailFocusNode.dispose();
     _passwordFocusNode.dispose();
     super.dispose();
-  }
+  }  static const _rainbowColors = [
 
-  static const _rainbowGradient = LinearGradient(
-    colors: [
-      Color(0xFFFF4D6D),
-      Color(0xFFFF9F1C),
-      Color(0xFFFFD60A),
-      Color(0xFF70E000),
-      Color(0xFF00E5FF),
-      Color(0xFF3A86FF),
-      Color(0xFF9D4EDD),
-    ],
-  transform: GradientRotation(0.35),
-  );
+
+    Color(0xFFFF4D6D),
+
+
+    Color(0xFFFF9F1C),
+
+
+    Color(0xFFFFD60A),
+
+
+    Color(0xFF70E000),
+
+
+    Color(0xFF00E5FF),
+
+
+    Color(0xFF3A86FF),
+
+
+    Color(0xFF9D4EDD),
+  ];
+
+  LinearGradient _diagonalGradient(Size size) {
+    final angle = size.height > 0 && size.width > 0 ? atan2(size.height, size.width) : 0.785;
+    return LinearGradient(colors: _rainbowColors, transform: GradientRotation(angle));
+  }
 
   Future<void> _login() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
@@ -360,12 +375,14 @@ class _LoginScreenState extends State<LoginScreen> {
     bool obscure = false,
   }) {
     final isFocused = focusNode.hasFocus;
-    return Container(
+    return LayoutBuilder(builder: (context, constraints) {
+        final size = Size(constraints.maxWidth, constraints.maxHeight);
+        return Container(
       height: 46,
       padding: const EdgeInsets.all(1),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
-        gradient: isFocused ? _rainbowGradient : null,
+        gradient: isFocused ? _diagonalGradient(size) : null,
       ),
       child: Container(
         decoration: BoxDecoration(
@@ -392,15 +409,18 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
+    });
   }
 
   // 七彩渐变边框包裹器（外层1px渐变+内层黑底）
   Widget _rainbowBorderBox({required Widget child, double borderRadius = 8}) {
-    return Container(
+    return LayoutBuilder(builder: (context, constraints) {
+        final size = Size(constraints.maxWidth, constraints.maxHeight);
+        return Container(
       padding: const EdgeInsets.all(1),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(borderRadius),
-        gradient: _rainbowGradient,
+        gradient: _diagonalGradient(size),
       ),
       child: Container(
         decoration: BoxDecoration(
@@ -410,6 +430,7 @@ class _LoginScreenState extends State<LoginScreen> {
         child: child,
       ),
     );
+    });
   }
 
   Widget _buildInput({
@@ -433,12 +454,14 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         const SizedBox(height: 6),
         // 七彩渐变边框包裹器（聚焦时显示彩虹边框，padding始终1px避免尺寸跳动）
-        Container(
+        LayoutBuilder(builder: (context, constraints) {
+            final size = Size(constraints.maxWidth, constraints.maxHeight);
+            return Container(
           height: 36,
           padding: const EdgeInsets.all(1),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
-            gradient: isFocused ? _rainbowGradient : null,
+            gradient: isFocused ? _diagonalGradient(size) : null,
           ),
           child: Container(
             decoration: BoxDecoration(
@@ -464,7 +487,8 @@ class _LoginScreenState extends State<LoginScreen> {
               onTapOutside: (event) => focusNode.unfocus(),
             ),
           ),
-        ),
+        );
+        }),
       ],
     );
   }
@@ -556,15 +580,18 @@ class _LoginScreenState extends State<LoginScreen> {
     );
 
     // 卡片 - 七彩渐变边框 + 黑底
-    final card = Container(
+    final card = LayoutBuilder(builder: (context, constraints) {
+        final size = Size(constraints.maxWidth, constraints.maxHeight);
+        return Container(
       padding: const EdgeInsets.all(1),
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: _rainbowGradient),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: _diagonalGradient(size)),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 18),
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(11), color: const Color(0xFF050816)),
         child: cardContent,
       ),
     );
+    });
 
     return Scaffold(
       backgroundColor: const Color(0xFF050816),

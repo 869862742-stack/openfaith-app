@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../theme/colors.dart';
@@ -66,15 +67,19 @@ class _HeatingRecordsScreenState extends State<HeatingRecordsScreen> {
       }
     }
     return streak;
-  }
+  }  static const _rainbowColors = [
 
-  static const _rainbowGradient = LinearGradient(
-    colors: [
-      Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A),
-      Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD),
-    ],
-  transform: GradientRotation(0.35),
-  );
+
+    Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A),
+
+
+    Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD),
+  ];
+
+  LinearGradient _diagonalGradient(Size size) {
+    final angle = size.height > 0 && size.width > 0 ? atan2(size.height, size.width) : 0.785;
+    return LinearGradient(colors: _rainbowColors, transform: GradientRotation(angle));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -97,11 +102,13 @@ class _HeatingRecordsScreenState extends State<HeatingRecordsScreen> {
               child: Column(
                 children: [
                   // Streak card
-                  Container(
+                  LayoutBuilder(builder: (context, constraints) {
+                      final size = Size(constraints.maxWidth, constraints.maxHeight);
+                      return Container(
                     padding: const EdgeInsets.all(1),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
-                      gradient: _rainbowGradient,
+                      gradient: _diagonalGradient(size),
                     ),
                     child: Container(
                       padding: const EdgeInsets.all(20),
@@ -133,7 +140,8 @@ class _HeatingRecordsScreenState extends State<HeatingRecordsScreen> {
                         ],
                       ),
                     ),
-                  ),
+                  );
+                  }),
                   const SizedBox(height: 24),
                   // Records list
                   if (_records.isEmpty)

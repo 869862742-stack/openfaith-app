@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -43,10 +44,15 @@ class BookGroup {
   }
 }
 
-const LinearGradient _rainbowGradient = LinearGradient(
-  colors: [Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A), Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD)],
-  begin: Alignment.topLeft, end: Alignment.bottomRight,
-);
+const _rainbowColors = [
+  Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A),
+  Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD),
+];
+
+LinearGradient _diagonalGradient(Size size) {
+  final angle = size.height > 0 && size.width > 0 ? atan2(size.height, size.width) : 0.785;
+  return LinearGradient(colors: _rainbowColors, transform: GradientRotation(angle));
+}
 
 class LearnScreen extends StatefulWidget {
   const LearnScreen({super.key});
@@ -165,10 +171,13 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
   Widget _buildTab(String label, IconData icon, int index) {
     return Tab(child: Builder(builder: (context) {
       final active = _tabController.index == index;
-      return Container(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), gradient: active ? _rainbowGradient : null),
+      return LayoutBuilder(builder: (context, constraints) {
+          final size = Size(constraints.maxWidth, constraints.maxHeight);
+          return Container(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), gradient: active ? _diagonalGradient(size) : null),
         child: Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), color: active ? AppColors.background : Colors.transparent),
           child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(icon, size: 14, color: active ? Colors.white : const Color(0xFF8B949E)), const SizedBox(width: 4),
             Text(label, style: TextStyle(color: active ? Colors.white : const Color(0xFF8B949E), fontSize: 13, fontWeight: FontWeight.w500))])));
+      });
     }));
   }
 
@@ -189,7 +198,10 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
           }, child: Container(decoration: BoxDecoration(color: const Color(0x0DFFFFFF), borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0x1AFFFFFF), width: 0.5)),
             padding: const EdgeInsets.all(14),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(children: [Container(width: 8, height: 8, decoration: const BoxDecoration(shape: BoxShape.circle, gradient: _rainbowGradient)), const SizedBox(width: 8),
+              Row(children: [LayoutBuilder(builder: (context, constraints) {
+                  final size = Size(constraints.maxWidth, constraints.maxHeight);
+                  return Container(width: 8, height: 8, decoration: BoxDecoration(shape: BoxShape.circle, gradient: _diagonalGradient(size)));
+              }), const SizedBox(width: 8),
                 Expanded(child: Text(r.name, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis))]),
               const SizedBox(height: 6),
               Expanded(child: Text(r.followersScale, style: const TextStyle(color: Color(0xFF8B949E), fontSize: 12), maxLines: 3, overflow: TextOverflow.ellipsis)),
@@ -332,10 +344,16 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
         Padding(padding: const EdgeInsets.all(8), child: Row(children: wk.map((d) => Expanded(child: Center(child: Text(d, style: const TextStyle(color: Color(0x80FFFFFF), fontSize: 12, fontWeight: FontWeight.w500))))).toList())),
         Padding(padding: const EdgeInsets.all(8), child: GridView.builder(shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 7), itemCount: firstDay + daysInMonth,
           itemBuilder: (c, index) { if (index < firstDay) return const SizedBox.shrink(); final day = index - firstDay + 1; final holidays = _getHolidaysForDate(day); final hasH = holidays.isNotEmpty; final isT = _isToday(day); final isSel = _selectedDate != null && _selectedDate!.day == day && _selectedDate!.month == month;
-            return GestureDetector(onTap: () => setState(() => _selectedDate = DateTime(year, month, day)), child: Container(margin: const EdgeInsets.all(2),
-              decoration: BoxDecoration(color: isT ? null : isSel ? const Color(0x0FFFFFFF) : hasH ? const Color(0x0AFFFFFF) : null, borderRadius: BorderRadius.circular(8), border: isT ? null : isSel ? Border.all(color: const Color(0x26FFFFFF)) : hasH ? Border.all(color: const Color(0x0FFFFFFF)) : null, gradient: isT ? _rainbowGradient : null),
+            return GestureDetector(onTap: () => setState(() => _selectedDate = DateTime(year, month, day)), child: LayoutBuilder(builder: (context, constraints) {
+                final size = Size(constraints.maxWidth, constraints.maxHeight);
+                return Container(margin: const EdgeInsets.all(2),
+              decoration: BoxDecoration(color: isT ? null : isSel ? const Color(0x0FFFFFFF) : hasH ? const Color(0x0AFFFFFF) : null, borderRadius: BorderRadius.circular(8), border: isT ? null : isSel ? Border.all(color: const Color(0x26FFFFFF)) : hasH ? Border.all(color: const Color(0x0FFFFFFF)) : null, gradient: isT ? _diagonalGradient(size) : null),
               child: isT ? Container(margin: const EdgeInsets.all(1), decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(7)), child: Center(child: Text('$day', style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500))))
-                : Column(mainAxisAlignment: MainAxisAlignment.center, children: [Text('$day', style: TextStyle(color: isSel || hasH ? Colors.white : const Color(0xB3FFFFFF), fontSize: 13, fontWeight: FontWeight.w500)), if (hasH) Row(mainAxisAlignment: MainAxisAlignment.center, children: List.generate(holidays.length > 3 ? 3 : holidays.length, (_) => Container(width: 4, height: 4, margin: const EdgeInsets.symmetric(horizontal: 1), decoration: const BoxDecoration(shape: BoxShape.circle, gradient: _rainbowGradient))))])));
+                : Column(mainAxisAlignment: MainAxisAlignment.center, children: [Text('$day', style: TextStyle(color: isSel || hasH ? Colors.white : const Color(0xB3FFFFFF), fontSize: 13, fontWeight: FontWeight.w500)), if (hasH) Row(mainAxisAlignment: MainAxisAlignment.center, children: List.generate(holidays.length > 3 ? 3 : holidays.length, (_) => LayoutBuilder(builder: (context, constraints) {
+                    final size = Size(constraints.maxWidth, constraints.maxHeight);
+                    return Container(width: 4, height: 4, margin: const EdgeInsets.symmetric(horizontal: 1), decoration: BoxDecoration(shape: BoxShape.circle, gradient: _diagonalGradient(size)));
+                })))]));
+            }));
           })),
       ])),
       const SizedBox(height: 16),
@@ -356,7 +374,10 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
 
   Widget _buildHolidayListItem(ReligiousHoliday holiday) {
     return GestureDetector(onTap: () => _showHolidayDetail(holiday), child: Container(margin: const EdgeInsets.only(bottom: 8), padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: const Color(0x0AFFFFFF), borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0x14FFFFFF))),
-      child: Row(children: [Container(width: 40, height: 40, decoration: BoxDecoration(color: const Color(0x0FFFFFFF), borderRadius: BorderRadius.circular(8)), child: Center(child: ShaderMask(shaderCallback: (b) => _rainbowGradient.createShader(b), child: Text('${holiday.day}', style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold))))), const SizedBox(width: 12),
+      child: Row(children: [LayoutBuilder(builder: (context, constraints) {
+          final size = Size(constraints.maxWidth, constraints.maxHeight);
+          return Container(width: 40, height: 40, decoration: BoxDecoration(color: const Color(0x0FFFFFFF), borderRadius: BorderRadius.circular(8)), child: Center(child: ShaderMask(shaderCallback: (b) => _diagonalGradient(size).createShader(b), child: Text('${holiday.day}', style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)))));
+      }), const SizedBox(width: 12),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(holiday.name, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)), Text(holiday.religion, style: const TextStyle(color: Color(0x80FFFFFF), fontSize: 12))])),
         const Icon(Icons.chevron_right, color: Color(0x4DFFFFFF), size: 20)])));
   }

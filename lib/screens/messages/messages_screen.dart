@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../theme/colors.dart';
@@ -47,12 +48,19 @@ class _MessagesScreenState extends State<MessagesScreen>
   bool _isLoadingGroups = false;
 
   final _searchController = TextEditingController();
-  String _searchQuery = '';
+  String _searchQuery = '';  static const List<Color> _rainbowColors = [
 
-  static const List<Color> _rainbowGradientColors = [
+
     Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A),
+
+
     Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD),
   ];
+
+  LinearGradient _diagonalGradient(Size size) {
+    final angle = size.height > 0 && size.width > 0 ? atan2(size.height, size.width) : 0.785;
+    return LinearGradient(colors: _rainbowColors, transform: GradientRotation(angle));
+  }
 
   @override
   void initState() {
@@ -418,13 +426,16 @@ class _MessagesScreenState extends State<MessagesScreen>
   }
 
   Widget _rainbowBordered({required Widget child, double radius = 12}) {
-    return Container(
+    return LayoutBuilder(builder: (context, constraints) {
+        final size = Size(constraints.maxWidth, constraints.maxHeight);
+        return Container(
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(radius + 1),
-        gradient: const LinearGradient(colors: _rainbowGradientColors)),
+        gradient: _diagonalGradient(size)),
       padding: const EdgeInsets.all(0.5),
       child: Container(decoration: BoxDecoration(borderRadius: BorderRadius.circular(radius),
         color: AppColors.bgColor), child: child),
     );
+    });
   }
 
   @override
@@ -710,12 +721,15 @@ class _MessagesScreenState extends State<MessagesScreen>
             ])),
             Row(mainAxisSize: MainAxisSize.min, children: [
               GestureDetector(onTap: ip ? null : () => _acceptFriendRequest(rq['requestId'] as String),
-                child: Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                child: LayoutBuilder(builder: (context, constraints) {
+                    final size = Size(constraints.maxWidth, constraints.maxHeight);
+                    return Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(borderRadius: BorderRadius.circular(8),
                     border: Border.all(width: 0.5, color: Colors.transparent),
-                    gradient: const LinearGradient(colors: _rainbowGradientColors)),
+                    gradient: _diagonalGradient(size)),
                   child: Text(ip ? '...' : '✓ 接受',
-                    style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500)))),
+                    style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500)));
+                })),
               const SizedBox(width: 6),
               GestureDetector(onTap: ip ? null : () => _rejectFriendRequest(rq['requestId'] as String),
                 child: Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -819,15 +833,18 @@ class _MessagesScreenState extends State<MessagesScreen>
               Text('待确认', style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 12)),
             ])
             else GestureDetector(onTap: () => _showAddFriendDlg(u),
-              child: Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              child: LayoutBuilder(builder: (context, constraints) {
+                  final size = Size(constraints.maxWidth, constraints.maxHeight);
+                  return Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(borderRadius: BorderRadius.circular(8),
                   border: Border.all(width: 0.5, color: Colors.transparent),
-                  gradient: const LinearGradient(colors: _rainbowGradientColors)),
+                  gradient: _diagonalGradient(size)),
                 child: const Row(mainAxisSize: MainAxisSize.min, children: [
                   Icon(Icons.person_add, size: 12, color: Colors.white),
                   SizedBox(width: 4),
                   Text('添加', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500)),
-                ]))),
+                ]));
+              })),
           ]));
       }),
     ]));

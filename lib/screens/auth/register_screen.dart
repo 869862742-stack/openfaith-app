@@ -1,20 +1,23 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 import '../../theme/colors.dart';
 import '../../services/auth_service.dart';
 import '../../navigation/bottom_nav.dart';
 
-const LinearGradient _rainbowGradient = LinearGradient(
-  colors: [
-    Color(0xFFFF4D6D),
-    Color(0xFFFF9F1C),
-    Color(0xFFFFD60A),
-    Color(0xFF70E000),
-    Color(0xFF00E5FF),
-    Color(0xFF3A86FF),
-    Color(0xFF9D4EDD),
-  ],
-  transform: GradientRotation(0.35),
-);
+const _rainbowColors = [
+  Color(0xFFFF4D6D),
+  Color(0xFFFF9F1C),
+  Color(0xFFFFD60A),
+  Color(0xFF70E000),
+  Color(0xFF00E5FF),
+  Color(0xFF3A86FF),
+  Color(0xFF9D4EDD),
+];
+
+LinearGradient _diagonalGradient(Size size) {
+  final angle = size.height > 0 && size.width > 0 ? atan2(size.height, size.width) : 0.785;
+  return LinearGradient(colors: _rainbowColors, transform: GradientRotation(angle));
+}
 
 /// 七彩渐变文字（aurora-text 效果）
 class _GradientText extends StatelessWidget {
@@ -29,7 +32,7 @@ class _GradientText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ShaderMask(
-      shaderCallback: (bounds) => _rainbowGradient.createShader(
+      shaderCallback: (bounds) => _diagonalGradient(bounds.size).createShader(
         Rect.fromLTWH(0, 0, bounds.width, bounds.height),
       ),
       blendMode: BlendMode.srcIn,
@@ -169,11 +172,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     const _GradientText(text: 'OpenFaith', fontSize: 30),
                     const SizedBox(height: 32),
 
-                    Container(
+                    LayoutBuilder(builder: (context, constraints) {
+                        final size = Size(constraints.maxWidth, constraints.maxHeight);
+                        return Container(
                       padding: const EdgeInsets.all(2),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
-                        gradient: _rainbowGradient,
+                        gradient: _diagonalGradient(size),
                         boxShadow: [
                           BoxShadow(color: const Color(0xFFFF4D6D).withOpacity(0.1), blurRadius: 30, spreadRadius: 0),
                           BoxShadow(color: const Color(0xFF3A86FF).withOpacity(0.08), blurRadius: 60, spreadRadius: 0),
@@ -199,10 +204,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               Text('已有账号？',
                                   style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 14)),
                               const SizedBox(height: 8),
-                              Container(
+                              LayoutBuilder(builder: (context, constraints) {
+                                  final size = Size(constraints.maxWidth, constraints.maxHeight);
+                                  return Container(
                                 padding: const EdgeInsets.all(2),
                                 decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(12), gradient: _rainbowGradient),
+                                    borderRadius: BorderRadius.circular(12), gradient: _diagonalGradient(size)),
                                 child: TextButton(
                                   onPressed: () => Navigator.pop(context),
                                   style: TextButton.styleFrom(
@@ -213,12 +220,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   child: const Text('立即登录',
                                       style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
                                 ),
-                              ),
+                              );
+                              }),
                             ],
                           ],
                         ),
                       ),
-                    ),
+                    );
+                    }),
                   ],
                 ),
               ),
@@ -331,11 +340,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
+        LayoutBuilder(builder: (context, constraints) {
+            final size = Size(constraints.maxWidth, constraints.maxHeight);
+            return Container(
           width: 64, height: 64,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            gradient: _rainbowGradient,
+            gradient: _diagonalGradient(size),
           ),
           padding: const EdgeInsets.all(2),
           child: Container(
@@ -345,7 +356,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
             child: const Icon(Icons.email_outlined, color: Color(0xFF3A86FF), size: 32),
           ),
-        ),
+        );
+        }),
         const SizedBox(height: 16),
 
         const Text('验证码已发送',
@@ -406,11 +418,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
             onFocusChange: (hasFocus) {
               setState(() => _focusedField = hasFocus ? 'regTag' : null);
             },
-            child: Container(
+            child: LayoutBuilder(builder: (context, constraints) {
+                final size = Size(constraints.maxWidth, constraints.maxHeight);
+                return Container(
               padding: EdgeInsets.all(_focusedField == 'regTag' ? 2 : 0),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                gradient: _focusedField == 'regTag' ? _rainbowGradient : null,
+                gradient: _focusedField == 'regTag' ? _diagonalGradient(size) : null,
                 border: _focusedField != 'regTag'
                     ? Border.all(color: Colors.white.withOpacity(0.12), width: 1)
                     : null,
@@ -442,7 +456,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ],
                 ),
               ),
-            ),
+            );
+            }),
           ),
         ),
       ],
@@ -495,9 +510,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Widget _buildRegisterButton() {
-    return Container(
+    return LayoutBuilder(builder: (context, constraints) {
+        final size = Size(constraints.maxWidth, constraints.maxHeight);
+        return Container(
       padding: const EdgeInsets.all(2),
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: _rainbowGradient),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: _diagonalGradient(size)),
       child: SizedBox(
         height: 44,
         child: TextButton(
@@ -511,12 +528,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
       ),
     );
+    });
   }
 
   Widget _buildVerifyButton() {
-    return Container(
+    return LayoutBuilder(builder: (context, constraints) {
+        final size = Size(constraints.maxWidth, constraints.maxHeight);
+        return Container(
       padding: const EdgeInsets.all(2),
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: _rainbowGradient),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: _diagonalGradient(size)),
       child: SizedBox(
         height: 48,
         child: TextButton(
@@ -530,6 +550,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
       ),
     );
+    });
   }
 
   Widget _buildInput({
@@ -552,11 +573,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
           onFocusChange: (hasFocus) {
             setState(() => _focusedField = hasFocus ? fieldKey : null);
           },
-          child: Container(
+          child: LayoutBuilder(builder: (context, constraints) {
+              final size = Size(constraints.maxWidth, constraints.maxHeight);
+              return Container(
             padding: EdgeInsets.all(isFocused ? 2 : 0),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
-              gradient: isFocused ? _rainbowGradient : null,
+              gradient: isFocused ? _diagonalGradient(size) : null,
               border: !isFocused
                   ? Border.all(color: Colors.white.withOpacity(0.12), width: 1)
                   : null,
@@ -586,7 +609,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
             ),
-          ),
+          );
+          }),
         ),
       ],
     );

@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
 
+import 'dart:math';
 class PrivacyPolicyScreen extends StatelessWidget {
-  const PrivacyPolicyScreen({super.key});
+  const PrivacyPolicyScreen({super.key});  static const _rainbowColors = [
 
-  static const _rainbowGradient = LinearGradient(
-    colors: [
-      Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A),
-      Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD),
-    ],
-  transform: GradientRotation(0.35),
-  );
+
+    Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A),
+
+
+    Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD),
+  ];
+
+  LinearGradient _diagonalGradient(Size size) {
+    final angle = size.height > 0 && size.width > 0 ? atan2(size.height, size.width) : 0.785;
+    return LinearGradient(colors: _rainbowColors, transform: GradientRotation(angle));
+  }
 
   @override
   Widget build(BuildContext context) {

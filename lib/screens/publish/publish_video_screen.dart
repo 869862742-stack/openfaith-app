@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../theme/colors.dart';
@@ -24,15 +25,19 @@ class _PublishVideoScreenState extends State<PublishVideoScreen> {
     _titleController.dispose();
     _descriptionController.dispose();
     super.dispose();
-  }
+  }  static const _rainbowColors = [
 
-  static const _rainbowGradient = LinearGradient(
-    colors: [
-      Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A),
-      Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD),
-    ],
-  transform: GradientRotation(0.35),
-  );
+
+    Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A),
+
+
+    Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD),
+  ];
+
+  LinearGradient _diagonalGradient(Size size) {
+    final angle = size.height > 0 && size.width > 0 ? atan2(size.height, size.width) : 0.785;
+    return LinearGradient(colors: _rainbowColors, transform: GradientRotation(angle));
+  }
 
   Future<void> _publish() async {
     if (_selectedVideoPath == null) {
@@ -105,16 +110,19 @@ class _PublishVideoScreenState extends State<PublishVideoScreen> {
             padding: const EdgeInsets.only(right: 12),
             child: GestureDetector(
               onTap: _publishing ? null : _publish,
-              child: Container(
+              child: LayoutBuilder(builder: (context, constraints) {
+                  final size = Size(constraints.maxWidth, constraints.maxHeight);
+                  return Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
-                  gradient: _rainbowGradient,
+                  gradient: _diagonalGradient(size),
                 ),
                 child: _publishing
                     ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                     : const Text('\u53d1\u5e03', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
-              ),
+              );
+              }),
             ),
           ),
         ],

@@ -42,12 +42,16 @@ class _HotRankingState extends State<HotRanking> {
     {'id': 'month', 'label': '本月'},
     {'id': 'year', 'label': '年度'},
     {'id': 'all', 'label': '总榜'},
+  ];  static const _rainbowColors = [
+
+
+    Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A), Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD)
   ];
 
-  static const _rainbowGradient = LinearGradient(
-    colors: [Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A), Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD)],
-  transform: GradientRotation(0.35),
-  );
+  LinearGradient _diagonalGradient(Size size) {
+    final angle = size.height > 0 && size.width > 0 ? atan2(size.height, size.width) : 0.785;
+    return LinearGradient(colors: _rainbowColors, transform: GradientRotation(angle));
+  }
 
   @override
   void initState() {
@@ -144,12 +148,14 @@ class _HotRankingState extends State<HotRanking> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
+      builder: (ctx) => LayoutBuilder(builder: (context, constraints) {
+          final size = Size(constraints.maxWidth, constraints.maxHeight);
+          return Container(
         height: MediaQuery.of(ctx).size.height * 0.85,
         padding: const EdgeInsets.all(1),
         decoration: BoxDecoration(
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          gradient: _rainbowGradient,
+          gradient: _diagonalGradient(size),
         ),
         child: Container(
           decoration: const BoxDecoration(
@@ -227,7 +233,8 @@ class _HotRankingState extends State<HotRanking> {
             ),
           ),
         ),
-      ),
+      );
+      }),
     );
   }
 
@@ -341,7 +348,7 @@ class _HotRankingState extends State<HotRanking> {
   /// 热度值 — 七彩渐变文字
   Widget _buildHotValue(double hotValue) {
     return ShaderMask(
-      shaderCallback: (bounds) => _rainbowGradient.createShader(bounds),
+      shaderCallback: (bounds) => _diagonalGradient(bounds.size).createShader(bounds),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -360,13 +367,15 @@ class _HotRankingState extends State<HotRanking> {
   Widget build(BuildContext context) {
     if (_topPosts.isEmpty) return const SizedBox.shrink();
     final top3 = _topPosts.take(3).toList();
-    return Container(
+    return LayoutBuilder(builder: (context, constraints) {
+        final size = Size(constraints.maxWidth, constraints.maxHeight);
+        return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       // 外层：七彩渐变边框
       padding: const EdgeInsets.all(1),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        gradient: _rainbowGradient,
+        gradient: _diagonalGradient(size),
       ),
       child: Container(
         // 内层：实色 #050816（铁律）
@@ -384,12 +393,12 @@ class _HotRankingState extends State<HotRanking> {
               child: Row(
                 children: [
                   ShaderMask(
-                    shaderCallback: (bounds) => _rainbowGradient.createShader(bounds),
+                    shaderCallback: (bounds) => _diagonalGradient(bounds.size).createShader(bounds),
                     child: const Icon(Icons.local_fire_department, size: 18, color: Colors.white),
                   ),
                   const SizedBox(width: 6),
                   ShaderMask(
-                    shaderCallback: (bounds) => _rainbowGradient.createShader(bounds),
+                    shaderCallback: (bounds) => _diagonalGradient(bounds.size).createShader(bounds),
                     child: const Text('热点排行', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
                   ),
                   const Spacer(),
@@ -431,5 +440,6 @@ class _HotRankingState extends State<HotRanking> {
         ),
       ),
     );
+    });
   }
 }

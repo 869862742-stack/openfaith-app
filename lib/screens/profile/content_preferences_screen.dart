@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../theme/colors.dart';
@@ -110,15 +111,19 @@ class _ContentPreferencesScreenState extends State<ContentPreferencesScreen> {
       }
     }
     if (mounted) setState(() => _saving = false);
-  }
+  }  static const _rainbowColors = [
 
-  static const _rainbowGradient = LinearGradient(
-    colors: [
-      Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A),
-      Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD),
-    ],
-  transform: GradientRotation(0.35),
-  );
+
+    Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A),
+
+
+    Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD),
+  ];
+
+  LinearGradient _diagonalGradient(Size size) {
+    final angle = size.height > 0 && size.width > 0 ? atan2(size.height, size.width) : 0.785;
+    return LinearGradient(colors: _rainbowColors, transform: GradientRotation(angle));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -185,18 +190,21 @@ class _ContentPreferencesScreenState extends State<ContentPreferencesScreen> {
                   // \u4fdd\u5b58\u6309\u94ae
                   GestureDetector(
                     onTap: _save,
-                    child: Container(
+                    child: LayoutBuilder(builder: (context, constraints) {
+                        final size = Size(constraints.maxWidth, constraints.maxHeight);
+                        return Container(
                       height: 40,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(8),
-                        gradient: _rainbowGradient,
+                        gradient: _diagonalGradient(size),
                       ),
                       child: Center(
                         child: _saving
                             ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                             : const Text('\u4fdd\u5b58\u504f\u597d', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
                       ),
-                    ),
+                    );
+                    }),
                   ),
                 ],
               ),

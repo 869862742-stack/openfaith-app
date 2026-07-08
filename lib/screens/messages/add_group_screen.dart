@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../theme/colors.dart';
@@ -89,15 +90,19 @@ class _AddGroupScreenState extends State<AddGroupScreen> {
         );
       }
     }
-  }
+  }  static const _rainbowColors = [
 
-  static const _rainbowGradient = LinearGradient(
-    colors: [
-      Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A),
-      Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD),
-    ],
-  transform: GradientRotation(0.35),
-  );
+
+    Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A),
+
+
+    Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD),
+  ];
+
+  LinearGradient _diagonalGradient(Size size) {
+    final angle = size.height > 0 && size.width > 0 ? atan2(size.height, size.width) : 0.785;
+    return LinearGradient(colors: _rainbowColors, transform: GradientRotation(angle));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -117,12 +122,14 @@ class _AddGroupScreenState extends State<AddGroupScreen> {
           // Group name input
           Padding(
             padding: const EdgeInsets.all(16),
-            child: Container(
+            child: LayoutBuilder(builder: (context, constraints) {
+                final size = Size(constraints.maxWidth, constraints.maxHeight);
+                return Container(
               height: 40,
               padding: const EdgeInsets.all(1),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
-                gradient: _nameFocusNode.hasFocus ? _rainbowGradient : null,
+                gradient: _nameFocusNode.hasFocus ? _diagonalGradient(size) : null,
               ),
               child: Container(
                 decoration: BoxDecoration(
@@ -146,7 +153,8 @@ class _AddGroupScreenState extends State<AddGroupScreen> {
                   onTapOutside: (event) => _nameFocusNode.unfocus(),
                 ),
               ),
-            ),
+            );
+            }),
           ),
           // Selected count
           Padding(
@@ -158,14 +166,17 @@ class _AddGroupScreenState extends State<AddGroupScreen> {
                 const Spacer(),
                 GestureDetector(
                   onTap: _createGroup,
-                  child: Container(
+                  child: LayoutBuilder(builder: (context, constraints) {
+                      final size = Size(constraints.maxWidth, constraints.maxHeight);
+                      return Container(
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(18),
-                      gradient: _rainbowGradient,
+                      gradient: _diagonalGradient(size),
                     ),
                     child: const Text('\u521b\u5efa', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
-                  ),
+                  );
+                  }),
                 ),
               ],
             ),
@@ -174,12 +185,14 @@ class _AddGroupScreenState extends State<AddGroupScreen> {
           // Search
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Container(
+            child: LayoutBuilder(builder: (context, constraints) {
+                final size = Size(constraints.maxWidth, constraints.maxHeight);
+                return Container(
               height: 36,
               padding: const EdgeInsets.all(1),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
-                gradient: _searchFocusNode.hasFocus ? _rainbowGradient : null,
+                gradient: _searchFocusNode.hasFocus ? _diagonalGradient(size) : null,
                 color: _searchFocusNode.hasFocus ? null : AppColors.inputBg,
                 border: _searchFocusNode.hasFocus ? null : Border.all(color: Colors.white.withOpacity(0.08)),
               ),
@@ -207,7 +220,8 @@ class _AddGroupScreenState extends State<AddGroupScreen> {
                   onChanged: (_) => setState(() {}),
                 ),
               ),
-            ),
+            );
+            }),
           ),
           const SizedBox(height: 8),
           // Friends list

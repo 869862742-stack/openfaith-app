@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../theme/colors.dart';
@@ -28,12 +29,19 @@ class _UserProfileScreenState extends State<UserProfileScreen>
   bool _loadingPosts = true;
   bool _loadingFavorites = true;
   String? _currentUserId;
-  String? _profileId;
+  String? _profileId;  static const List<Color> _rainbowColors = [
 
-  static const List<Color> _rainbowGradientColors = [
+
     Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A),
+
+
     Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD),
   ];
+
+  LinearGradient _diagonalGradient(Size size) {
+    final angle = size.height > 0 && size.width > 0 ? atan2(size.height, size.width) : 0.785;
+    return LinearGradient(colors: _rainbowColors, transform: GradientRotation(angle));
+  }
 
   @override
   void initState() {
@@ -343,22 +351,23 @@ class _UserProfileScreenState extends State<UserProfileScreen>
   }
 
   Widget _rainbowBordered({required Widget child, double radius = 12}) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(radius + 1),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,colors: _rainbowGradientColors),
-      ),
-      padding: const EdgeInsets.all(0.5),
-      child: Container(
+    return LayoutBuilder(builder: (context, constraints) {
+      final size = Size(constraints.maxWidth, constraints.maxHeight);
+      return Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(radius),
-          color: AppColors.bgColor,
+          borderRadius: BorderRadius.circular(radius + 1),
+          gradient: _diagonalGradient(size),
         ),
-        child: child,
-      ),
-    );
+        padding: const EdgeInsets.all(0.5),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(radius),
+            color: AppColors.bgColor,
+          ),
+          child: child,
+        ),
+      );
+    });
   }
 
   String _formatTime(String ds) {
@@ -533,7 +542,9 @@ class _UserProfileScreenState extends State<UserProfileScreen>
                 : _isPending
                     ? null
                     : _sendFriendRequest,
-            child: Container(
+            child:LayoutBuilder(builder: (context, constraints) {
+      final size = Size(constraints.maxWidth, constraints.maxHeight);
+      return Container(
               height: 40,
               alignment: Alignment.center,
               decoration: BoxDecoration(
@@ -543,9 +554,7 @@ class _UserProfileScreenState extends State<UserProfileScreen>
                     : null,
                 gradient: _isFollowing || _isPending
                     ? null
-                    : const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,colors: _rainbowGradientColors),
+                    : _diagonalGradient(size),
               ),
               child: _isFollowing
                   ? Row(mainAxisAlignment: MainAxisAlignment.center, children: [
@@ -575,7 +584,8 @@ class _UserProfileScreenState extends State<UserProfileScreen>
                                     fontWeight: FontWeight.w500)),
                           ],
                         ),
-            ),
+            );
+    }),
           ),
         ),
       ]),

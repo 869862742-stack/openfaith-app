@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../theme/colors.dart';
@@ -28,12 +29,19 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
   bool _loading = true;
   bool _loadingMembers = true;
   bool _loadingPosts = true;
-  String? _currentUserId;
+  String? _currentUserId;  static const List<Color> _rainbowColors = [
 
-  static const List<Color> _rainbowGradientColors = [
+
     Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A),
+
+
     Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD),
   ];
+
+  LinearGradient _diagonalGradient(Size size) {
+    final angle = size.height > 0 && size.width > 0 ? atan2(size.height, size.width) : 0.785;
+    return LinearGradient(colors: _rainbowColors, transform: GradientRotation(angle));
+  }
 
   @override
   void initState() {
@@ -159,22 +167,23 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
   }
 
   Widget _rainbowBordered({required Widget child, double radius = 12}) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(radius + 1),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,colors: _rainbowGradientColors),
-      ),
-      padding: const EdgeInsets.all(0.5),
-      child: Container(
+    return LayoutBuilder(builder: (context, constraints) {
+      final size = Size(constraints.maxWidth, constraints.maxHeight);
+      return Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(radius),
-          color: AppColors.bgColor,
+          borderRadius: BorderRadius.circular(radius + 1),
+          gradient: _diagonalGradient(size),
         ),
-        child: child,
-      ),
-    );
+        padding: const EdgeInsets.all(0.5),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(radius),
+            color: AppColors.bgColor,
+          ),
+          child: child,
+        ),
+      );
+    });
   }
 
   @override

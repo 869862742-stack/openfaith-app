@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../theme/colors.dart';
 
@@ -38,12 +39,16 @@ class _VipScreenState extends State<VipScreen> {
     Color(0xFF70E000), Color(0xFF9D4EDD), Color(0xFFFF4D6D),
     Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFF70E000),
     Color(0xFF00E5FF), Color(0xFFFFD60A),
+  ];  static const _rainbowColors = [
+
+
+    Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A), Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD)
   ];
 
-  static const _rainbowGradient = LinearGradient(
-    colors: [Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A), Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD)],
-  transform: GradientRotation(0.35),
-  );
+  LinearGradient _diagonalGradient(Size size) {
+    final angle = size.height > 0 && size.width > 0 ? atan2(size.height, size.width) : 0.785;
+    return LinearGradient(colors: _rainbowColors, transform: GradientRotation(angle));
+  }
 
   static const _plans = [
     {'id': 'monthly', 'title': '月度会员', 'price': '¥28/月', 'subtitle': '按月续费'},
@@ -98,15 +103,18 @@ class _VipScreenState extends State<VipScreen> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: Column(
             children: [
-              Container(
+              LayoutBuilder(builder: (context, constraints) {
+                  final size = Size(constraints.maxWidth, constraints.maxHeight);
+                  return Container(
                 width: 56, height: 56,
-                decoration: BoxDecoration(shape: BoxShape.circle, gradient: _rainbowGradient),
+                decoration: BoxDecoration(shape: BoxShape.circle, gradient: _diagonalGradient(size)),
                 padding: const EdgeInsets.all(2),
                 child: Container(
                   decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFF0A0E1A)),
                   child: const Icon(Icons.workspace_premium, color: Colors.white, size: 28),
                 ),
-              ),
+              );
+              }),
               const SizedBox(height: 12),
               const Text('开通 VIP 会员', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
               const SizedBox(height: 4),
@@ -121,12 +129,14 @@ class _VipScreenState extends State<VipScreen> {
                   final isSelected = _selectedPlan == plan['id'];
                   return GestureDetector(
                     onTap: _processing ? null : () => setDialogState(() => _selectedPlan = plan['id'] as String),
-                    child: Container(
+                    child: LayoutBuilder(builder: (context, constraints) {
+                        final size = Size(constraints.maxWidth, constraints.maxHeight);
+                        return Container(
                       margin: const EdgeInsets.only(bottom: 8),
                       padding: const EdgeInsets.all(1),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
-                        gradient: isSelected ? _rainbowGradient : null,
+                        gradient: isSelected ? _diagonalGradient(size) : null,
                       ),
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -146,7 +156,8 @@ class _VipScreenState extends State<VipScreen> {
                           ],
                         ),
                       ),
-                    ),
+                    );
+                    }),
                   );
                 }),
                 const SizedBox(height: 12),
@@ -179,10 +190,12 @@ class _VipScreenState extends State<VipScreen> {
                     ),
                   ),
                 const SizedBox(height: 16),
-                Container(
+                LayoutBuilder(builder: (context, constraints) {
+                    final size = Size(constraints.maxWidth, constraints.maxHeight);
+                    return Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(1),
-                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: _rainbowGradient),
+                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: _diagonalGradient(size)),
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
@@ -208,7 +221,8 @@ class _VipScreenState extends State<VipScreen> {
                       ),
                     ),
                   ),
-                ),
+                );
+                }),
                 const SizedBox(height: 8),
                 if (_selectedPlan == 'lifetime')
                   Text('一次性付费 · 永久享受', style: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 11)),
@@ -236,9 +250,11 @@ class _VipScreenState extends State<VipScreen> {
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  Container(
+                  LayoutBuilder(builder: (context, constraints) {
+                      final size = Size(constraints.maxWidth, constraints.maxHeight);
+                      return Container(
                     padding: const EdgeInsets.all(1),
-                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), gradient: _rainbowGradient),
+                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), gradient: _diagonalGradient(size)),
                     child: Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(borderRadius: BorderRadius.circular(19), color: AppColors.background),
@@ -262,7 +278,8 @@ class _VipScreenState extends State<VipScreen> {
                         ],
                       ),
                     ),
-                  ),
+                  );
+                  }),
                   const SizedBox(height: 20),
                   if (!_isVip) ...[
                     ..._plans.asMap().entries.map((entry) {
@@ -271,9 +288,11 @@ class _VipScreenState extends State<VipScreen> {
                         padding: const EdgeInsets.only(bottom: 12),
                         child: GestureDetector(
                           onTap: () { setState(() => _selectedPlan = plan['id'] as String); _showPaymentModal(); },
-                          child: Container(
+                          child: LayoutBuilder(builder: (context, constraints) {
+                              final size = Size(constraints.maxWidth, constraints.maxHeight);
+                              return Container(
                             padding: const EdgeInsets.all(1),
-                            decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), gradient: _rainbowGradient),
+                            decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), gradient: _diagonalGradient(size)),
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                               decoration: BoxDecoration(borderRadius: BorderRadius.circular(13), color: AppColors.background),
@@ -289,7 +308,8 @@ class _VipScreenState extends State<VipScreen> {
                                 ],
                               ),
                             ),
-                          ),
+                          );
+                          }),
                         ),
                       );
                     }),

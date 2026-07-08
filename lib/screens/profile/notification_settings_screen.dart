@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../theme/colors.dart';
 
@@ -28,12 +29,16 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
     {'id': 'bubble', 'name': '气泡', 'desc': '轻快气泡声'},
     {'id': 'chime', 'name': '风铃', 'desc': '悠远风铃'},
     {'id': 'ping', 'name': '清脆', 'desc': '简洁提示'},
+  ];  static const _rainbowColors = [
+
+
+    Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A), Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD)
   ];
 
-  static const _rainbowGradient = LinearGradient(
-    colors: [Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A), Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD)],
-  transform: GradientRotation(0.35),
-  );
+  LinearGradient _diagonalGradient(Size size) {
+    final angle = size.height > 0 && size.width > 0 ? atan2(size.height, size.width) : 0.785;
+    return LinearGradient(colors: _rainbowColors, transform: GradientRotation(angle));
+  }
 
   @override
   void initState() {
@@ -66,11 +71,13 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
   Widget _buildToggle({required bool value, required VoidCallback onChanged}) {
     return GestureDetector(
       onTap: onChanged,
-      child: Container(
+      child: LayoutBuilder(builder: (context, constraints) {
+          final size = Size(constraints.maxWidth, constraints.maxHeight);
+          return Container(
         width: 44, height: 26,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(13),
-          gradient: value ? _rainbowGradient : null,
+          gradient: value ? _diagonalGradient(size) : null,
           color: value ? null : Colors.white.withOpacity(0.15),
           border: value ? null : Border.all(color: Colors.white.withOpacity(0.1)),
         ),
@@ -87,7 +94,8 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
             ),
           ),
         ),
-      ),
+      );
+      }),
     );
   }
 
@@ -162,12 +170,14 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                   await _setTone(prefKey, tone['id']!);
                   if (ctx.mounted) Navigator.pop(ctx);
                 },
-                child: Container(
+                child: LayoutBuilder(builder: (context, constraints) {
+                    final size = Size(constraints.maxWidth, constraints.maxHeight);
+                    return Container(
                   margin: const EdgeInsets.only(bottom: 4),
                   padding: const EdgeInsets.all(1),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    gradient: isSelected ? _rainbowGradient : null,
+                    gradient: isSelected ? _diagonalGradient(size) : null,
                   ),
                   child: isSelected
                       ? Container(
@@ -208,7 +218,8 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                             ],
                           ),
                         ),
-                ),
+                );
+                }),
               );
             }),
             const SizedBox(height: 12),
@@ -245,10 +256,12 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: Column(
           children: [
-            Container(
+            LayoutBuilder(builder: (context, constraints) {
+                final size = Size(constraints.maxWidth, constraints.maxHeight);
+                return Container(
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               padding: const EdgeInsets.all(1),
-              decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: _rainbowGradient),
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: _diagonalGradient(size)),
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(borderRadius: BorderRadius.circular(11), color: const Color(0xFF050816)),
@@ -266,7 +279,8 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                   ],
                 ),
               ),
-            ),
+            );
+            }),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

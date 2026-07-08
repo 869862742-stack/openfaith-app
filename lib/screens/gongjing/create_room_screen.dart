@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../theme/colors.dart';
@@ -41,15 +42,19 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
     _nameFocusNode.dispose();
     _descFocusNode.dispose();
     super.dispose();
-  }
+  }  static const _rainbowColors = [
 
-  static const _rainbowGradient = LinearGradient(
-    colors: [
-      Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A),
-      Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD),
-    ],
-  transform: GradientRotation(0.35),
-  );
+
+    Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A),
+
+
+    Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD),
+  ];
+
+  LinearGradient _diagonalGradient(Size size) {
+    final angle = size.height > 0 && size.width > 0 ? atan2(size.height, size.width) : 0.785;
+    return LinearGradient(colors: _rainbowColors, transform: GradientRotation(angle));
+  }
 
   Future<void> _createRoom() async {
     if (_nameController.text.trim().isEmpty) {
@@ -104,16 +109,19 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
             padding: const EdgeInsets.only(right: 12),
             child: GestureDetector(
               onTap: _creating ? null : _createRoom,
-              child: Container(
+              child: LayoutBuilder(builder: (context, constraints) {
+                  final size = Size(constraints.maxWidth, constraints.maxHeight);
+                  return Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
-                  gradient: _rainbowGradient,
+                  gradient: _diagonalGradient(size),
                 ),
                 child: _creating
                     ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                     : const Text('\u521b\u5efa', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
-              ),
+              );
+              }),
             ),
           ),
         ],
@@ -124,11 +132,13 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // \u623f\u95f4\u540d\u79f0
-            Container(
+            LayoutBuilder(builder: (context, constraints) {
+                final size = Size(constraints.maxWidth, constraints.maxHeight);
+                return Container(
               padding: const EdgeInsets.all(1),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
-                gradient: _nameFocusNode.hasFocus ? _rainbowGradient : null,
+                gradient: _nameFocusNode.hasFocus ? _diagonalGradient(size) : null,
               ),
               child: Container(
                 decoration: BoxDecoration(
@@ -151,14 +161,17 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
                   onTapOutside: (event) => _nameFocusNode.unfocus(),
                 ),
               ),
-            ),
+            );
+            }),
             const SizedBox(height: 12),
             // \u63cf\u8ff0
-            Container(
+            LayoutBuilder(builder: (context, constraints) {
+                final size = Size(constraints.maxWidth, constraints.maxHeight);
+                return Container(
               padding: const EdgeInsets.all(1),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
-                gradient: _descFocusNode.hasFocus ? _rainbowGradient : null,
+                gradient: _descFocusNode.hasFocus ? _diagonalGradient(size) : null,
               ),
               child: Container(
                 decoration: BoxDecoration(
@@ -182,7 +195,8 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
                   onTapOutside: (event) => _descFocusNode.unfocus(),
                 ),
               ),
-            ),
+            );
+            }),
             const SizedBox(height: 16),
             // \u6807\u7b7e\u9009\u62e9
             const Text('\u623f\u95f4\u6807\u7b7e', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
