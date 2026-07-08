@@ -36,7 +36,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
   ];
 
   LinearGradient _diagonalGradient(Size size) {
-    final angle = size.height > 0 && size.width > 0 ? atan2(size.height, size.width) : 0.785;
+    final angle = size.height > 0 && size.width > 0 ? atan2(size.width, size.height) : 0.785;
     return LinearGradient(colors: _rainbowColors, transform: GradientRotation(angle));
   }
 
