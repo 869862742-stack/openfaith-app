@@ -48,3 +48,4 @@ jobs:
         uses: shorebirdtech/shorebird-patch@v1
         with:
           platform: android
+          release-version: "1.0.0+1"
