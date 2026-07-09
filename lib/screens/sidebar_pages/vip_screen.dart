@@ -46,8 +46,7 @@ class _VipScreenState extends State<VipScreen> {
   ];
 
   LinearGradient _diagonalGradient(Size size) {
-    final angle = size.height > 0 && size.width > 0 ? atan2(size.width, size.height) : 0.785;
-    return LinearGradient(colors: _rainbowColors, transform: GradientRotation(angle));
+    return LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: _rainbowColors);
   }
 
   static const _plans = [
