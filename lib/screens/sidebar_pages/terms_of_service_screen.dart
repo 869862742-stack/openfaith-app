@@ -14,15 +14,15 @@ class TermsOfServiceScreen extends StatelessWidget {
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('\u670d\u52a1\u6761\u6b3e', style: TextStyle(color: Colors.white, fontSize: 16)),
+        title: const Text('用户协议', style: TextStyle(color: Colors.white, fontSize: 16)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildSection('\u5f15\u8a00', [
-              '\u6b22\u8fce\u4f7f\u7528 OpenFaith\u3002\u901a\u8fc7\u4f7f\u7528\u672c\u5e73\u53f0\uff0c\u60a8\u540c\u610f\u9075\u5b88\u4ee5\u4e0b\u670d\u52a1\u6761\u6b3e\u3002\u8bf7\u4ed4\u7ec6\u9605\u8bfb\u3002',
+            _buildSection('引言', [
+              '欢迎使用 OpenFaith。通过使用本平台，您同意遵守以下用户协议。请仔细阅读。',
             ]),
             const SizedBox(height: 16),
             _buildSection('\u8d26\u6237\u6ce8\u518c\u4e0e\u5b89\u5168', [
@@ -73,8 +73,9 @@ class TermsOfServiceScreen extends StatelessWidget {
               '\u6211\u4eec\u6709\u6743\u968f\u65f6\u4fee\u6539\u672c\u6761\u6b3e\u3002\u4fee\u6539\u540e\u7684\u6761\u6b3e\u5c06\u5728\u5e73\u53f0\u4e0a\u516c\u5e03\uff0c\u7ee7\u7eed\u4f7f\u7528\u5373\u8868\u793a\u63a5\u53d7\u3002',
             ]),
             const SizedBox(height: 16),
-            _buildSection('\u8054\u7cfb\u6211\u4eec', [
-              '\u5982\u5bf9\u670d\u52a1\u6761\u6b3e\u6709\u7591\u95ee\uff0c\u8bf7\u901a\u8fc7\u5e73\u53f0\u5185\u7684\u53cd\u9988\u529f\u80fd\u8054\u7cfb\u6211\u4eec\u3002',
+            _buildSection('联系我们', [
+              '如对本用户协议有疑问，请通过以下方式联系我们：',
+              '• 邮箱：869862742@qq.com',
             ]),
             const SizedBox(height: 32),
           ],

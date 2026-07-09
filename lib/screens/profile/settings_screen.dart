@@ -87,7 +87,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _buildDivider(),
             _buildListTile(
               icon: Icons.description_outlined,
-              title: '\u670d\u52a1\u6761\u6b3e',
+              title: '用户协议',
               onTap: () => _navigateTo(const TermsOfServiceScreen()),
             ),
           ]),

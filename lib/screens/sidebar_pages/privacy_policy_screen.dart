@@ -86,8 +86,9 @@ class PrivacyPolicyScreen extends StatelessWidget {
               '\u6211\u4eec\u53ef\u80fd\u5b9a\u671f\u66f4\u65b0\u672c\u9690\u79c1\u653f\u7b56\u3002\u91cd\u5927\u53d8\u66f4\u65f6\uff0c\u6211\u4eec\u4f1a\u901a\u8fc7\u5e73\u53f0\u901a\u77e5\u60a8\u3002',
             ]),
             const SizedBox(height: 16),
-            _buildSection('\u8054\u7cfb\u6211\u4eec', [
-              '\u5982\u6709\u5173\u4e8e\u9690\u79c1\u653f\u7b56\u7684\u95ee\u9898\uff0c\u8bf7\u901a\u8fc7\u5e73\u53f0\u5185\u7684\u53cd\u9988\u529f\u80fd\u8054\u7cfb\u6211\u4eec\u3002',
+            _buildSection('联系我们', [
+              '如有关于隐私政策的问题，请通过以下方式联系我们：',
+              '• 邮箱：869862742@qq.com',
             ]),
             const SizedBox(height: 32),
           ],

@@ -3,6 +3,9 @@ import 'dart:math';
 import '../../theme/colors.dart';
 import '../../services/auth_service.dart';
 import '../../navigation/bottom_nav.dart';
+import '../../widgets/religion_icon.dart';
+import '../sidebar_pages/privacy_policy_screen.dart';
+import '../sidebar_pages/terms_of_service_screen.dart';
 
 const _rainbowColors = [
   Color(0xFFFF4D6D),
@@ -102,7 +105,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (password.length < 8) { setState(() => _error = '密码至少8位'); return; }
     if (password != confirmPassword) { setState(() => _error = '两次密码不一致'); return; }
     if (!_isAbove13) { setState(() => _error = '您必须年满13周岁才能注册'); return; }
-    if (!_agreedToTerms) { setState(() => _error = '请阅读并同意隐私政策和服务条款'); return; }
+    if (!_agreedToTerms) { setState(() => _error = '请阅读并同意隐私政策和用户协议'); return; }
 
     setState(() { _loading = true; _error = null; });
     try {
@@ -145,6 +148,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _loading = false;
       });
     }
+  }
+
+  // 七彩渐变边框包裹器（与登录页一致）
+  Widget _rainbowBorderBox({required Widget child, double borderRadius = 8}) {
+    return LayoutBuilder(builder: (context, constraints) {
+      final size = Size(constraints.maxWidth, constraints.maxHeight);
+      return Container(
+        padding: const EdgeInsets.all(1),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(borderRadius),
+          gradient: _diagonalGradient(size),
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(borderRadius - 1),
+            color: const Color(0xFF050816),
+          ),
+          child: child,
+        ),
+      );
+    });
   }
 
   @override
@@ -203,24 +227,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               Text('已有账号？',
                                   style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 14)),
                               const SizedBox(height: 8),
-                              LayoutBuilder(builder: (context, constraints) {
-                                  final size = Size(constraints.maxWidth, constraints.maxHeight);
-                                  return Container(
-                                padding: const EdgeInsets.all(2),
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(12), gradient: _diagonalGradient(size)),
-                                child: TextButton(
-                                  onPressed: () => Navigator.pop(context),
-                                  style: TextButton.styleFrom(
-                                    backgroundColor: const Color(0xFF050816).withOpacity(0.95),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                              // 修复1: "立即登录"按钮 - 使用固定padding而非LayoutBuilder避免高度变形
+                              GestureDetector(
+                                onTap: () => Navigator.pop(context),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: Colors.white.withOpacity(0.15),
+                                      width: 1,
+                                    ),
                                   ),
                                   child: const Text('立即登录',
                                       style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
                                 ),
-                              );
-                              }),
+                              ),
                             ],
                           ],
                         ),
@@ -259,57 +281,96 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _buildFaithTagDropdown(),
         const SizedBox(height: 16),
 
-        Row(
-          children: [
-            SizedBox(
-              width: 16, height: 16,
-              child: Checkbox(
-                value: _isAbove13,
-                onChanged: (v) { setState(() => _isAbove13 = v ?? false); _error = null; },
-                activeColor: const Color(0xFF3A86FF),
-                side: BorderSide(color: Colors.white.withOpacity(0.3), width: 1),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        // 修复3: 年满13周岁 checkbox - 使用与登录页一致的_rainbowBorderBox样式
+        GestureDetector(
+          onTap: () { setState(() => _isAbove13 = !_isAbove13); _error = null; },
+          child: Row(
+            children: [
+              _rainbowBorderBox(
+                borderRadius: 3,
+                child: SizedBox(
+                  width: 12, height: 12,
+                  child: _isAbove13
+                      ? const Icon(Icons.check, size: 10, color: Colors.white)
+                      : null,
+                ),
               ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text('我已年满13周岁',
-                  style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
-            ),
-          ],
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text('我已年满13周岁',
+                    style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
+              ),
+            ],
+          ),
         ),
         const SizedBox(height: 8),
 
+        // 修复3: 同意条款 checkbox - 同样使用_rainbowBorderBox样式
         Row(
           children: [
-            SizedBox(
-              width: 16, height: 16,
-              child: Checkbox(
-                value: _agreedToTerms,
-                onChanged: (v) { setState(() => _agreedToTerms = v ?? false); _error = null; },
-                activeColor: const Color(0xFF3A86FF),
-                side: BorderSide(color: Colors.white.withOpacity(0.3), width: 1),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            GestureDetector(
+              onTap: () { setState(() => _agreedToTerms = !_agreedToTerms); _error = null; },
+              child: _rainbowBorderBox(
+                borderRadius: 3,
+                child: SizedBox(
+                  width: 12, height: 12,
+                  child: _agreedToTerms
+                      ? const Icon(Icons.check, size: 10, color: Colors.white)
+                      : null,
+                ),
               ),
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: GestureDetector(
-                onTap: () => setState(() => _agreedToTerms = !_agreedToTerms),
-                child: Text.rich(
-                  TextSpan(
-                    style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
-                    children: [
-                      const TextSpan(text: '我已阅读并同意'),
-                      TextSpan(text: '隐私政策', style: TextStyle(color: const Color(0xFF3A86FF).withOpacity(0.8))),
-                      const TextSpan(text: '和'),
-                      TextSpan(text: '服务条款', style: TextStyle(color: const Color(0xFF3A86FF).withOpacity(0.8))),
-                    ],
+              child: Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => setState(() => _agreedToTerms = !_agreedToTerms),
+                      child: Text.rich(
+                        TextSpan(
+                          style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
+                          children: [
+                            const TextSpan(text: '我已阅读并同意'),
+                            TextSpan(
+                              text: '隐私政策',
+                              style: TextStyle(
+                                color: const Color(0xFF3A86FF).withOpacity(0.8),
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                            const TextSpan(text: '和'),
+                            TextSpan(
+                              text: '用户协议',
+                              style: TextStyle(
+                                color: const Color(0xFF3A86FF).withOpacity(0.8),
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
+            ),
+            // 可点击的链接（独立行，避免与checkbox onTap冲突）
+            Row(
+              children: [
+                const SizedBox(width: 20),
+                GestureDetector(
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen())),
+                  child: const Text('查看隐私政策',
+                      style: TextStyle(color: Color(0xFF3A86FF), fontSize: 11, decoration: TextDecoration.underline)),
+                ),
+                const SizedBox(width: 12),
+                GestureDetector(
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TermsOfServiceScreen())),
+                  child: const Text('查看用户协议',
+                      style: TextStyle(color: Color(0xFF3A86FF), fontSize: 11, decoration: TextDecoration.underline)),
+                ),
+              ],
             ),
           ],
         ),
@@ -439,6 +500,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 child: Row(
                   children: [
+                    // 修复4: 选中的身份标签显示宗教图标
+                    if (_selectedFaithTag.isNotEmpty) ...[
+                      ReligionIconWidget(name: _selectedFaithTag, size: 18),
+                      const SizedBox(width: 8),
+                    ],
                     Expanded(
                       child: Text(
                         _selectedFaithTag.isEmpty ? '请选择身份标签...' : _selectedFaithTag,
@@ -488,6 +554,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     final tag = _faithTags[i];
                     final selected = tag == _selectedFaithTag;
                     return ListTile(
+                      leading: ReligionIconWidget(name: tag, size: 22),
                       title: Text(tag,
                           style: TextStyle(color: selected ? Colors.white : Colors.white.withOpacity(0.8), fontSize: 14)),
                       trailing: selected
@@ -552,6 +619,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     });
   }
 
+  // 修复2: 输入框 - 补齐enabledBorder/focusedBorder/cursorColor/isDense/onTapOutside，与登录页一致
   Widget _buildInput({
     required TextEditingController controller,
     required String label,
@@ -575,37 +643,37 @@ class _RegisterScreenState extends State<RegisterScreen> {
           child: LayoutBuilder(builder: (context, constraints) {
               final size = Size(constraints.maxWidth, constraints.maxHeight);
               return Container(
-            padding: EdgeInsets.all(isFocused ? 2 : 0),
+            padding: const EdgeInsets.all(1),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
               gradient: isFocused ? _diagonalGradient(size) : null,
               border: !isFocused
                   ? Border.all(color: Colors.white.withOpacity(0.12), width: 1)
                   : null,
-              boxShadow: isFocused
-                  ? [BoxShadow(color: const Color(0xFFFF4D6D).withOpacity(0.15), blurRadius: 12, spreadRadius: 0)]
-                  : null,
             ),
             child: Container(
               height: 44,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(isFocused ? 10 : 11),
-                color: isFocused
-                    ? AppColors.background.withOpacity(0.9)
-                    : Colors.white.withOpacity(0.06),
+                borderRadius: BorderRadius.circular(10),
+                color: const Color(0xFF050816),
               ),
               child: TextField(
                 controller: controller,
                 obscureText: obscure,
                 textAlign: textAlign,
                 style: const TextStyle(color: Colors.white, fontSize: 14),
+                cursorColor: Colors.white,
                 decoration: InputDecoration(
                   hintText: hint,
                   hintStyle: TextStyle(color: Colors.white.withOpacity(0.35), fontSize: 14),
                   suffixIcon: suffix,
                   border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  isDense: true,
                 ),
+                onTapOutside: (event) => FocusManager.instance.primaryFocus?.unfocus(),
               ),
             ),
           );
