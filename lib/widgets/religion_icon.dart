@@ -21,7 +21,7 @@ class ReligionIconWidget extends StatelessWidget {
   }
 }
 
-/// 获取宗教图标配置 (shape, color)
+/// 获取宗教图标配置 (shape, color) - 严格匹配网页版 ReligionIcon.tsx 映射
 (String, Color) getReligionIconConfig(String name) {
   const map = <String, (String, Color)>{
     '基督教': ('cross', Color(0xFFFFD60A)),
@@ -36,11 +36,11 @@ class ReligionIconWidget extends StatelessWidget {
     '巴哈伊教': ('star9', Color(0xFFFFD60A)),
     '摩门教': ('angel', Color(0xFFFFD60A)),
     '耶和华见证人': ('tower', Color(0xFF3A86FF)),
-    '琐罗亚斯德教': ('fire', Color(0xFFFF9F1C)),
+    '琐罗亚斯德教': ('faravahar', Color(0xFFFF9F1C)),
     '诺斯替': ('snake', Color(0xFF9D4EDD)),
     '卡巴拉': ('tree', Color(0xFF70E000)),
     '神道教': ('torii', Color(0xFFFF4D6D)),
-    '耆那教': ('hand', Color(0xFFFF9F1C)),
+    '耆那教': ('jain_hand', Color(0xFFFF9F1C)),
     '德鲁兹教': ('star5', Color(0xFF00E5FF)),
     '约鲁巴教': ('circle', Color(0xFFFF4D6D)),
     '伏都教': ('eye', Color(0xFF9D4EDD)),
@@ -209,14 +209,64 @@ class _ReligionIconPainter extends CustomPainter {
           ..quadraticBezierTo(cx, cy - h * 0.36, cx - w * 0.42, cy - h * 0.19)
           ..close();
         canvas.drawPath(tp, fill);
-      case 'fire':
-        final fp = Path()
-          ..moveTo(cx, cy - h * 0.4)
-          ..quadraticBezierTo(cx + w * 0.3, cy - h * 0.1, cx + w * 0.18, cy + h * 0.15)
-          ..quadraticBezierTo(cx + w * 0.08, cy + h * 0.35, cx, cy + h * 0.38)
-          ..quadraticBezierTo(cx - w * 0.08, cy + h * 0.35, cx - w * 0.18, cy + h * 0.15)
-          ..quadraticBezierTo(cx - w * 0.3, cy - h * 0.1, cx, cy - h * 0.4);
-        canvas.drawPath(fp, fill);
+      case 'faravahar':
+        // 琐罗亚斯德教 - Faravahar: winged disc with human figure
+        // Central disc (ring)
+        final ringR = w * 0.18;
+        canvas.drawCircle(Offset(cx, cy), ringR, fill);
+        canvas.drawCircle(Offset(cx, cy), ringR * 0.6, Paint()..color = const Color(0xFF050816));
+
+        // Human figure on top (simplified - head and body)
+        canvas.drawCircle(Offset(cx, cy - ringR * 1.6), w * 0.06, fill);
+        canvas.drawRect(Rect.fromCenter(center: Offset(cx, cy - ringR * 1.1), width: w * 0.06, height: h * 0.12), fill);
+
+        // Wings (3-layer feathers on each side, matching Faravahar symbolism)
+        final wingY = cy - h * 0.05;
+        for (int side = -1; side <= 1; side += 2) {
+          for (int layer = 0; layer < 3; layer++) {
+            final layerOffset = layer * h * 0.06;
+            final wingPath = Path()
+              ..moveTo(cx + side * ringR * 0.8, wingY + layerOffset)
+              ..quadraticBezierTo(
+                cx + side * w * 0.45, wingY - h * 0.15 + layerOffset,
+                cx + side * w * 0.4, wingY - h * 0.08 + layerOffset,
+              )
+              ..lineTo(cx + side * ringR * 0.6, wingY + layerOffset)
+              ..close();
+            canvas.drawPath(wingPath, Paint()..color = color.withOpacity(0.9 - layer * 0.2));
+          }
+        }
+
+        // Tail feathers (3 downward)
+        for (int i = -1; i <= 1; i++) {
+          final tailPath = Path()
+            ..moveTo(cx + i * w * 0.06, cy + ringR * 0.6)
+            ..quadraticBezierTo(
+              cx + i * w * 0.12, cy + h * 0.35,
+              cx + i * w * 0.08, cy + h * 0.38,
+            )
+            ..lineTo(cx + i * w * 0.04, cy + ringR * 0.6)
+            ..close();
+          canvas.drawPath(tailPath, Paint()..color = color.withOpacity(0.7));
+        }
+
+        // Streamers (two curling lines from the ring)
+        final streamerPaint = Paint()
+          ..color = color.withOpacity(0.6)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = w * 0.03
+          ..strokeCap = StrokeCap.round;
+        for (int side = -1; side <= 1; side += 2) {
+          canvas.drawPath(
+            Path()
+              ..moveTo(cx + side * ringR * 0.3, cy + ringR * 0.6)
+              ..quadraticBezierTo(
+                cx + side * w * 0.15, cy + h * 0.32,
+                cx + side * w * 0.2, cy + h * 0.35,
+              ),
+            streamerPaint,
+          );
+        }
       case 'pyramid':
         final pp = Path()
           ..moveTo(cx, cy - h * 0.35)
@@ -279,12 +329,196 @@ class _ReligionIconPainter extends CustomPainter {
       case 'khanda':
         canvas.drawLine(Offset(cx, cy - h * 0.38), Offset(cx, cy + h * 0.38), stroke);
         canvas.drawCircle(Offset(cx, cy), w * 0.18, fill);
-      case 'hand':
-        canvas.drawCircle(Offset(cx, cy), w * 0.1, fill);
-        for (int i = -1; i <= 1; i++) {
-          canvas.drawLine(Offset(cx + i * w * 0.1, cy - h * 0.02),
-              Offset(cx + i * w * 0.12, cy - h * 0.28),
-              Paint()..color = color..strokeWidth = w * 0.06..strokeCap = StrokeCap.round);
+      case 'jain_hand':
+        // 耆那教 - Jain Hand: open palm with wheel (Ahimsa symbol)
+        // Palm
+        final palmPath = Path()
+          ..moveTo(cx - w * 0.22, cy + h * 0.32)
+          ..lineTo(cx - w * 0.22, cy - h * 0.02)
+          ..quadraticBezierTo(cx - w * 0.22, cy - h * 0.15, cx - w * 0.15, cy - h * 0.25)
+          ..quadraticBezierTo(cx - w * 0.08, cy - h * 0.35, cx - w * 0.04, cy - h * 0.2)
+          ..lineTo(cx - w * 0.04, cy - h * 0.05)
+          ..lineTo(cx, cy - h * 0.05)
+          ..lineTo(cx, cy - h * 0.35)
+          ..quadraticBezierTo(cx, cy - h * 0.42, cx + w * 0.04, cy - h * 0.42)
+          ..quadraticBezierTo(cx + w * 0.08, cy - h * 0.42, cx + w * 0.08, cy - h * 0.35)
+          ..lineTo(cx + w * 0.08, cy - h * 0.05)
+          ..lineTo(cx + w * 0.12, cy - h * 0.05)
+          ..lineTo(cx + w * 0.12, cy - h * 0.3)
+          ..quadraticBezierTo(cx + w * 0.12, cy - h * 0.37, cx + w * 0.16, cy - h * 0.37)
+          ..quadraticBezierTo(cx + w * 0.2, cy - h * 0.37, cx + w * 0.2, cy - h * 0.3)
+          ..lineTo(cx + w * 0.2, cy - h * 0.02)
+          ..lineTo(cx + w * 0.24, cy - h * 0.02)
+          ..lineTo(cx + w * 0.24, cy - h * 0.2)
+          ..quadraticBezierTo(cx + w * 0.24, cy - h * 0.26, cx + w * 0.28, cy - h * 0.26)
+          ..quadraticBezierTo(cx + w * 0.32, cy - h * 0.26, cx + w * 0.32, cy - h * 0.2)
+          ..lineTo(cx + w * 0.32, cy + h * 0.05)
+          ..quadraticBezierTo(cx + w * 0.32, cy + h * 0.32, cx, cy + h * 0.38)
+          ..quadraticBezierTo(cx - w * 0.32, cy + h * 0.32, cx - w * 0.22, cy + h * 0.32)
+          ..close();
+        canvas.drawPath(palmPath, fill);
+        // Wheel (Dharmachakra) in the palm center
+        final wheelR = w * 0.08;
+        final wheelCx = cx + w * 0.04;
+        final wheelCy = cy + h * 0.08;
+        canvas.drawCircle(Offset(wheelCx, wheelCy), wheelR, Paint()..color = const Color(0xFF050816));
+        canvas.drawCircle(Offset(wheelCx, wheelCy), wheelR * 0.5, fill);
+        // Wheel spokes
+        final spokePaint = Paint()
+          ..color = color
+          ..strokeWidth = w * 0.015
+          ..strokeCap = StrokeCap.round;
+        for (int i = 0; i < 4; i++) {
+          final a = i * pi / 2;
+          canvas.drawLine(
+            Offset(wheelCx + wheelR * 0.5 * cos(a), wheelCy + wheelR * 0.5 * sin(a)),
+            Offset(wheelCx + wheelR * cos(a), wheelCy + wheelR * sin(a)),
+            spokePaint,
+          );
+        }
+      case 'snake':
+        // 诺斯替 - Gnostic snake (ouroboros-like)
+        final snakePath = Path()
+          ..moveTo(cx - w * 0.3, cy)
+          ..quadraticBezierTo(cx - w * 0.3, cy - h * 0.3, cx, cy - h * 0.25)
+          ..quadraticBezierTo(cx + w * 0.3, cy - h * 0.2, cx + w * 0.3, cy)
+          ..quadraticBezierTo(cx + w * 0.3, cy + h * 0.2, cx + w * 0.1, cy + h * 0.25)
+          ..quadraticBezierTo(cx - w * 0.05, cy + h * 0.28, cx - w * 0.15, cy + h * 0.15);
+        canvas.drawPath(snakePath, Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = w * 0.07
+          ..strokeCap = StrokeCap.round);
+        // Head
+        canvas.drawCircle(Offset(cx - w * 0.15, cy + h * 0.15), w * 0.05, fill);
+      case 'tree':
+        // 卡巴拉 - Kabbalistic Tree of Life (simplified)
+        // Three columns of sephirot
+        final dotR = w * 0.055;
+        // Left column
+        canvas.drawCircle(Offset(cx - w * 0.22, cy - h * 0.28), dotR, fill);
+        canvas.drawCircle(Offset(cx - w * 0.22, cy - h * 0.05), dotR, fill);
+        canvas.drawCircle(Offset(cx - w * 0.18, cy + h * 0.18), dotR, fill);
+        // Middle column
+        canvas.drawCircle(Offset(cx, cy - h * 0.35), dotR, fill);
+        canvas.drawCircle(Offset(cx, cy - h * 0.15), dotR, fill);
+        canvas.drawCircle(Offset(cx, cy + h * 0.05), dotR, fill);
+        canvas.drawCircle(Offset(cx, cy + h * 0.25), dotR, fill);
+        // Right column
+        canvas.drawCircle(Offset(cx + w * 0.22, cy - h * 0.28), dotR, fill);
+        canvas.drawCircle(Offset(cx + w * 0.22, cy - h * 0.05), dotR, fill);
+        canvas.drawCircle(Offset(cx + w * 0.18, cy + h * 0.18), dotR, fill);
+        // Connecting lines
+        final linePaint = Paint()
+          ..color = color.withOpacity(0.4)
+          ..strokeWidth = w * 0.02
+          ..strokeCap = StrokeCap.round;
+        // Simplified connections
+        canvas.drawLine(Offset(cx, cy - h * 0.35), Offset(cx - w * 0.22, cy - h * 0.28), linePaint);
+        canvas.drawLine(Offset(cx, cy - h * 0.35), Offset(cx + w * 0.22, cy - h * 0.28), linePaint);
+        canvas.drawLine(Offset(cx - w * 0.22, cy - h * 0.28), Offset(cx - w * 0.22, cy - h * 0.05), linePaint);
+        canvas.drawLine(Offset(cx + w * 0.22, cy - h * 0.28), Offset(cx + w * 0.22, cy - h * 0.05), linePaint);
+        canvas.drawLine(Offset(cx, cy - h * 0.15), Offset(cx - w * 0.22, cy - h * 0.05), linePaint);
+        canvas.drawLine(Offset(cx, cy - h * 0.15), Offset(cx + w * 0.22, cy - h * 0.05), linePaint);
+        canvas.drawLine(Offset(cx, cy - h * 0.15), Offset(cx, cy + h * 0.05), linePaint);
+        canvas.drawLine(Offset(cx - w * 0.22, cy - h * 0.05), Offset(cx - w * 0.18, cy + h * 0.18), linePaint);
+        canvas.drawLine(Offset(cx + w * 0.22, cy - h * 0.05), Offset(cx + w * 0.18, cy + h * 0.18), linePaint);
+        canvas.drawLine(Offset(cx, cy + h * 0.05), Offset(cx - w * 0.18, cy + h * 0.18), linePaint);
+        canvas.drawLine(Offset(cx, cy + h * 0.05), Offset(cx + w * 0.18, cy + h * 0.18), linePaint);
+        canvas.drawLine(Offset(cx, cy + h * 0.05), Offset(cx, cy + h * 0.25), linePaint);
+      case 'circle':
+        canvas.drawCircle(Offset(cx, cy), w * 0.3, fill);
+        canvas.drawCircle(Offset(cx, cy), w * 0.15, Paint()..color = const Color(0xFF050816));
+      case 'book':
+        // 宗教研究者 - open book
+        canvas.drawPath(
+          Path()
+            ..moveTo(cx, cy - h * 0.15)
+            ..lineTo(cx - w * 0.35, cy - h * 0.2)
+            ..lineTo(cx - w * 0.35, cy + h * 0.25)
+            ..lineTo(cx, cy + h * 0.2)
+            ..close(),
+          fill,
+        );
+        canvas.drawPath(
+          Path()
+            ..moveTo(cx, cy - h * 0.15)
+            ..lineTo(cx + w * 0.35, cy - h * 0.2)
+            ..lineTo(cx + w * 0.35, cy + h * 0.25)
+            ..lineTo(cx, cy + h * 0.2)
+            ..close(),
+          Paint()..color = color.withOpacity(0.75),
+        );
+      case 'scroll':
+        // 经文爱好者 - scroll
+        canvas.drawRect(Rect.fromCenter(center: Offset(cx, cy), width: w * 0.5, height: h * 0.55), fill);
+        canvas.drawCircle(Offset(cx - w * 0.25, cy - h * 0.1), w * 0.06, fill);
+        canvas.drawCircle(Offset(cx - w * 0.25, cy + h * 0.1), w * 0.06, fill);
+        canvas.drawCircle(Offset(cx + w * 0.25, cy - h * 0.1), w * 0.06, Paint()..color = color.withOpacity(0.75));
+        canvas.drawCircle(Offset(cx + w * 0.25, cy + h * 0.1), w * 0.06, Paint()..color = color.withOpacity(0.75));
+      case 'angel':
+        // 摩门教 - Angel Moroni (simplified trumpet figure)
+        canvas.drawCircle(Offset(cx, cy - h * 0.2), w * 0.08, fill);
+        canvas.drawRect(Rect.fromCenter(center: Offset(cx, cy - h * 0.05), width: w * 0.08, height: h * 0.2), fill);
+        // Wings
+        canvas.drawPath(
+          Path()
+            ..moveTo(cx - w * 0.06, cy - h * 0.12)
+            ..quadraticBezierTo(cx - w * 0.35, cy - h * 0.25, cx - w * 0.3, cy - h * 0.05)
+            ..lineTo(cx - w * 0.06, cy - h * 0.02)
+            ..close(),
+          Paint()..color = color.withOpacity(0.7),
+        );
+        canvas.drawPath(
+          Path()
+            ..moveTo(cx + w * 0.06, cy - h * 0.12)
+            ..quadraticBezierTo(cx + w * 0.35, cy - h * 0.25, cx + w * 0.3, cy - h * 0.05)
+            ..lineTo(cx + w * 0.06, cy - h * 0.02)
+            ..close(),
+          Paint()..color = color.withOpacity(0.7),
+        );
+        // Trumpet
+        canvas.drawLine(Offset(cx + w * 0.05, cy), Offset(cx + w * 0.3, cy - h * 0.1),
+            Paint()..color = color..strokeWidth = w * 0.04..strokeCap = StrokeCap.round);
+        canvas.drawCircle(Offset(cx + w * 0.3, cy - h * 0.1), w * 0.05, fill);
+      case 'tower':
+        // 耶和华见证人 - Watchtower
+        canvas.drawRect(Rect.fromCenter(center: Offset(cx, cy), width: w * 0.35, height: h * 0.6), fill);
+        canvas.drawPath(
+          Path()
+            ..moveTo(cx - w * 0.22, cy - h * 0.3)
+            ..lineTo(cx, cy - h * 0.42)
+            ..lineTo(cx + w * 0.22, cy - h * 0.3)
+            ..close(),
+          fill,
+        );
+        // Window
+        canvas.drawRect(Rect.fromCenter(center: Offset(cx, cy - h * 0.08), width: w * 0.12, height: h * 0.12),
+            Paint()..color = const Color(0xFF050816));
+      case 'taeguk':
+        // 天道教 - Taegeuk (Korean yin-yang variant)
+        final r = w * 0.38;
+        canvas.drawCircle(Offset(cx, cy), r, fill);
+        canvas.drawArc(Rect.fromCircle(center: Offset(cx, cy), radius: r),
+            pi / 2, pi, true, Paint()..color = Colors.white.withOpacity(0.85));
+        canvas.drawCircle(Offset(cx, cy + r * 0.48), r * 0.13, fill);
+        canvas.drawCircle(Offset(cx, cy - r * 0.48), r * 0.13, Paint()..color = Colors.white.withOpacity(0.85));
+      case 'divine_eye':
+        // 高台教 - Divine Eye
+        final eyePath = Path()
+          ..moveTo(cx - w * 0.38, cy)
+          ..quadraticBezierTo(cx, cy - h * 0.35, cx + w * 0.38, cy)
+          ..quadraticBezierTo(cx, cy + h * 0.35, cx - w * 0.38, cy);
+        canvas.drawPath(eyePath, fill);
+        canvas.drawCircle(Offset(cx, cy), w * 0.15, Paint()..color = const Color(0xFF050816));
+        // Radiating lines
+        for (int i = 0; i < 12; i++) {
+          final a = i * pi / 6;
+          canvas.drawLine(
+            Offset(cx + w * 0.2 * cos(a), cy + w * 0.2 * sin(a)),
+            Offset(cx + w * 0.38 * cos(a), cy + w * 0.38 * sin(a)),
+            Paint()..color = color.withOpacity(0.5)..strokeWidth = w * 0.03..strokeCap = StrokeCap.round,
+          );
         }
       default:
         // 默认渐变圆点
