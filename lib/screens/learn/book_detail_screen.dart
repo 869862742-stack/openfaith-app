@@ -176,7 +176,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   borderRadius: BorderRadius.circular(12),
                   gradient: const LinearGradient(
                     colors: [Color(0xFFFF4D6D), Color(0xFF9D4EDD)],
-                    begin: Alignment.topLeft, end: Alignment.bottomRight,
+                    transform: GradientRotation(0.785398),
                     transform: GradientRotation(0.35),
                   ),
                 ),

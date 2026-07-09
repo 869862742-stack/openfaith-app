@@ -49,7 +49,7 @@ class _HotRankingState extends State<HotRanking> {
   ];
 
   LinearGradient _diagonalGradient(Size size) {
-    return LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: _rainbowColors);
+    return LinearGradient(colors: _rainbowColors, transform: GradientRotation(0.785398));
   }
 
   @override

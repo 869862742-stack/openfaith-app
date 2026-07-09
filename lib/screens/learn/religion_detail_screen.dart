@@ -176,7 +176,7 @@ class _ReligionDetailScreenState extends State<ReligionDetailScreen> {
                 shape: BoxShape.circle,
                 gradient: LinearGradient(
                   colors: [Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A), Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD)],
-                  begin: Alignment.topLeft, end: Alignment.bottomRight,
+                  transform: GradientRotation(0.785398),
                   transform: GradientRotation(0.35),
                 ),
               ),
@@ -296,7 +296,7 @@ class _ReligionDetailScreenState extends State<ReligionDetailScreen> {
               child: ShaderMask(
                 shaderCallback: (b) => const LinearGradient(
                   colors: [Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A), Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD)],
-                  begin: Alignment.topLeft, end: Alignment.bottomRight,
+                  transform: GradientRotation(0.785398),
                   transform: GradientRotation(0.35),
                 ).createShader(b),
                 child: Text('$month/$day',
