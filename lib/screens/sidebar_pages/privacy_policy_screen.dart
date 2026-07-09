@@ -88,7 +88,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             const SizedBox(height: 16),
             _buildSection('联系我们', [
               '如有关于隐私政策的问题，请通过以下方式联系我们：',
-              '• 邮箱：869862742@qq.com',
+              '• 邮箱：hello@openfaithhub.com',
             ]),
             const SizedBox(height: 32),
           ],

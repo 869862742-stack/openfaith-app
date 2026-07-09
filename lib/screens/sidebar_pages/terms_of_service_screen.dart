@@ -75,7 +75,7 @@ class TermsOfServiceScreen extends StatelessWidget {
             const SizedBox(height: 16),
             _buildSection('联系我们', [
               '如对本用户协议有疑问，请通过以下方式联系我们：',
-              '• 邮箱：869862742@qq.com',
+              '• 邮箱：hello@openfaithhub.com',
             ]),
             const SizedBox(height: 32),
           ],
