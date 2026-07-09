@@ -44,8 +44,15 @@ jobs:
         with:
           cache: true
 
+      - name: Read version from pubspec.yaml
+        id: version
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: *//' | tr -d '[:space:]')
+          echo "release-version=$VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Release version: $VERSION"
+
       - name: Shorebird Patch
         uses: shorebirdtech/shorebird-patch@v1
         with:
           platform: android
-          release-version: "1.0.0+2"
+          release-version: ${{ steps.version.outputs.release-version }}
