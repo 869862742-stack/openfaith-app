@@ -48,7 +48,7 @@ class CovenantScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                           gradient: const LinearGradient(
                             colors: AppColors.rainbowColors,
-                            begin: Alignment.topLeft, end: Alignment.bottomRight,
+                            transform: GradientRotation(0.785398),
                           ),
                         ),
                         child: Container(
@@ -101,7 +101,7 @@ class CovenantScreen extends StatelessWidget {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(8),
                         gradient: const LinearGradient(
-                          begin: Alignment.topLeft, end: Alignment.bottomRight,
+                          transform: GradientRotation(0.785398),
                           colors: AppColors.rainbowColors,
                         ),
                       ),
@@ -133,7 +133,7 @@ class CovenantScreen extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                gradient: const LinearGradient(colors: AppColors.rainbowColors, begin: Alignment.topLeft, end: Alignment.bottomRight),
+                gradient: const LinearGradient(colors: AppColors.rainbowColors, transform: GradientRotation(0.785398)),
               ),
               child: Container(
                 padding: const EdgeInsets.all(16),

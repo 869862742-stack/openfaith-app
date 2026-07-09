@@ -192,7 +192,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     const _GradientText(text: 'OpenFaith', fontSize: 30),
                     const SizedBox(height: 32),
 
-                    // 【修复1】外层卡片：去掉LayoutBuilder，使用固定_gradient
                     Container(
                       padding: const EdgeInsets.all(2),
                       decoration: BoxDecoration(
@@ -223,7 +222,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               Text('已有账号？',
                                   style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 14)),
                               const SizedBox(height: 8),
-                              // 【修复1】"立即登录"按钮：去掉LayoutBuilder，使用_rainbowBorderBox
                               _rainbowBorderBox(
                                 borderRadius: 12,
                                 child: Material(
@@ -277,7 +275,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _buildFaithTagDropdown(),
         const SizedBox(height: 16),
 
-        // 【修复3】年满13周岁 checkbox：使用_rainbowBorderBox + 白色勾
         GestureDetector(
           onTap: () { setState(() => _isAbove13 = !_isAbove13); _error = null; },
           child: Row(
@@ -302,8 +299,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
         const SizedBox(height: 8),
 
-        // 【修复3】隐私政策 checkbox：使用_rainbowBorderBox + 白色勾
-        // 【修复5】"隐私政策"和"用户协议"文字可点击导航，"服务条款"改名为"用户协议"
         GestureDetector(
           onTap: () => setState(() => _agreedToTerms = !_agreedToTerms),
           child: Row(
@@ -379,7 +374,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // 邮件图标圆圈：去掉LayoutBuilder，使用固定渐变
         Container(
           width: 64, height: 64,
           padding: const EdgeInsets.all(2),
@@ -455,7 +449,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
             onFocusChange: (hasFocus) {
               setState(() => _focusedField = hasFocus ? 'regTag' : null);
             },
-            // 【修复2】身份标签下拉：去掉LayoutBuilder，使用固定渐变
             child: Container(
               padding: EdgeInsets.all(_focusedField == 'regTag' ? 2 : 0),
               decoration: BoxDecoration(
@@ -476,7 +469,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 child: Row(
                   children: [
-                    // 【修复4】选中标签时显示宗教图标
                     if (_selectedFaithTag.isNotEmpty) ...[
                       ReligionIconWidget(name: _selectedFaithTag, size: 18),
                       const SizedBox(width: 8),
@@ -528,7 +520,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   itemBuilder: (ctx, i) {
                     final tag = _faithTags[i];
                     final selected = tag == _selectedFaithTag;
-                    // 【修复4】每个标签前显示宗教图标
                     return ListTile(
                       leading: ReligionIconWidget(name: tag, size: 22),
                       title: Text(tag,
@@ -552,7 +543,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Widget _buildRegisterButton() {
-    // 【修复1+2】去掉LayoutBuilder，使用_rainbowBorderBox
     return _rainbowBorderBox(
       borderRadius: 12,
       child: SizedBox(
@@ -614,7 +604,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
           onFocusChange: (hasFocus) {
             setState(() => _focusedField = hasFocus ? fieldKey : null);
           },
-          // 【修复2】输入框：去掉LayoutBuilder，使用固定渐变GradientRotation(0.785398)
           child: Container(
             padding: EdgeInsets.all(isFocused ? 2 : 0),
             decoration: BoxDecoration(

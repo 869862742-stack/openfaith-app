@@ -1,0 +1,51 @@
+name: Shorebird Patch
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'lib/**'
+      - 'pubspec.yaml'
+      - '.github/workflows/**'
+  workflow_dispatch:
+
+env:
+  SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
+
+jobs:
+  patch:
+    defaults:
+      run:
+        shell: bash
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.5'
+          channel: 'stable'
+          cache: true
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Setup Shorebird
+        uses: shorebirdtech/setup-shorebird@v1
+        with:
+          cache: true
+
+      - name: Shorebird Patch
+        uses: shorebirdtech/shorebird-patch@v1
+        with:
+          platform: android
+          release-version: "1.0.0+1"
