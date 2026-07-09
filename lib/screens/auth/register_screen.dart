@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 import '../../theme/colors.dart';
 import '../../services/auth_service.dart';
 import '../../navigation/bottom_nav.dart';
@@ -16,10 +17,9 @@ const _rainbowColors = [
   Color(0xFF9D4EDD),
 ];
 
-const _rainbowGradient = LinearGradient(
-  colors: _rainbowColors,
-  transform: GradientRotation(0.785398),
-);
+LinearGradient _diagonalGradient() {
+  return LinearGradient(colors: _rainbowColors, transform: GradientRotation(0.785398));
+}
 
 /// 七彩渐变文字（aurora-text 效果）
 class _GradientText extends StatelessWidget {
@@ -34,9 +34,7 @@ class _GradientText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ShaderMask(
-      shaderCallback: (bounds) => _rainbowGradient.createShader(
-        Rect.fromLTWH(0, 0, bounds.width, bounds.height),
-      ),
+      shaderCallback: (bounds) => _diagonalGradient().createShader(bounds),
       blendMode: BlendMode.srcIn,
       child: Text(
         text,
@@ -91,24 +89,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _confirmCtrl.dispose();
     _codeCtrl.dispose();
     super.dispose();
-  }
-
-  /// 七彩渐变边框包裹器（外层2px渐变+内层#050816，铁律）
-  Widget _rainbowBorderBox({required Widget child, double borderRadius = 8}) {
-    return Container(
-      padding: const EdgeInsets.all(2),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(borderRadius),
-        gradient: _rainbowGradient,
-      ),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(borderRadius - 2),
-          color: const Color(0xFF050816),
-        ),
-        child: child,
-      ),
-    );
   }
 
   Future<void> _handleRegister() async {
@@ -168,6 +148,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
+  /// 七彩渐变勾选标记 Checkbox（白色边框 + 渐变勾选标记）
+  Widget _buildGradientCheckbox({required bool value}) {
+    return Container(
+      width: 16,
+      height: 16,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(3),
+        border: Border.all(color: Colors.white, width: 1.5),
+      ),
+      child: value
+          ? ShaderMask(
+              shaderCallback: (bounds) => _diagonalGradient().createShader(bounds),
+              blendMode: BlendMode.srcIn,
+              child: const Icon(Icons.check, size: 12, color: Colors.white),
+            )
+          : null,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -189,14 +188,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const _GradientText(text: 'OpenFaith', fontSize: 30),
+                    const _GradientText(text: 'Sign Up', fontSize: 30),
                     const SizedBox(height: 32),
 
                     Container(
                       padding: const EdgeInsets.all(2),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
-                        gradient: _rainbowGradient,
+                        gradient: _diagonalGradient(),
                         boxShadow: [
                           BoxShadow(color: const Color(0xFFFF4D6D).withOpacity(0.1), blurRadius: 30, spreadRadius: 0),
                           BoxShadow(color: const Color(0xFF3A86FF).withOpacity(0.08), blurRadius: 60, spreadRadius: 0),
@@ -211,9 +210,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const _GradientText(text: '注册', fontSize: 20, fontWeight: FontWeight.w600),
-                            const SizedBox(height: 24),
-
                             if (!_codeSent) _buildStep1Form() else _buildStep2Form(),
 
                             const SizedBox(height: 24),
@@ -222,20 +218,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               Text('已有账号？',
                                   style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 14)),
                               const SizedBox(height: 8),
-                              _rainbowBorderBox(
-                                borderRadius: 12,
-                                child: Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
+                              GestureDetector(
+                                onTap: () => Navigator.pop(context),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                                  decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(10),
-                                    onTap: () => Navigator.pop(context),
-                                    child: Container(
-                                      alignment: Alignment.center,
-                                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                                      child: const Text('立即登录',
-                                          style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
+                                    border: Border.all(
+                                      color: Colors.white.withOpacity(0.15),
+                                      width: 1,
                                     ),
                                   ),
+                                  child: const Text('立即登录',
+                                      style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
                                 ),
                               ),
                             ],
@@ -275,20 +270,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _buildFaithTagDropdown(),
         const SizedBox(height: 16),
 
+        // 年满13周岁 checkbox（单独一行，左对齐）
         GestureDetector(
           onTap: () { setState(() => _isAbove13 = !_isAbove13); _error = null; },
           child: Row(
             children: [
-              _rainbowBorderBox(
-                borderRadius: 3,
-                child: SizedBox(
-                  width: 12,
-                  height: 12,
-                  child: _isAbove13
-                      ? const Icon(Icons.check, size: 10, color: Colors.white)
-                      : null,
-                ),
-              ),
+              _buildGradientCheckbox(value: _isAbove13),
               const SizedBox(width: 8),
               Expanded(
                 child: Text('我已年满13周岁',
@@ -297,49 +284,41 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
 
+        // 同意条款 checkbox（单独一行，内含可点击链接）
         GestureDetector(
-          onTap: () => setState(() => _agreedToTerms = !_agreedToTerms),
+          onTap: () { setState(() => _agreedToTerms = !_agreedToTerms); _error = null; },
           child: Row(
             children: [
-              _rainbowBorderBox(
-                borderRadius: 3,
-                child: SizedBox(
-                  width: 12,
-                  height: 12,
-                  child: _agreedToTerms
-                      ? const Icon(Icons.check, size: 10, color: Colors.white)
-                      : null,
-                ),
-              ),
+              _buildGradientCheckbox(value: _agreedToTerms),
               const SizedBox(width: 8),
               Expanded(
                 child: Text.rich(
                   TextSpan(
                     style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
                     children: [
-                      const TextSpan(text: '我已阅读并同意'),
+                      const TextSpan(text: '我已阅读并同意 '),
                       TextSpan(
                         text: '隐私政策',
-                        style: const TextStyle(color: Color(0xFF3A86FF)),
-                        recognizer: TapGestureRecognizer()
-                          ..onTap = () {
-                            Navigator.push(context, MaterialPageRoute(
-                              builder: (context) => const PrivacyPolicyScreen(),
-                            ));
-                          },
+                        style: TextStyle(
+                          color: const Color(0xFF3A86FF).withOpacity(0.8),
+                          decoration: TextDecoration.underline,
+                        ),
+                        recognizer: TapGestureRecognizer()..onTap = () {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()));
+                        },
                       ),
-                      const TextSpan(text: '和'),
+                      const TextSpan(text: ' 和 '),
                       TextSpan(
                         text: '用户协议',
-                        style: const TextStyle(color: Color(0xFF3A86FF)),
-                        recognizer: TapGestureRecognizer()
-                          ..onTap = () {
-                            Navigator.push(context, MaterialPageRoute(
-                              builder: (context) => const TermsOfServiceScreen(),
-                            ));
-                          },
+                        style: TextStyle(
+                          color: const Color(0xFF3A86FF).withOpacity(0.8),
+                          decoration: TextDecoration.underline,
+                        ),
+                        recognizer: TapGestureRecognizer()..onTap = () {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => const TermsOfServiceScreen()));
+                        },
                       ),
                     ],
                   ),
@@ -348,7 +327,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 20),
 
         if (_error != null) ...[
           Container(
@@ -376,11 +355,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
       children: [
         Container(
           width: 64, height: 64,
-          padding: const EdgeInsets.all(2),
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             shape: BoxShape.circle,
-            gradient: _rainbowGradient,
+            gradient: _diagonalGradient(),
           ),
+          padding: const EdgeInsets.all(2),
           child: Container(
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
@@ -430,6 +409,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Widget _buildFaithTagDropdown() {
+    final isSelected = _selectedFaithTag.isNotEmpty;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -445,49 +425,44 @@ class _RegisterScreenState extends State<RegisterScreen> {
         const SizedBox(height: 4),
         GestureDetector(
           onTap: () => _showTagPicker(),
-          child: Focus(
-            onFocusChange: (hasFocus) {
-              setState(() => _focusedField = hasFocus ? 'regTag' : null);
-            },
+          child: Container(
+            padding: EdgeInsets.all(isSelected ? 2 : 0),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              gradient: isSelected ? _diagonalGradient() : null,
+              border: !isSelected
+                  ? Border.all(color: Colors.white.withOpacity(0.12), width: 1)
+                  : null,
+            ),
             child: Container(
-              padding: EdgeInsets.all(_focusedField == 'regTag' ? 2 : 0),
+              height: 48,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                gradient: _focusedField == 'regTag' ? _rainbowGradient : null,
-                border: _focusedField != 'regTag'
-                    ? Border.all(color: Colors.white.withOpacity(0.12), width: 1)
-                    : null,
+                borderRadius: BorderRadius.circular(isSelected ? 10 : 11),
+                color: isSelected
+                    ? AppColors.background.withOpacity(0.9)
+                    : Colors.white.withOpacity(0.06),
               ),
-              child: Container(
-                height: 44,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(_focusedField == 'regTag' ? 10 : 11),
-                  color: _focusedField == 'regTag'
-                      ? AppColors.background.withOpacity(0.9)
-                      : Colors.white.withOpacity(0.06),
-                ),
-                child: Row(
-                  children: [
-                    if (_selectedFaithTag.isNotEmpty) ...[
-                      ReligionIconWidget(name: _selectedFaithTag, size: 18),
-                      const SizedBox(width: 8),
-                    ],
-                    Expanded(
-                      child: Text(
-                        _selectedFaithTag.isEmpty ? '请选择身份标签...' : _selectedFaithTag,
-                        style: TextStyle(
-                          color: _selectedFaithTag.isEmpty
-                              ? Colors.white.withOpacity(0.35)
-                              : Colors.white,
-                          fontSize: 14,
-                        ),
+              child: Row(
+                children: [
+                  if (_selectedFaithTag.isNotEmpty) ...[
+                    ReligionIconWidget(name: _selectedFaithTag, size: 18),
+                    const SizedBox(width: 8),
+                  ],
+                  Expanded(
+                    child: Text(
+                      _selectedFaithTag.isEmpty ? '请选择身份标签...' : _selectedFaithTag,
+                      style: TextStyle(
+                        color: _selectedFaithTag.isEmpty
+                            ? Colors.white.withOpacity(0.35)
+                            : Colors.white,
+                        fontSize: 14,
                       ),
                     ),
-                    Icon(Icons.keyboard_arrow_down,
-                        color: Colors.white.withOpacity(0.45), size: 20),
-                  ],
-                ),
+                  ),
+                  Icon(Icons.keyboard_arrow_down,
+                      color: Colors.white.withOpacity(0.45), size: 20),
+                ],
               ),
             ),
           ),
@@ -543,42 +518,45 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Widget _buildRegisterButton() {
-    return _rainbowBorderBox(
-      borderRadius: 12,
+    return Container(
+      padding: const EdgeInsets.all(2),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        gradient: _diagonalGradient(),
+      ),
       child: SizedBox(
-        height: 44,
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(10),
-            onTap: _loading ? null : _handleRegister,
-            child: Container(
-              alignment: Alignment.center,
-              child: Text(_loading ? '发送中...' : '获取验证码',
-                  style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
-            ),
+        height: 48,
+        width: double.infinity,
+        child: TextButton(
+          onPressed: _loading ? () {} : _handleRegister,
+          style: TextButton.styleFrom(
+            backgroundColor: const Color(0xFF050816).withOpacity(0.95),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
+          child: Text(_loading ? '发送中...' : '获取验证码',
+              style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
         ),
       ),
     );
   }
 
   Widget _buildVerifyButton() {
-    return _rainbowBorderBox(
-      borderRadius: 12,
+    return Container(
+      padding: const EdgeInsets.all(2),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        gradient: _diagonalGradient(),
+      ),
       child: SizedBox(
         height: 48,
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(10),
-            onTap: _loading ? null : _verifyCode,
-            child: Container(
-              alignment: Alignment.center,
-              child: Text(_loading ? '验证中...' : '完成注册',
-                  style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
-            ),
+        child: TextButton(
+          onPressed: _loading ? () {} : _verifyCode,
+          style: TextButton.styleFrom(
+            backgroundColor: const Color(0xFF050816).withOpacity(0.95),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
+          child: Text(_loading ? '验证中...' : '完成注册',
+              style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
         ),
       ),
     );
@@ -605,37 +583,37 @@ class _RegisterScreenState extends State<RegisterScreen> {
             setState(() => _focusedField = hasFocus ? fieldKey : null);
           },
           child: Container(
-            padding: EdgeInsets.all(isFocused ? 2 : 0),
+            padding: const EdgeInsets.all(1),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
-              gradient: isFocused ? _rainbowGradient : null,
+              gradient: isFocused ? _diagonalGradient() : null,
               border: !isFocused
                   ? Border.all(color: Colors.white.withOpacity(0.12), width: 1)
                   : null,
-              boxShadow: isFocused
-                  ? [BoxShadow(color: const Color(0xFFFF4D6D).withOpacity(0.15), blurRadius: 12, spreadRadius: 0)]
-                  : null,
             ),
             child: Container(
-              height: 44,
+              height: 48,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(isFocused ? 10 : 11),
-                color: isFocused
-                    ? AppColors.background.withOpacity(0.9)
-                    : Colors.white.withOpacity(0.06),
+                borderRadius: BorderRadius.circular(10),
+                color: const Color(0xFF050816),
               ),
               child: TextField(
                 controller: controller,
                 obscureText: obscure,
                 textAlign: textAlign,
                 style: const TextStyle(color: Colors.white, fontSize: 14),
+                cursorColor: Colors.white,
                 decoration: InputDecoration(
                   hintText: hint,
                   hintStyle: TextStyle(color: Colors.white.withOpacity(0.35), fontSize: 14),
                   suffixIcon: suffix,
                   border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  isDense: true,
                 ),
+                onTapOutside: (event) => FocusManager.instance.primaryFocus?.unfocus(),
               ),
             ),
           ),

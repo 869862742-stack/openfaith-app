@@ -507,15 +507,20 @@ class _LoginScreenState extends State<LoginScreen> {
           onTap: () => setState(() => _rememberMe = !_rememberMe),
           child: Row(
             children: [
-              _rainbowBorderBox(
-                borderRadius: 3,
-                child: SizedBox(
-                  width: 12,
-                  height: 12,
-                  child: _rememberMe
-                      ? const Icon(Icons.check, size: 10, color: Colors.white)
-                      : null,
+              Container(
+                width: 16,
+                height: 16,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(3),
+                  border: Border.all(color: Colors.white, width: 1.5),
                 ),
+                child: _rememberMe
+                    ? ShaderMask(
+                        shaderCallback: (bounds) => _diagonalGradient(Size(bounds.width, bounds.height)).createShader(bounds),
+                        blendMode: BlendMode.srcIn,
+                        child: const Icon(Icons.check, size: 12, color: Colors.white),
+                      )
+                    : null,
               ),
               const SizedBox(width: 8),
               Text('记住我（30天）', style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.5))),
