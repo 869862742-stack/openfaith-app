@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 
-/// 宗教图标组件 - 对齐网页版 ReligionIcon.tsx
+/// 宗教图标组件 - 严格对齐网页版 ReligionIcon.tsx
 class ReligionIconWidget extends StatelessWidget {
   final String name;
   final double size;
@@ -94,442 +94,457 @@ class _ReligionIconPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final w = size.width, h = size.height;
     final cx = w / 2, cy = h / 2;
+    final s = w / 24.0;
     final fill = Paint()..color = color;
-    final stroke = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = w * 0.08
-      ..strokeCap = StrokeCap.round;
+    final fillDark = Paint()..color = const Color(0xFF0A0C1A);
+    double v(double val) => val * s;
 
     switch (shape) {
       case 'cross':
-        final bw = w * 0.22;
         fill.style = PaintingStyle.fill;
         canvas.drawRRect(RRect.fromRectAndRadius(
-            Rect.fromCenter(center: Offset(cx, cy), width: bw, height: h * 0.85),
-            Radius.circular(1)), fill);
+            Rect.fromLTWH(v(9), v(2), v(6), v(20)), Radius.circular(v(1))), fill);
         canvas.drawRRect(RRect.fromRectAndRadius(
-            Rect.fromCenter(center: Offset(cx, cy - h * 0.08), width: w * 0.65, height: bw),
-            Radius.circular(1)), fill);
+            Rect.fromLTWH(v(4), v(7), v(16), v(6)), Radius.circular(v(1))), fill);
+        break;
+
       case 'papal_cross':
-        final bw = w * 0.15;
+        final bw = v(4);
         canvas.drawRRect(RRect.fromRectAndRadius(
-            Rect.fromCenter(center: Offset(cx, cy), width: bw, height: h * 0.88),
-            Radius.circular(1)), fill);
+            Rect.fromLTWH(v(10), v(1), bw, v(22)), Radius.circular(v(0.5))), fill);
         canvas.drawRRect(RRect.fromRectAndRadius(
-            Rect.fromCenter(center: Offset(cx, cy - h * 0.22), width: w * 0.58, height: bw),
-            Radius.circular(1)), fill);
+            Rect.fromLTWH(v(4), v(5), v(16), bw), Radius.circular(v(0.5))), fill);
         canvas.drawRRect(RRect.fromRectAndRadius(
-            Rect.fromCenter(center: Offset(cx, cy - h * 0.04), width: w * 0.42, height: bw * 0.85),
-            Radius.circular(1)), Paint()..color = color.withOpacity(0.8));
+            Rect.fromLTWH(v(6), v(10), v(12), v(3.5)), Radius.circular(v(0.5))),
+            Paint()..color = color.withOpacity(0.8));
         canvas.drawRRect(RRect.fromRectAndRadius(
-            Rect.fromCenter(center: Offset(cx, cy + h * 0.12), width: w * 0.3, height: bw * 0.7),
-            Radius.circular(1)), Paint()..color = color.withOpacity(0.6));
+            Rect.fromLTWH(v(8), v(15), v(8), v(3)), Radius.circular(v(0.5))),
+            Paint()..color = color.withOpacity(0.6));
+        break;
+
       case 'orthodox_cross':
-        final bw = w * 0.17;
+        final bw = v(4);
         canvas.drawRRect(RRect.fromRectAndRadius(
-            Rect.fromCenter(center: Offset(cx, cy), width: bw, height: h * 0.88),
-            Radius.circular(1)), fill);
+            Rect.fromLTWH(v(10), v(1), bw, v(22)), Radius.circular(v(0.5))), fill);
         canvas.drawRRect(RRect.fromRectAndRadius(
-            Rect.fromCenter(center: Offset(cx, cy - h * 0.18), width: w * 0.55, height: bw),
-            Radius.circular(1)), fill);
+            Rect.fromLTWH(v(4), v(6), v(16), bw), Radius.circular(v(0.5))), fill);
         canvas.drawRRect(RRect.fromRectAndRadius(
-            Rect.fromCenter(center: Offset(cx, cy + h * 0.02), width: w * 0.4, height: bw * 0.85),
-            Radius.circular(1)), fill);
+            Rect.fromLTWH(v(6), v(11), v(12), v(3)), Radius.circular(v(0.5))), fill);
+        final stroke = Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = v(2)..strokeCap = StrokeCap.round;
+        canvas.drawLine(Offset(v(16), v(14)), Offset(v(19), v(18)), stroke);
+        break;
+
       case 'crescent':
-        final r = w * 0.38;
+        final r = v(9);
         final outer = Path()..addOval(Rect.fromCircle(center: Offset(cx, cy), radius: r));
-        final inner = Path()..addOval(Rect.fromCircle(center: Offset(cx + r * 0.3, cy - r * 0.05), radius: r * 0.78));
-        final diff = Path.combine(PathOperation.difference, outer, inner);
-        canvas.drawPath(diff, fill);
-        canvas.drawCircle(Offset(cx + r * 0.5, cy - r * 0.5), w * 0.05, fill);
+        final inner = Path()..addOval(Rect.fromCircle(
+            center: Offset(cx + r * 0.33, cy - r * 0.06), radius: r * 0.78));
+        canvas.drawPath(Path.combine(PathOperation.difference, outer, inner), fill);
+        canvas.drawCircle(Offset(v(18), v(8)), v(1.5), fill);
+        break;
+
       case 'star_of_david':
-        final r = w * 0.38;
+        final stroke = Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = v(1.5)..strokeCap = StrokeCap.round;
         final up = Path()
-          ..moveTo(cx, cy - r)
-          ..lineTo(cx - r * 0.87, cy + r * 0.5)
-          ..lineTo(cx + r * 0.87, cy + r * 0.5)
+          ..moveTo(cx, v(2))
+          ..lineTo(v(3.34), v(17))
+          ..lineTo(v(20.66), v(17))
           ..close();
         final dn = Path()
-          ..moveTo(cx, cy + r)
-          ..lineTo(cx - r * 0.87, cy - r * 0.5)
-          ..lineTo(cx + r * 0.87, cy - r * 0.5)
+          ..moveTo(cx, v(22))
+          ..lineTo(v(3.34), v(7))
+          ..lineTo(v(20.66), v(7))
           ..close();
-        canvas.drawPath(up, fill);
-        canvas.drawPath(dn, fill);
+        canvas.drawPath(up, stroke);
+        canvas.drawPath(dn, stroke);
+        break;
+
       case 'lotus':
-        final pw = w * 0.18, ph = h * 0.35;
-        final c1 = Path()
-          ..moveTo(cx, cy - ph)
-          ..quadraticBezierTo(cx + pw, cy - ph * 0.3, cx, cy + ph * 0.3)
-          ..quadraticBezierTo(cx - pw, cy - ph * 0.3, cx, cy - ph);
-        canvas.drawPath(c1, fill);
-        canvas.drawPath(
-            Path()
-              ..moveTo(cx - w * 0.05, cy - ph * 0.6)
-              ..quadraticBezierTo(cx - w * 0.35, cy - ph * 0.2, cx - w * 0.1, cy + ph * 0.3)
-              ..quadraticBezierTo(cx - w * 0.15, cy - ph * 0.1, cx - w * 0.05, cy - ph * 0.6),
-            Paint()..color = color.withOpacity(0.7));
-        canvas.drawPath(
-            Path()
-              ..moveTo(cx + w * 0.05, cy - ph * 0.6)
-              ..quadraticBezierTo(cx + w * 0.35, cy - ph * 0.2, cx + w * 0.1, cy + ph * 0.3)
-              ..quadraticBezierTo(cx + w * 0.15, cy - ph * 0.1, cx + w * 0.05, cy - ph * 0.6),
-            Paint()..color = color.withOpacity(0.7));
+        final stroke = Paint()..color = color..style = PaintingStyle.stroke..strokeCap = StrokeCap.round;
+        // 底座椭圆
+        canvas.drawOval(Rect.fromCenter(center: Offset(cx, v(19)), width: v(16), height: v(4)),
+            Paint()..color = color.withOpacity(0.4)..style = PaintingStyle.stroke..strokeWidth = v(1));
+        // 外层花瓣
+        stroke.strokeWidth = v(1.5);
+        canvas.drawPath(Path()
+          ..moveTo(v(4), v(15))
+          ..quadraticBezierTo(v(6), v(8), cx, v(6))
+          ..quadraticBezierTo(v(18), v(8), v(20), v(15)), stroke);
+        // 更外层
+        canvas.drawPath(Path()
+          ..moveTo(v(2), v(14))
+          ..quadraticBezierTo(v(5), v(5), cx, v(3))
+          ..quadraticBezierTo(v(19), v(5), v(22), v(14)),
+            Paint()..color = color.withOpacity(0.5)..style = PaintingStyle.stroke..strokeWidth = v(1)..strokeCap = StrokeCap.round);
+        // 中层
+        final mid = Path()
+          ..moveTo(v(6), v(15))
+          ..quadraticBezierTo(v(8), v(10), cx, v(8))
+          ..quadraticBezierTo(v(16), v(10), v(18), v(15))
+          ..close();
+        canvas.drawPath(mid, Paint()..color = color.withOpacity(0.2));
+        canvas.drawPath(mid, Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = v(1.5)..strokeCap = StrokeCap.round);
+        // 内层
+        final inner = Path()
+          ..moveTo(v(8), v(14))
+          ..quadraticBezierTo(v(10), v(10), cx, v(9))
+          ..quadraticBezierTo(v(14), v(10), v(16), v(14))
+          ..close();
+        canvas.drawPath(inner, Paint()..color = color.withOpacity(0.3));
+        canvas.drawPath(inner, Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = v(1.5)..strokeCap = StrokeCap.round);
+        // 中心
+        canvas.drawCircle(Offset(cx, v(12)), v(1.5), fill);
+        break;
+
+      case 'om':
+        final tp = TextPainter(
+          text: TextSpan(
+            text: 'ॐ',
+            style: TextStyle(color: color, fontSize: v(18), fontWeight: FontWeight.bold, fontFamily: 'serif'),
+          ),
+          textDirection: TextDirection.ltr,
+        )..layout(maxWidth: v(24));
+        tp.paint(canvas, Offset(v(3), v(1)));
+        break;
+
       case 'yin_yang':
-        final r = w * 0.38;
-        canvas.drawCircle(Offset(cx, cy), r, fill);
-        canvas.drawArc(Rect.fromCircle(center: Offset(cx, cy), radius: r),
-            -pi / 2, pi, true, Paint()..color = Colors.white.withOpacity(0.85));
-        canvas.drawCircle(Offset(cx, cy - r * 0.48), r * 0.13, Paint()..color = Colors.white.withOpacity(0.85));
-        canvas.drawCircle(Offset(cx, cy + r * 0.48), r * 0.13, fill);
+        final r = v(9);
+        canvas.drawCircle(Offset(cx, cy), r, Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = v(1.5));
+        final yinPath = Path()
+          ..moveTo(cx, v(3))
+          ..arcTo(Rect.fromCircle(center: Offset(cx, cy), radius: r), -pi / 2, pi, false)
+          ..arcTo(Rect.fromCircle(center: Offset(cx, cy - r / 2), radius: r / 2), pi / 2, -pi, false)
+          ..arcTo(Rect.fromCircle(center: Offset(cx, cy + r / 2), radius: r / 2), pi / 2, pi, false)
+          ..close();
+        canvas.drawPath(yinPath, fill);
+        canvas.drawCircle(Offset(cx, v(7.5)), v(1.5), fillDark);
+        canvas.drawCircle(Offset(cx, v(16.5)), v(1.5), fill);
+        break;
+
+      case 'khanda':
+        canvas.drawCircle(Offset(cx, cy), v(9), Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = v(1.5));
+        canvas.drawRRect(RRect.fromRectAndRadius(
+            Rect.fromLTWH(v(10.5), v(2), v(3), v(14)), Radius.circular(v(1))), fill);
+        canvas.drawPath(Path()
+          ..moveTo(v(7), v(8))
+          ..lineTo(cx, v(5))
+          ..lineTo(v(17), v(8)),
+            Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = v(1.5)..strokeCap = StrokeCap.round);
+        canvas.drawCircle(Offset(cx, v(18)), v(2), Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = v(1.5));
+        break;
+
       case 'star9':
       case 'star5':
         final n = shape == 'star9' ? 9 : 5;
-        final r = w * 0.38;
+        final r = v(9);
         final p = Path();
-        for (int i = 0; i < n * 2; i++) {
-          final a = (i * pi / n) - pi / 2;
-          final rr = i.isEven ? r : r * 0.45;
-          final px = cx + rr * cos(a);
-          final py = cy + rr * sin(a);
+        for (int i = 0; i < n; i++) {
+          final a = (i * 2 * pi / n) - pi / 2;
+          final px = cx + r * cos(a);
+          final py = cy + r * sin(a);
           i == 0 ? p.moveTo(px, py) : p.lineTo(px, py);
         }
         p.close();
-        canvas.drawPath(p, fill);
+        canvas.drawPath(p, Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = v(1.5));
+        break;
+
       case 'torii':
-        final sw = w * 0.09;
-        canvas.drawRect(Rect.fromLTWH(cx - w * 0.28, cy - h * 0.05, sw, h * 0.45), fill);
-        canvas.drawRect(Rect.fromLTWH(cx + w * 0.28 - sw, cy - h * 0.05, sw, h * 0.45), fill);
-        canvas.drawRect(Rect.fromLTWH(cx - w * 0.38, cy - h * 0.1, w * 0.76, sw * 0.9), fill);
-        final tp = Path()
-          ..moveTo(cx - w * 0.42, cy - h * 0.25)
-          ..quadraticBezierTo(cx, cy - h * 0.42, cx + w * 0.42, cy - h * 0.25)
-          ..lineTo(cx + w * 0.42, cy - h * 0.19)
-          ..quadraticBezierTo(cx, cy - h * 0.36, cx - w * 0.42, cy - h * 0.19)
-          ..close();
-        canvas.drawPath(tp, fill);
+        final stroke = Paint()..color = color..style = PaintingStyle.stroke..strokeCap = StrokeCap.round;
+        stroke.strokeWidth = v(2);
+        canvas.drawPath(Path()
+          ..moveTo(v(2), v(6))
+          ..quadraticBezierTo(cx, v(4), v(22), v(6)), stroke);
+        stroke.strokeWidth = v(1.5);
+        canvas.drawPath(Path()
+          ..moveTo(v(4), v(8))
+          ..quadraticBezierTo(cx, v(7), v(20), v(8)), stroke);
+        canvas.drawRect(Rect.fromLTWH(v(9), v(7), v(1.5), v(14)), fill);
+        canvas.drawRect(Rect.fromLTWH(v(13.5), v(7), v(1.5), v(14)), fill);
+        break;
+
       case 'faravahar':
-        // 琐罗亚斯德教 - Faravahar: winged disc with human figure
-        // Central disc (ring)
-        final ringR = w * 0.18;
-        canvas.drawCircle(Offset(cx, cy), ringR, fill);
-        canvas.drawCircle(Offset(cx, cy), ringR * 0.6, Paint()..color = const Color(0xFF050816));
+        canvas.drawPath(Path()
+          ..moveTo(cx, v(2))
+          ..cubicTo(v(7), v(8), v(7), v(13), v(7), v(13))
+          ..cubicTo(v(7), v(17), v(9.5), v(21), cx, v(21))
+          ..cubicTo(v(14.5), v(21), v(17), v(17), v(17), v(13))
+          ..cubicTo(v(17), v(8), cx, v(2), cx, v(2))
+          ..close(),
+            Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = v(1.5));
+        canvas.drawPath(Path()
+          ..moveTo(cx, v(8))
+          ..cubicTo(v(10), v(11), v(10), v(13.5), v(10), v(13.5))
+          ..cubicTo(v(10), v(15.5), v(11), v(17), cx, v(17))
+          ..cubicTo(v(13), v(17), v(14), v(15.5), v(14), v(13.5))
+          ..cubicTo(v(14), v(11), cx, v(8), cx, v(8))
+          ..close(),
+            Paint()..color = color.withOpacity(0.4));
+        break;
 
-        // Human figure on top (simplified - head and body)
-        canvas.drawCircle(Offset(cx, cy - ringR * 1.6), w * 0.06, fill);
-        canvas.drawRect(Rect.fromCenter(center: Offset(cx, cy - ringR * 1.1), width: w * 0.06, height: h * 0.12), fill);
-
-        // Wings (3-layer feathers on each side, matching Faravahar symbolism)
-        final wingY = cy - h * 0.05;
-        for (int side = -1; side <= 1; side += 2) {
-          for (int layer = 0; layer < 3; layer++) {
-            final layerOffset = layer * h * 0.06;
-            final wingPath = Path()
-              ..moveTo(cx + side * ringR * 0.8, wingY + layerOffset)
-              ..quadraticBezierTo(
-                cx + side * w * 0.45, wingY - h * 0.15 + layerOffset,
-                cx + side * w * 0.4, wingY - h * 0.08 + layerOffset,
-              )
-              ..lineTo(cx + side * ringR * 0.6, wingY + layerOffset)
-              ..close();
-            canvas.drawPath(wingPath, Paint()..color = color.withOpacity(0.9 - layer * 0.2));
-          }
-        }
-
-        // Tail feathers (3 downward)
-        for (int i = -1; i <= 1; i++) {
-          final tailPath = Path()
-            ..moveTo(cx + i * w * 0.06, cy + ringR * 0.6)
-            ..quadraticBezierTo(
-              cx + i * w * 0.12, cy + h * 0.35,
-              cx + i * w * 0.08, cy + h * 0.38,
-            )
-            ..lineTo(cx + i * w * 0.04, cy + ringR * 0.6)
-            ..close();
-          canvas.drawPath(tailPath, Paint()..color = color.withOpacity(0.7));
-        }
-
-        // Streamers (two curling lines from the ring)
-        final streamerPaint = Paint()
-          ..color = color.withOpacity(0.6)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = w * 0.03
-          ..strokeCap = StrokeCap.round;
-        for (int side = -1; side <= 1; side += 2) {
-          canvas.drawPath(
-            Path()
-              ..moveTo(cx + side * ringR * 0.3, cy + ringR * 0.6)
-              ..quadraticBezierTo(
-                cx + side * w * 0.15, cy + h * 0.32,
-                cx + side * w * 0.2, cy + h * 0.35,
-              ),
-            streamerPaint,
-          );
-        }
-      case 'pyramid':
-        final pp = Path()
-          ..moveTo(cx, cy - h * 0.35)
-          ..lineTo(cx + w * 0.38, cy + h * 0.35)
-          ..lineTo(cx - w * 0.38, cy + h * 0.35)
-          ..close();
-        canvas.drawPath(pp, fill);
-      case 'crown':
-        final cp = Path()
-          ..moveTo(cx - w * 0.35, cy + h * 0.2)
-          ..lineTo(cx - w * 0.35, cy - h * 0.05)
-          ..lineTo(cx - w * 0.18, cy + h * 0.08)
-          ..lineTo(cx, cy - h * 0.25)
-          ..lineTo(cx + w * 0.18, cy + h * 0.08)
-          ..lineTo(cx + w * 0.35, cy - h * 0.05)
-          ..lineTo(cx + w * 0.35, cy + h * 0.2)
-          ..close();
-        canvas.drawPath(cp, fill);
       case 'sun':
-        canvas.drawCircle(Offset(cx, cy), w * 0.2, fill);
-        for (int i = 0; i < 8; i++) {
-          final a = i * pi / 4;
+        canvas.drawCircle(Offset(cx, cy), v(4), fill);
+        final stroke = Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = v(2)..strokeCap = StrokeCap.round;
+        for (int deg = 0; deg < 360; deg += 45) {
+          final rad = deg * pi / 180;
           canvas.drawLine(
-              Offset(cx + w * 0.25 * cos(a), cy + w * 0.25 * sin(a)),
-              Offset(cx + w * 0.38 * cos(a), cy + w * 0.38 * sin(a)),
-              Paint()..color = color..strokeWidth = w * 0.06..strokeCap = StrokeCap.round);
+              Offset(cx + v(5.5) * cos(rad), cy + v(5.5) * sin(rad)),
+              Offset(cx + v(8) * cos(rad), cy + v(8) * sin(rad)), stroke);
         }
+        break;
+
       case 'eye':
-        final ep = Path()
-          ..moveTo(cx - w * 0.38, cy)
-          ..quadraticBezierTo(cx, cy - h * 0.28, cx + w * 0.38, cy)
-          ..quadraticBezierTo(cx, cy + h * 0.28, cx - w * 0.38, cy);
-        canvas.drawPath(ep, fill);
-        canvas.drawCircle(Offset(cx, cy), w * 0.1, Paint()..color = const Color(0xFF050816));
-      case 'compass':
-        canvas.drawCircle(Offset(cx, cy), w * 0.34, fill);
-        final np = Path()
-          ..moveTo(cx, cy - w * 0.24)
-          ..lineTo(cx + w * 0.06, cy)
-          ..lineTo(cx, cy + w * 0.24)
-          ..lineTo(cx - w * 0.06, cy)
-          ..close();
-        canvas.drawPath(np, Paint()..color = const Color(0xFF050816));
+        canvas.drawPath(Path()
+          ..moveTo(v(1), cy)
+          ..cubicTo(v(1), cy, v(5), v(5), cx, v(5))
+          ..cubicTo(v(19), v(5), v(23), cy, v(23), cy)
+          ..cubicTo(v(23), cy, v(19), v(19), cx, v(19))
+          ..cubicTo(v(5), v(19), v(1), cy, v(1), cy),
+            Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = v(1.5));
+        canvas.drawCircle(Offset(cx, cy), v(3.5), fill);
+        canvas.drawCircle(Offset(cx, cy), v(1.5), fillDark);
+        break;
+
       case 'spiral':
         final sp = Path();
         for (int i = 0; i <= 50; i++) {
           final t = i / 50 * 2.5 * pi;
-          final r = w * 0.04 * (i / 50) * 6;
+          final r = v(1) * (i / 50) * 9;
           final x = cx + r * cos(t);
           final y = cy + r * sin(t);
           i == 0 ? sp.moveTo(x, y) : sp.lineTo(x, y);
         }
-        canvas.drawPath(sp, Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = w * 0.06..strokeCap = StrokeCap.round);
+        canvas.drawPath(sp, Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = v(1.5)..strokeCap = StrokeCap.round);
+        break;
+
+      case 'pyramid':
+        canvas.drawPath(Path()
+          ..moveTo(cx, v(3))
+          ..lineTo(v(22), v(20))
+          ..lineTo(v(2), v(20))
+          ..close(),
+            Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = v(1.5));
+        canvas.drawLine(Offset(v(7), v(12)), Offset(v(17), v(12)),
+            Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = v(1));
+        break;
+
       case 'wave':
-        final wp = Path()
-          ..moveTo(cx - w * 0.38, cy)
-          ..quadraticBezierTo(cx - w * 0.19, cy - h * 0.18, cx, cy)
-          ..quadraticBezierTo(cx + w * 0.19, cy + h * 0.18, cx + w * 0.38, cy);
-        canvas.drawPath(wp, Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = w * 0.07..strokeCap = StrokeCap.round);
-      case 'khanda':
-        canvas.drawLine(Offset(cx, cy - h * 0.38), Offset(cx, cy + h * 0.38), stroke);
-        canvas.drawCircle(Offset(cx, cy), w * 0.18, fill);
+        final stroke = Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = v(2)..strokeCap = StrokeCap.round;
+        canvas.drawPath(Path()
+          ..moveTo(v(2), v(10))
+          ..cubicTo(v(4), v(8), v(6), v(8), v(8), v(10))
+          ..cubicTo(v(10), v(12), v(12), v(12), v(14), v(10))
+          ..cubicTo(v(16), v(8), v(18), v(8), v(20), v(10))
+          ..cubicTo(v(22), v(12), v(22), v(12), v(22), v(12)), stroke);
+        canvas.drawPath(Path()
+          ..moveTo(v(2), v(15))
+          ..cubicTo(v(4), v(13), v(6), v(13), v(8), v(15))
+          ..cubicTo(v(10), v(17), v(12), v(17), v(14), v(15))
+          ..cubicTo(v(16), v(13), v(18), v(13), v(20), v(15))
+          ..cubicTo(v(22), v(17), v(22), v(17), v(22), v(17)), stroke);
+        break;
+
       case 'jain_hand':
-        // 耆那教 - Jain Hand: open palm with wheel (Ahimsa symbol)
-        // Palm
-        final palmPath = Path()
-          ..moveTo(cx - w * 0.22, cy + h * 0.32)
-          ..lineTo(cx - w * 0.22, cy - h * 0.02)
-          ..quadraticBezierTo(cx - w * 0.22, cy - h * 0.15, cx - w * 0.15, cy - h * 0.25)
-          ..quadraticBezierTo(cx - w * 0.08, cy - h * 0.35, cx - w * 0.04, cy - h * 0.2)
-          ..lineTo(cx - w * 0.04, cy - h * 0.05)
-          ..lineTo(cx, cy - h * 0.05)
-          ..lineTo(cx, cy - h * 0.35)
-          ..quadraticBezierTo(cx, cy - h * 0.42, cx + w * 0.04, cy - h * 0.42)
-          ..quadraticBezierTo(cx + w * 0.08, cy - h * 0.42, cx + w * 0.08, cy - h * 0.35)
-          ..lineTo(cx + w * 0.08, cy - h * 0.05)
-          ..lineTo(cx + w * 0.12, cy - h * 0.05)
-          ..lineTo(cx + w * 0.12, cy - h * 0.3)
-          ..quadraticBezierTo(cx + w * 0.12, cy - h * 0.37, cx + w * 0.16, cy - h * 0.37)
-          ..quadraticBezierTo(cx + w * 0.2, cy - h * 0.37, cx + w * 0.2, cy - h * 0.3)
-          ..lineTo(cx + w * 0.2, cy - h * 0.02)
-          ..lineTo(cx + w * 0.24, cy - h * 0.02)
-          ..lineTo(cx + w * 0.24, cy - h * 0.2)
-          ..quadraticBezierTo(cx + w * 0.24, cy - h * 0.26, cx + w * 0.28, cy - h * 0.26)
-          ..quadraticBezierTo(cx + w * 0.32, cy - h * 0.26, cx + w * 0.32, cy - h * 0.2)
-          ..lineTo(cx + w * 0.32, cy + h * 0.05)
-          ..quadraticBezierTo(cx + w * 0.32, cy + h * 0.32, cx, cy + h * 0.38)
-          ..quadraticBezierTo(cx - w * 0.32, cy + h * 0.32, cx - w * 0.22, cy + h * 0.32)
-          ..close();
-        canvas.drawPath(palmPath, fill);
-        // Wheel (Dharmachakra) in the palm center
-        final wheelR = w * 0.08;
-        final wheelCx = cx + w * 0.04;
-        final wheelCy = cy + h * 0.08;
-        canvas.drawCircle(Offset(wheelCx, wheelCy), wheelR, Paint()..color = const Color(0xFF050816));
-        canvas.drawCircle(Offset(wheelCx, wheelCy), wheelR * 0.5, fill);
-        // Wheel spokes
-        final spokePaint = Paint()
-          ..color = color
-          ..strokeWidth = w * 0.015
-          ..strokeCap = StrokeCap.round;
-        for (int i = 0; i < 4; i++) {
-          final a = i * pi / 2;
-          canvas.drawLine(
-            Offset(wheelCx + wheelR * 0.5 * cos(a), wheelCy + wheelR * 0.5 * sin(a)),
-            Offset(wheelCx + wheelR * cos(a), wheelCy + wheelR * sin(a)),
-            spokePaint,
-          );
-        }
+        canvas.drawPath(Path()
+          ..moveTo(cx, v(22))
+          ..cubicTo(cx - v(4), v(19), cx - v(7), v(16), cx - v(7), v(12))
+          ..cubicTo(cx - v(7), v(10), cx - v(6), v(9), cx - v(5), v(9))
+          ..cubicTo(cx - v(4), v(9), cx - v(3), v(10), cx - v(3), v(11))
+          ..lineTo(cx - v(3), v(8))
+          ..cubicTo(cx - v(3), v(7), cx - v(2), v(6), cx - v(1), v(6))
+          ..cubicTo(cx, v(6), cx, v(7), cx, v(8))
+          ..lineTo(cx, v(8))
+          ..cubicTo(cx, v(7), cx + v(1), v(6), cx + v(2), v(6))
+          ..cubicTo(cx + v(3), v(6), cx + v(3), v(7), cx + v(3), v(8))
+          ..lineTo(cx + v(3), v(9))
+          ..cubicTo(cx + v(3), v(8), cx + v(4), v(7), cx + v(5), v(7))
+          ..cubicTo(cx + v(6), v(7), cx + v(6), v(8), cx + v(6), v(9))
+          ..lineTo(cx + v(6), v(10))
+          ..cubicTo(cx + v(6), v(9), cx + v(7), v(8), cx + v(7), v(9))
+          ..cubicTo(cx + v(7), v(10), cx + v(7), v(11), cx + v(7), v(12))
+          ..cubicTo(cx + v(7), v(16), cx + v(4), v(19), cx, v(22))
+          ..close(),
+            Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = v(1.5));
+        canvas.drawCircle(Offset(cx, v(15)), v(3), Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = v(1));
+        canvas.drawCircle(Offset(cx, v(15)), v(1), fill);
+        break;
+
       case 'snake':
-        // 诺斯替 - Gnostic snake (ouroboros-like)
-        final snakePath = Path()
-          ..moveTo(cx - w * 0.3, cy)
-          ..quadraticBezierTo(cx - w * 0.3, cy - h * 0.3, cx, cy - h * 0.25)
-          ..quadraticBezierTo(cx + w * 0.3, cy - h * 0.2, cx + w * 0.3, cy)
-          ..quadraticBezierTo(cx + w * 0.3, cy + h * 0.2, cx + w * 0.1, cy + h * 0.25)
-          ..quadraticBezierTo(cx - w * 0.05, cy + h * 0.28, cx - w * 0.15, cy + h * 0.15);
-        canvas.drawPath(snakePath, Paint()
-          ..color = color
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = w * 0.07
-          ..strokeCap = StrokeCap.round);
-        // Head
-        canvas.drawCircle(Offset(cx - w * 0.15, cy + h * 0.15), w * 0.05, fill);
-      case 'tree':
-        // 卡巴拉 - Kabbalistic Tree of Life (simplified)
-        // Three columns of sephirot
-        final dotR = w * 0.055;
-        // Left column
-        canvas.drawCircle(Offset(cx - w * 0.22, cy - h * 0.28), dotR, fill);
-        canvas.drawCircle(Offset(cx - w * 0.22, cy - h * 0.05), dotR, fill);
-        canvas.drawCircle(Offset(cx - w * 0.18, cy + h * 0.18), dotR, fill);
-        // Middle column
-        canvas.drawCircle(Offset(cx, cy - h * 0.35), dotR, fill);
-        canvas.drawCircle(Offset(cx, cy - h * 0.15), dotR, fill);
-        canvas.drawCircle(Offset(cx, cy + h * 0.05), dotR, fill);
-        canvas.drawCircle(Offset(cx, cy + h * 0.25), dotR, fill);
-        // Right column
-        canvas.drawCircle(Offset(cx + w * 0.22, cy - h * 0.28), dotR, fill);
-        canvas.drawCircle(Offset(cx + w * 0.22, cy - h * 0.05), dotR, fill);
-        canvas.drawCircle(Offset(cx + w * 0.18, cy + h * 0.18), dotR, fill);
-        // Connecting lines
-        final linePaint = Paint()
-          ..color = color.withOpacity(0.4)
-          ..strokeWidth = w * 0.02
-          ..strokeCap = StrokeCap.round;
-        // Simplified connections
-        canvas.drawLine(Offset(cx, cy - h * 0.35), Offset(cx - w * 0.22, cy - h * 0.28), linePaint);
-        canvas.drawLine(Offset(cx, cy - h * 0.35), Offset(cx + w * 0.22, cy - h * 0.28), linePaint);
-        canvas.drawLine(Offset(cx - w * 0.22, cy - h * 0.28), Offset(cx - w * 0.22, cy - h * 0.05), linePaint);
-        canvas.drawLine(Offset(cx + w * 0.22, cy - h * 0.28), Offset(cx + w * 0.22, cy - h * 0.05), linePaint);
-        canvas.drawLine(Offset(cx, cy - h * 0.15), Offset(cx - w * 0.22, cy - h * 0.05), linePaint);
-        canvas.drawLine(Offset(cx, cy - h * 0.15), Offset(cx + w * 0.22, cy - h * 0.05), linePaint);
-        canvas.drawLine(Offset(cx, cy - h * 0.15), Offset(cx, cy + h * 0.05), linePaint);
-        canvas.drawLine(Offset(cx - w * 0.22, cy - h * 0.05), Offset(cx - w * 0.18, cy + h * 0.18), linePaint);
-        canvas.drawLine(Offset(cx + w * 0.22, cy - h * 0.05), Offset(cx + w * 0.18, cy + h * 0.18), linePaint);
-        canvas.drawLine(Offset(cx, cy + h * 0.05), Offset(cx - w * 0.18, cy + h * 0.18), linePaint);
-        canvas.drawLine(Offset(cx, cy + h * 0.05), Offset(cx + w * 0.18, cy + h * 0.18), linePaint);
-        canvas.drawLine(Offset(cx, cy + h * 0.05), Offset(cx, cy + h * 0.25), linePaint);
-      case 'circle':
-        canvas.drawCircle(Offset(cx, cy), w * 0.3, fill);
-        canvas.drawCircle(Offset(cx, cy), w * 0.15, Paint()..color = const Color(0xFF050816));
-      case 'book':
-        // 宗教研究者 - open book
-        canvas.drawPath(
-          Path()
-            ..moveTo(cx, cy - h * 0.15)
-            ..lineTo(cx - w * 0.35, cy - h * 0.2)
-            ..lineTo(cx - w * 0.35, cy + h * 0.25)
-            ..lineTo(cx, cy + h * 0.2)
-            ..close(),
-          fill,
-        );
-        canvas.drawPath(
-          Path()
-            ..moveTo(cx, cy - h * 0.15)
-            ..lineTo(cx + w * 0.35, cy - h * 0.2)
-            ..lineTo(cx + w * 0.35, cy + h * 0.25)
-            ..lineTo(cx, cy + h * 0.2)
-            ..close(),
-          Paint()..color = color.withOpacity(0.75),
-        );
-      case 'scroll':
-        // 经文爱好者 - scroll
-        canvas.drawRect(Rect.fromCenter(center: Offset(cx, cy), width: w * 0.5, height: h * 0.55), fill);
-        canvas.drawCircle(Offset(cx - w * 0.25, cy - h * 0.1), w * 0.06, fill);
-        canvas.drawCircle(Offset(cx - w * 0.25, cy + h * 0.1), w * 0.06, fill);
-        canvas.drawCircle(Offset(cx + w * 0.25, cy - h * 0.1), w * 0.06, Paint()..color = color.withOpacity(0.75));
-        canvas.drawCircle(Offset(cx + w * 0.25, cy + h * 0.1), w * 0.06, Paint()..color = color.withOpacity(0.75));
-      case 'angel':
-        // 摩门教 - Angel Moroni (simplified trumpet figure)
-        canvas.drawCircle(Offset(cx, cy - h * 0.2), w * 0.08, fill);
-        canvas.drawRect(Rect.fromCenter(center: Offset(cx, cy - h * 0.05), width: w * 0.08, height: h * 0.2), fill);
-        // Wings
-        canvas.drawPath(
-          Path()
-            ..moveTo(cx - w * 0.06, cy - h * 0.12)
-            ..quadraticBezierTo(cx - w * 0.35, cy - h * 0.25, cx - w * 0.3, cy - h * 0.05)
-            ..lineTo(cx - w * 0.06, cy - h * 0.02)
-            ..close(),
-          Paint()..color = color.withOpacity(0.7),
-        );
-        canvas.drawPath(
-          Path()
-            ..moveTo(cx + w * 0.06, cy - h * 0.12)
-            ..quadraticBezierTo(cx + w * 0.35, cy - h * 0.25, cx + w * 0.3, cy - h * 0.05)
-            ..lineTo(cx + w * 0.06, cy - h * 0.02)
-            ..close(),
-          Paint()..color = color.withOpacity(0.7),
-        );
-        // Trumpet
-        canvas.drawLine(Offset(cx + w * 0.05, cy), Offset(cx + w * 0.3, cy - h * 0.1),
-            Paint()..color = color..strokeWidth = w * 0.04..strokeCap = StrokeCap.round);
-        canvas.drawCircle(Offset(cx + w * 0.3, cy - h * 0.1), w * 0.05, fill);
-      case 'tower':
-        // 耶和华见证人 - Watchtower
-        canvas.drawRect(Rect.fromCenter(center: Offset(cx, cy), width: w * 0.35, height: h * 0.6), fill);
-        canvas.drawPath(
-          Path()
-            ..moveTo(cx - w * 0.22, cy - h * 0.3)
-            ..lineTo(cx, cy - h * 0.42)
-            ..lineTo(cx + w * 0.22, cy - h * 0.3)
-            ..close(),
-          fill,
-        );
-        // Window
-        canvas.drawRect(Rect.fromCenter(center: Offset(cx, cy - h * 0.08), width: w * 0.12, height: h * 0.12),
-            Paint()..color = const Color(0xFF050816));
-      case 'taeguk':
-        // 天道教 - Taegeuk (Korean yin-yang variant)
-        final r = w * 0.38;
-        canvas.drawCircle(Offset(cx, cy), r, fill);
-        canvas.drawArc(Rect.fromCircle(center: Offset(cx, cy), radius: r),
-            pi / 2, pi, true, Paint()..color = Colors.white.withOpacity(0.85));
-        canvas.drawCircle(Offset(cx, cy + r * 0.48), r * 0.13, fill);
-        canvas.drawCircle(Offset(cx, cy - r * 0.48), r * 0.13, Paint()..color = Colors.white.withOpacity(0.85));
-      case 'divine_eye':
-        // 高台教 - Divine Eye
-        final eyePath = Path()
-          ..moveTo(cx - w * 0.38, cy)
-          ..quadraticBezierTo(cx, cy - h * 0.35, cx + w * 0.38, cy)
-          ..quadraticBezierTo(cx, cy + h * 0.35, cx - w * 0.38, cy);
-        canvas.drawPath(eyePath, fill);
-        canvas.drawCircle(Offset(cx, cy), w * 0.15, Paint()..color = const Color(0xFF050816));
-        // Radiating lines
-        for (int i = 0; i < 12; i++) {
-          final a = i * pi / 6;
-          canvas.drawLine(
-            Offset(cx + w * 0.2 * cos(a), cy + w * 0.2 * sin(a)),
-            Offset(cx + w * 0.38 * cos(a), cy + w * 0.38 * sin(a)),
-            Paint()..color = color.withOpacity(0.5)..strokeWidth = w * 0.03..strokeCap = StrokeCap.round,
-          );
+        final stroke = Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = v(2)..strokeCap = StrokeCap.round;
+        final dashPath = Path();
+        final circleR = v(8);
+        final circumference = 2 * pi * circleR;
+        final dashLen = circumference / 10;
+        final gapLen = circumference / 10;
+        final totalLen = dashLen + gapLen;
+        for (double start = 0; start < circumference; start += totalLen) {
+          final a1 = start / circleR;
+          final a2 = (start + dashLen) / circleR;
+          dashPath.addArc(Rect.fromCircle(center: Offset(cx, cy), radius: circleR), a1, a2 - a1);
         }
+        canvas.drawPath(dashPath, stroke);
+        canvas.drawCircle(Offset(cx, v(4)), v(2.5), fill);
+        break;
+
+      case 'tree':
+        canvas.drawRect(Rect.fromLTWH(v(11), v(16), v(2), v(6)), fill);
+        canvas.drawPath(Path()
+          ..moveTo(cx, v(4))
+          ..lineTo(v(7), v(10))
+          ..lineTo(v(10), v(10))
+          ..lineTo(v(8), v(14))
+          ..lineTo(v(10), v(14))
+          ..lineTo(cx, v(16))
+          ..lineTo(v(14), v(14))
+          ..lineTo(v(16), v(14))
+          ..lineTo(v(14), v(10))
+          ..lineTo(v(17), v(10))
+          ..close(),
+            Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = v(1.5));
+        break;
+
+      case 'angel':
+        canvas.drawCircle(Offset(cx, v(6)), v(2.5), Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = v(1.5));
+        canvas.drawPath(Path()
+          ..moveTo(v(8), v(10))
+          ..lineTo(v(16), v(10))
+          ..lineTo(v(14), v(18))
+          ..lineTo(v(10), v(18))
+          ..close(),
+            Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = v(1.5));
+        final stroke = Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = v(2)..strokeCap = StrokeCap.round;
+        canvas.drawLine(Offset(v(16), v(9)), Offset(v(20), v(6)), stroke);
+        canvas.drawPath(Path()
+          ..moveTo(v(20), v(4))
+          ..lineTo(v(22), v(5))
+          ..lineTo(v(20), v(6))
+          ..close(), fill);
+        break;
+
+      case 'tower':
+        canvas.drawPath(Path()
+          ..moveTo(v(8), v(22))
+          ..lineTo(v(9), v(8))
+          ..lineTo(v(15), v(8))
+          ..lineTo(v(16), v(22))
+          ..close(),
+            Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = v(1.5));
+        canvas.drawPath(Path()
+          ..moveTo(v(9), v(8))
+          ..lineTo(v(10), v(3))
+          ..lineTo(v(14), v(3))
+          ..lineTo(v(15), v(8)),
+            Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = v(1.5));
+        canvas.drawRect(Rect.fromLTWH(v(11), v(14), v(2), v(3)), fill);
+        break;
+
+      case 'crown':
+        canvas.drawPath(Path()
+          ..moveTo(v(3), v(18))
+          ..lineTo(v(5), v(8))
+          ..lineTo(v(9), v(13))
+          ..lineTo(cx, v(6))
+          ..lineTo(v(15), v(13))
+          ..lineTo(v(19), v(8))
+          ..lineTo(v(21), v(18))
+          ..close(),
+            Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = v(1.5));
+        canvas.drawLine(Offset(v(3), v(18)), Offset(v(21), v(18)),
+            Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = v(2));
+        break;
+
+      case 'taeguk':
+        final r = v(9);
+        canvas.drawCircle(Offset(cx, cy), r, Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = v(1.5));
+        final taegukPath = Path()
+          ..moveTo(cx, v(3))
+          ..arcTo(Rect.fromCircle(center: Offset(cx, cy), radius: r), -pi / 2, pi, false)
+          ..arcTo(Rect.fromCircle(center: Offset(cx, cy + r / 2), radius: r / 2), pi / 2, -pi, false)
+          ..arcTo(Rect.fromCircle(center: Offset(cx, cy - r / 2), radius: r / 2), pi / 2, pi, false)
+          ..close();
+        canvas.drawPath(taegukPath, fill);
+        break;
+
+      case 'divine_eye':
+        canvas.drawPath(Path()
+          ..moveTo(v(1), cy)
+          ..cubicTo(v(1), cy, v(5), v(5), cx, v(5))
+          ..cubicTo(v(19), v(5), v(23), cy, v(23), cy)
+          ..cubicTo(v(23), cy, v(19), v(19), cx, v(19))
+          ..cubicTo(v(5), v(19), v(1), cy, v(1), cy),
+            Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = v(1.5));
+        canvas.drawCircle(Offset(cx, cy), v(4), fill);
+        canvas.drawCircle(Offset(cx, cy), v(1.5), fillDark);
+        break;
+
+      case 'circle':
+        canvas.drawCircle(Offset(cx, cy), v(8), Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = v(2));
+        canvas.drawCircle(Offset(cx, cy), v(3), fill);
+        break;
+
+      case 'book':
+        final stroke = Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = v(1.5);
+        canvas.drawPath(Path()
+          ..moveTo(v(2), v(4))
+          ..cubicTo(v(2), v(4), v(4), v(4), v(8), v(6))
+          ..lineTo(v(8), v(20))
+          ..cubicTo(v(7), v(19), v(2), v(19), v(2), v(19))
+          ..close(), stroke);
+        canvas.drawPath(Path()
+          ..moveTo(v(22), v(4))
+          ..cubicTo(v(22), v(4), v(20), v(4), v(16), v(6))
+          ..lineTo(v(16), v(20))
+          ..cubicTo(v(17), v(19), v(22), v(19), v(22), v(19))
+          ..close(), stroke);
+        stroke.strokeWidth = v(1);
+        canvas.drawLine(Offset(cx, v(6)), Offset(cx, v(20)), stroke);
+        break;
+
+      case 'scroll':
+        final stroke = Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = v(1.5);
+        canvas.drawPath(Path()
+          ..moveTo(v(4), v(5))
+          ..cubicTo(v(4), v(5), v(6), v(3), v(6), v(5))
+          ..lineTo(v(6), v(19))
+          ..cubicTo(v(6), v(21), v(4), v(19), v(4), v(19)), stroke);
+        canvas.drawPath(Path()
+          ..moveTo(v(20), v(5))
+          ..cubicTo(v(20), v(5), v(18), v(3), v(18), v(5))
+          ..lineTo(v(18), v(19))
+          ..cubicTo(v(18), v(21), v(20), v(19), v(20), v(19)), stroke);
+        canvas.drawRect(Rect.fromLTWH(v(6), v(5), v(12), v(14)),
+            Paint()..color = color.withOpacity(0.3)..style = PaintingStyle.stroke..strokeWidth = v(1));
+        final linePaint = Paint()..color = color.withOpacity(0.6)..style = PaintingStyle.stroke..strokeWidth = v(1);
+        canvas.drawLine(Offset(v(8), v(9)), Offset(v(16), v(9)), linePaint);
+        canvas.drawLine(Offset(v(8), v(12)), Offset(v(16), v(12)), linePaint);
+        canvas.drawLine(Offset(v(8), v(15)), Offset(v(14), v(15)), linePaint);
+        break;
+
+      case 'compass':
+        canvas.drawCircle(Offset(cx, cy), v(9), Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = v(1.5));
+        canvas.drawPath(Path()
+          ..moveTo(cx, v(4))
+          ..lineTo(cx + v(2), v(11))
+          ..lineTo(cx, v(10))
+          ..lineTo(cx - v(2), v(11))
+          ..close(), Paint()..color = color.withOpacity(0.8));
+        canvas.drawPath(Path()
+          ..moveTo(cx, v(20))
+          ..lineTo(cx - v(2), v(13))
+          ..lineTo(cx, v(14))
+          ..lineTo(cx + v(2), v(13))
+          ..close(), Paint()..color = color.withOpacity(0.4));
+        canvas.drawCircle(Offset(cx, cy), v(1), fill);
+        break;
+
       default:
-        // 默认渐变圆点
-        final r = w * 0.3;
-        final rect = Rect.fromCircle(center: Offset(cx, cy), radius: r);
-        canvas.drawRect(rect, Paint()
-          ..shader = SweepGradient(colors: [
-            Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A),
-            Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF),
-            Color(0xFF9D4EDD), Color(0xFFFF4D6D),
-          ]).createShader(rect));
+        canvas.drawPath(Path()
+          ..moveTo(v(6.5), v(2))
+          ..lineTo(v(20), v(2))
+          ..lineTo(v(20), v(22))
+          ..lineTo(v(6.5), v(22))
+          ..arcTo(Rect.fromLTWH(v(4), v(17), v(5), v(5)), pi / 2, pi, false),
+            Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = v(1.5));
+        break;
     }
   }
 
