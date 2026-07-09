@@ -1,9 +1,6 @@
-name: APK Release Build
+name: APK Release Build (Shorebird)
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths: ['lib/**', 'pubspec.yaml']
 env:
   SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
 jobs:
@@ -19,7 +16,14 @@ jobs:
         with:
           flutter-version: '3.44.5'
       - run: flutter pub get
-      - run: flutter build apk --release
+      - name: Setup Shorebird
+        uses: shorebirdtech/setup-shorebird@v1
+        with:
+          cache: true
+      - name: Shorebird Release
+        uses: shorebirdtech/shorebird-release@v1
+        with:
+          platform: android
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
