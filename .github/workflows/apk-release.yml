@@ -24,6 +24,7 @@ jobs:
         uses: shorebirdtech/shorebird-release@v1
         with:
           platform: android
+          artifact: apk
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
