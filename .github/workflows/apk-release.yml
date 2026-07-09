@@ -21,10 +21,7 @@ jobs:
         with:
           cache: true
       - name: Shorebird Release
-        uses: shorebirdtech/shorebird-release@v1
-        with:
-          platform: android
-          artifact: apk
+        run: shorebird release android --artifact apk
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
