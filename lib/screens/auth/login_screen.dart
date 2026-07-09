@@ -512,13 +512,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 height: 16,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(3),
-                  border: Border.all(color: Colors.white, width: 1.5),
+                  border: Border.all(color: Colors.white, width: 0.8),
                 ),
                 child: _rememberMe
                     ? ShaderMask(
                         shaderCallback: (bounds) => _diagonalGradient(Size(bounds.width, bounds.height)).createShader(bounds),
                         blendMode: BlendMode.srcIn,
-                        child: const Icon(Icons.check, size: 12, color: Colors.white),
+                        child: const Icon(Icons.check, size: 14, color: Colors.white, weight: 900),
                       )
                     : null,
               ),
