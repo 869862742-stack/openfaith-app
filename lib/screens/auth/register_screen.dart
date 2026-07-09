@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'dart:math';
 import '../../theme/colors.dart';
 import '../../services/auth_service.dart';
 import '../../navigation/bottom_nav.dart';
+import '../../widgets/religion_icon.dart';
+import '../sidebar_pages/privacy_policy_screen.dart';
+import '../sidebar_pages/terms_of_service_screen.dart';
 
 const _rainbowColors = [
   Color(0xFFFF4D6D),
@@ -14,10 +16,10 @@ const _rainbowColors = [
   Color(0xFF9D4EDD),
 ];
 
-LinearGradient _diagonalGradient(Size size) {
-  final angle = size.height > 0 && size.width > 0 ? atan2(size.width, size.height) : 0.785;
-  return LinearGradient(colors: _rainbowColors, transform: GradientRotation(angle));
-}
+const _rainbowGradient = LinearGradient(
+  colors: _rainbowColors,
+  transform: GradientRotation(0.785398),
+);
 
 /// 七彩渐变文字（aurora-text 效果）
 class _GradientText extends StatelessWidget {
@@ -32,7 +34,7 @@ class _GradientText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ShaderMask(
-      shaderCallback: (bounds) => _diagonalGradient(bounds.size).createShader(
+      shaderCallback: (bounds) => _rainbowGradient.createShader(
         Rect.fromLTWH(0, 0, bounds.width, bounds.height),
       ),
       blendMode: BlendMode.srcIn,
@@ -91,6 +93,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
+  /// 七彩渐变边框包裹器（外层2px渐变+内层#050816，铁律）
+  Widget _rainbowBorderBox({required Widget child, double borderRadius = 8}) {
+    return Container(
+      padding: const EdgeInsets.all(2),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(borderRadius),
+        gradient: _rainbowGradient,
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(borderRadius - 2),
+          color: const Color(0xFF050816),
+        ),
+        child: child,
+      ),
+    );
+  }
+
   Future<void> _handleRegister() async {
     final email = _emailCtrl.text.trim();
     final nickname = _nicknameCtrl.text.trim();
@@ -103,7 +123,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (password.length < 8) { setState(() => _error = '密码至少8位'); return; }
     if (password != confirmPassword) { setState(() => _error = '两次密码不一致'); return; }
     if (!_isAbove13) { setState(() => _error = '您必须年满13周岁才能注册'); return; }
-    if (!_agreedToTerms) { setState(() => _error = '请阅读并同意隐私政策和服务条款'); return; }
+    if (!_agreedToTerms) { setState(() => _error = '请阅读并同意隐私政策和用户协议'); return; }
 
     setState(() { _loading = true; _error = null; });
     try {
@@ -172,13 +192,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     const _GradientText(text: 'OpenFaith', fontSize: 30),
                     const SizedBox(height: 32),
 
-                    LayoutBuilder(builder: (context, constraints) {
-                        final size = Size(constraints.maxWidth, constraints.maxHeight);
-                        return Container(
+                    // 【修复1】外层卡片：去掉LayoutBuilder，使用固定_gradient
+                    Container(
                       padding: const EdgeInsets.all(2),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
-                        gradient: _diagonalGradient(size),
+                        gradient: _rainbowGradient,
                         boxShadow: [
                           BoxShadow(color: const Color(0xFFFF4D6D).withOpacity(0.1), blurRadius: 30, spreadRadius: 0),
                           BoxShadow(color: const Color(0xFF3A86FF).withOpacity(0.08), blurRadius: 60, spreadRadius: 0),
@@ -204,30 +223,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               Text('已有账号？',
                                   style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 14)),
                               const SizedBox(height: 8),
-                              LayoutBuilder(builder: (context, constraints) {
-                                  final size = Size(constraints.maxWidth, constraints.maxHeight);
-                                  return Container(
-                                padding: const EdgeInsets.all(2),
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(12), gradient: _diagonalGradient(size)),
-                                child: TextButton(
-                                  onPressed: () => Navigator.pop(context),
-                                  style: TextButton.styleFrom(
-                                    backgroundColor: const Color(0xFF050816).withOpacity(0.95),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                              // 【修复1】"立即登录"按钮：去掉LayoutBuilder，使用_rainbowBorderBox
+                              _rainbowBorderBox(
+                                borderRadius: 12,
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(10),
+                                    onTap: () => Navigator.pop(context),
+                                    child: Container(
+                                      alignment: Alignment.center,
+                                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                                      child: const Text('立即登录',
+                                          style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
+                                    ),
                                   ),
-                                  child: const Text('立即登录',
-                                      style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
                                 ),
-                              );
-                              }),
+                              ),
                             ],
                           ],
                         ),
                       ),
-                    );
-                    }),
+                    ),
                   ],
                 ),
               ),
@@ -260,59 +277,81 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _buildFaithTagDropdown(),
         const SizedBox(height: 16),
 
-        Row(
-          children: [
-            SizedBox(
-              width: 16, height: 16,
-              child: Checkbox(
-                value: _isAbove13,
-                onChanged: (v) { setState(() => _isAbove13 = v ?? false); _error = null; },
-                activeColor: const Color(0xFF3A86FF),
-                side: BorderSide(color: Colors.white.withOpacity(0.3), width: 1),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        // 【修复3】年满13周岁 checkbox：使用_rainbowBorderBox + 白色勾
+        GestureDetector(
+          onTap: () { setState(() => _isAbove13 = !_isAbove13); _error = null; },
+          child: Row(
+            children: [
+              _rainbowBorderBox(
+                borderRadius: 3,
+                child: SizedBox(
+                  width: 12,
+                  height: 12,
+                  child: _isAbove13
+                      ? const Icon(Icons.check, size: 10, color: Colors.white)
+                      : null,
+                ),
               ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text('我已年满13周岁',
-                  style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
-            ),
-          ],
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text('我已年满13周岁',
+                    style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
+              ),
+            ],
+          ),
         ),
         const SizedBox(height: 8),
 
-        Row(
-          children: [
-            SizedBox(
-              width: 16, height: 16,
-              child: Checkbox(
-                value: _agreedToTerms,
-                onChanged: (v) { setState(() => _agreedToTerms = v ?? false); _error = null; },
-                activeColor: const Color(0xFF3A86FF),
-                side: BorderSide(color: Colors.white.withOpacity(0.3), width: 1),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        // 【修复3】隐私政策 checkbox：使用_rainbowBorderBox + 白色勾
+        // 【修复5】"隐私政策"和"用户协议"文字可点击导航，"服务条款"改名为"用户协议"
+        GestureDetector(
+          onTap: () => setState(() => _agreedToTerms = !_agreedToTerms),
+          child: Row(
+            children: [
+              _rainbowBorderBox(
+                borderRadius: 3,
+                child: SizedBox(
+                  width: 12,
+                  height: 12,
+                  child: _agreedToTerms
+                      ? const Icon(Icons.check, size: 10, color: Colors.white)
+                      : null,
+                ),
               ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: GestureDetector(
-                onTap: () => setState(() => _agreedToTerms = !_agreedToTerms),
+              const SizedBox(width: 8),
+              Expanded(
                 child: Text.rich(
                   TextSpan(
                     style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
                     children: [
                       const TextSpan(text: '我已阅读并同意'),
-                      TextSpan(text: '隐私政策', style: TextStyle(color: const Color(0xFF3A86FF).withOpacity(0.8))),
+                      TextSpan(
+                        text: '隐私政策',
+                        style: const TextStyle(color: Color(0xFF3A86FF)),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                            Navigator.push(context, MaterialPageRoute(
+                              builder: (context) => const PrivacyPolicyScreen(),
+                            ));
+                          },
+                      ),
                       const TextSpan(text: '和'),
-                      TextSpan(text: '服务条款', style: TextStyle(color: const Color(0xFF3A86FF).withOpacity(0.8))),
+                      TextSpan(
+                        text: '用户协议',
+                        style: const TextStyle(color: Color(0xFF3A86FF)),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                            Navigator.push(context, MaterialPageRoute(
+                              builder: (context) => const TermsOfServiceScreen(),
+                            ));
+                          },
+                      ),
                     ],
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         const SizedBox(height: 12),
 
@@ -340,15 +379,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        LayoutBuilder(builder: (context, constraints) {
-            final size = Size(constraints.maxWidth, constraints.maxHeight);
-            return Container(
+        // 邮件图标圆圈：去掉LayoutBuilder，使用固定渐变
+        Container(
           width: 64, height: 64,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: _diagonalGradient(size),
-          ),
           padding: const EdgeInsets.all(2),
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: _rainbowGradient,
+          ),
           child: Container(
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
@@ -356,8 +394,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
             child: const Icon(Icons.email_outlined, color: Color(0xFF3A86FF), size: 32),
           ),
-        );
-        }),
+        ),
         const SizedBox(height: 16),
 
         const Text('验证码已发送',
@@ -418,13 +455,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
             onFocusChange: (hasFocus) {
               setState(() => _focusedField = hasFocus ? 'regTag' : null);
             },
-            child: LayoutBuilder(builder: (context, constraints) {
-                final size = Size(constraints.maxWidth, constraints.maxHeight);
-                return Container(
+            // 【修复2】身份标签下拉：去掉LayoutBuilder，使用固定渐变
+            child: Container(
               padding: EdgeInsets.all(_focusedField == 'regTag' ? 2 : 0),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                gradient: _focusedField == 'regTag' ? _diagonalGradient(size) : null,
+                gradient: _focusedField == 'regTag' ? _rainbowGradient : null,
                 border: _focusedField != 'regTag'
                     ? Border.all(color: Colors.white.withOpacity(0.12), width: 1)
                     : null,
@@ -440,6 +476,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 child: Row(
                   children: [
+                    // 【修复4】选中标签时显示宗教图标
+                    if (_selectedFaithTag.isNotEmpty) ...[
+                      ReligionIconWidget(name: _selectedFaithTag, size: 18),
+                      const SizedBox(width: 8),
+                    ],
                     Expanded(
                       child: Text(
                         _selectedFaithTag.isEmpty ? '请选择身份标签...' : _selectedFaithTag,
@@ -456,8 +497,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ],
                 ),
               ),
-            );
-            }),
+            ),
           ),
         ),
       ],
@@ -488,7 +528,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   itemBuilder: (ctx, i) {
                     final tag = _faithTags[i];
                     final selected = tag == _selectedFaithTag;
+                    // 【修复4】每个标签前显示宗教图标
                     return ListTile(
+                      leading: ReligionIconWidget(name: tag, size: 22),
                       title: Text(tag,
                           style: TextStyle(color: selected ? Colors.white : Colors.white.withOpacity(0.8), fontSize: 14)),
                       trailing: selected
@@ -510,47 +552,46 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Widget _buildRegisterButton() {
-    return LayoutBuilder(builder: (context, constraints) {
-        final size = Size(constraints.maxWidth, constraints.maxHeight);
-        return Container(
-      padding: const EdgeInsets.all(2),
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: _diagonalGradient(size)),
+    // 【修复1+2】去掉LayoutBuilder，使用_rainbowBorderBox
+    return _rainbowBorderBox(
+      borderRadius: 12,
       child: SizedBox(
         height: 44,
-        child: TextButton(
-          onPressed: _loading ? () {} : _handleRegister,
-          style: TextButton.styleFrom(
-            backgroundColor: const Color(0xFF050816).withOpacity(0.95),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(10),
+            onTap: _loading ? null : _handleRegister,
+            child: Container(
+              alignment: Alignment.center,
+              child: Text(_loading ? '发送中...' : '获取验证码',
+                  style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
+            ),
           ),
-          child: Text(_loading ? '发送中...' : '获取验证码',
-              style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
         ),
       ),
     );
-    });
   }
 
   Widget _buildVerifyButton() {
-    return LayoutBuilder(builder: (context, constraints) {
-        final size = Size(constraints.maxWidth, constraints.maxHeight);
-        return Container(
-      padding: const EdgeInsets.all(2),
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: _diagonalGradient(size)),
+    return _rainbowBorderBox(
+      borderRadius: 12,
       child: SizedBox(
         height: 48,
-        child: TextButton(
-          onPressed: _loading ? () {} : _verifyCode,
-          style: TextButton.styleFrom(
-            backgroundColor: const Color(0xFF050816).withOpacity(0.95),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(10),
+            onTap: _loading ? null : _verifyCode,
+            child: Container(
+              alignment: Alignment.center,
+              child: Text(_loading ? '验证中...' : '完成注册',
+                  style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
+            ),
           ),
-          child: Text(_loading ? '验证中...' : '完成注册',
-              style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
         ),
       ),
     );
-    });
   }
 
   Widget _buildInput({
@@ -573,13 +614,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
           onFocusChange: (hasFocus) {
             setState(() => _focusedField = hasFocus ? fieldKey : null);
           },
-          child: LayoutBuilder(builder: (context, constraints) {
-              final size = Size(constraints.maxWidth, constraints.maxHeight);
-              return Container(
+          // 【修复2】输入框：去掉LayoutBuilder，使用固定渐变GradientRotation(0.785398)
+          child: Container(
             padding: EdgeInsets.all(isFocused ? 2 : 0),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
-              gradient: isFocused ? _diagonalGradient(size) : null,
+              gradient: isFocused ? _rainbowGradient : null,
               border: !isFocused
                   ? Border.all(color: Colors.white.withOpacity(0.12), width: 1)
                   : null,
@@ -609,8 +649,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
             ),
-          );
-          }),
+          ),
         ),
       ],
     );
