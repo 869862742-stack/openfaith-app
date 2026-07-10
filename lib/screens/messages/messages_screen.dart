@@ -791,7 +791,7 @@ class _MessagesScreenState extends State<MessagesScreen>
               final nm = f['nickname'] as String? ?? f['username'] as String? ?? '未命名用户';
               final fuid = f['user_id'] as String? ?? f['id'] as String;
               widgets.add(Container(decoration: BoxDecoration(
-                border: Border(bottom: BorderSide(color: AppColors.borderSubtle)),
+                border: Border(bottom: BorderSide(color: AppColors.borderSubtle))),
                 child: ListTile(contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
                   leading: LayoutBuilder(builder: (context, constraints) {
                     final size = Size(constraints.maxWidth, constraints.maxHeight);
