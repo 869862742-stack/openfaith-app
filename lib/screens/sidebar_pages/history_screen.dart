@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/rainbow_border.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../home/post_detail_screen.dart';
 
 /// 浏览记录页 - 对齐网页版 History.tsx
 class HistoryScreen extends StatefulWidget {
@@ -13,6 +15,7 @@ class HistoryScreen extends StatefulWidget {
 }
 
 class _HistoryScreenState extends State<HistoryScreen> {
+  final _supabase = Supabase.instance.client;
   List<Map<String, dynamic>> _history = [];
   bool _recording = true;
   String? _longPressItemId;
@@ -305,8 +308,23 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final coverImage = item['cover_image']?.toString();
 
     return GestureDetector(
-      onTap: () {
-        // TODO: 打开笔记详情
+      onTap: () async {
+        try {
+          final postId = item['id']?.toString();
+          if (postId == null) return;
+          final response = await _supabase
+              .from('posts')
+              .select('*, profiles:user_id(nickname, username, avatar_url, faith_tag)')
+              .eq('id', postId)
+              .maybeSingle();
+          if (response != null && mounted) {
+            Navigator.push(context, MaterialPageRoute(
+              builder: (context) => PostDetailScreen(post: response),
+            ));
+          }
+        } catch (e) {
+          debugPrint('打开帖子详情失败: \$e');
+        }
       },
       onLongPress: () {
         setState(() => _longPressItemId = itemId);

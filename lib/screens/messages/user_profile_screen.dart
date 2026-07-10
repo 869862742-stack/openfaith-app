@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../theme/colors.dart';
 import 'private_chat_screen.dart';
+import '../home/post_detail_screen.dart';
 
 /// 用户/好友详情页 - 对齐网页版 UserProfile.tsx
 class UserProfileScreen extends StatefulWidget {
@@ -555,7 +556,9 @@ class _UserProfileScreenState extends State<UserProfileScreen>
 
     return GestureDetector(
       onTap: () {
-        // TODO: open post detail
+        Navigator.push(context, MaterialPageRoute(
+          builder: (context) => PostDetailScreen(post: post),
+        ));
       },
       child: AspectRatio(
         aspectRatio: 3 / 4,
