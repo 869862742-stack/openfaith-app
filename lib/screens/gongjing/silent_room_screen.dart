@@ -4,6 +4,7 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -252,6 +253,11 @@ class _SilentRoomScreenState extends State<SilentRoomScreen>
   bool _showMembersSheet = false;
   bool _uploadingAudio = false;
   String _uploadProgress = '';
+
+  // ── 浮动面板状态 ──
+  Offset _soundPanelPosition = const Offset(20, 100);
+  bool _isSoundPanelMinimized = false;
+  final double _soundPanelWidth = 300;
 
   // ── 定时器 ──
   Timer? _dataRefreshTimer;
@@ -786,15 +792,50 @@ class _SilentRoomScreenState extends State<SilentRoomScreen>
         final filePath = 'room-audio/${widget.roomId}/$fileName';
 
         try {
+          // 提取音频文件元数据
+          String trackName = file.name.replaceAll(RegExp(r'\.[^/.]+$'), '');
+          String? artistName;
+          String? extractedLyrics;
+          double? trackDuration;
+
+          try {
+            final audioFile = File(file.path!);
+            final metadata = readMetadata(audioFile, getImage: false);
+            
+            if (metadata.title != null && metadata.title!.isNotEmpty) {
+              trackName = metadata.title!;
+            }
+            if (metadata.artist != null && metadata.artist!.isNotEmpty) {
+              artistName = metadata.artist;
+            }
+            if (metadata.lyrics != null && metadata.lyrics!.isNotEmpty) {
+              extractedLyrics = metadata.lyrics;
+            }
+            if (metadata.duration != null) {
+              trackDuration = metadata.duration!.inMilliseconds / 1000.0;
+            }
+            debugPrint('Metadata extracted: title=$trackName, artist=$artistName, duration=$trackDuration');
+          } catch (metaError) {
+            debugPrint('Failed to extract metadata: $metaError');
+          }
+
+          // 上传文件到存储
           final audioFile = File(file.path!);
           await _supabase.storage.from('media').upload(filePath, audioFile);
           final audioUrl =
               _supabase.storage.from('media').getPublicUrl(filePath);
 
+          // 如果有艺术家信息，显示为 "歌曲名 - 艺术家"
+          final displayName = artistName != null && artistName.isNotEmpty
+              ? '$trackName - $artistName'
+              : trackName;
+
           newTracks.add(AudioTrack(
             id: '${DateTime.now().millisecondsSinceEpoch}_${_rng.nextInt(999999)}',
-            name: file.name.replaceAll(RegExp(r'\.[^/.]+$'), ''),
+            name: displayName,
             url: audioUrl,
+            duration: trackDuration,
+            lyrics: extractedLyrics,
             uploadedAt: DateTime.now().toIso8601String(),
           ));
         } catch (e) {
@@ -1628,221 +1669,362 @@ class _SilentRoomScreenState extends State<SilentRoomScreen>
   // ══════════════════════════════════════════════════════════════
 
   Widget _buildSoundPanel() {
-    return GestureDetector(
-      onTap: () {}, // 阻止穿透
-      child: Container(
-        color: Colors.black.withOpacity(0.5),
-        child: SafeArea(
-          child: Center(
-            child: Container(
-              width: 320,
-              margin: const EdgeInsets.symmetric(horizontal: 24),
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: AppColors.overlayBg,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.borderDefault),
+    if (_isSoundPanelMinimized) {
+      return Positioned(
+        left: _soundPanelPosition.dx,
+        top: _soundPanelPosition.dy,
+        child: GestureDetector(
+          onPanUpdate: (details) {
+            setState(() {
+              _soundPanelPosition = Offset(
+                (_soundPanelPosition.dx + details.delta.dx).clamp(
+                  0, MediaQuery.of(context).size.width - 56),
+                (_soundPanelPosition.dy + details.delta.dy).clamp(
+                  0, MediaQuery.of(context).size.height - 56),
+              );
+            });
+          },
+          onTap: () => setState(() => _isSoundPanelMinimized = false),
+          child: Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: AppColors.auroraGradientWithOpacity(0.8),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.auroraCyan.withOpacity(0.3),
+                  blurRadius: 12,
+                  spreadRadius: 2,
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  _isPlaying ? Icons.pause : Icons.play_arrow,
+                  color: AppColors.textPrimary,
+                  size: 22,
+                ),
+                if (_isPlaying)
+                  const SizedBox(height: 2)
+                else
+                  const SizedBox(height: 2),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Positioned(
+      left: _soundPanelPosition.dx,
+      top: _soundPanelPosition.dy,
+      child: GestureDetector(
+        onPanUpdate: (details) {
+          setState(() {
+            _soundPanelPosition = Offset(
+              (_soundPanelPosition.dx + details.delta.dx).clamp(
+                0, MediaQuery.of(context).size.width - _soundPanelWidth),
+              (_soundPanelPosition.dy + details.delta.dy).clamp(
+                0, MediaQuery.of(context).size.height - 100),
+            );
+          });
+        },
+        child: Container(
+          width: _soundPanelWidth,
+          constraints: const BoxConstraints(maxHeight: 500),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.overlayBg,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.borderDefault),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3),
+                blurRadius: 20,
+                spreadRadius: 2,
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // 标题行
-                  Row(
+            ],
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 拖动把手
+                GestureDetector(
+                  onTap: () => setState(() => _isSoundPanelMinimized = true),
+                  child: Column(
                     children: [
-                      const Text(
-                        '声音设置',
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                      Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: AppColors.textPlaceholder.withOpacity(0.5),
+                          borderRadius: BorderRadius.circular(2),
                         ),
                       ),
-                      const Spacer(),
-                      GestureDetector(
-                        onTap: () => setState(() => _showSoundPanel = false),
-                        child: const Icon(Icons.close,
-                            color: AppColors.textPlaceholder, size: 20),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Text(
+                            '音乐控制',
+                            style: TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const Spacer(),
+                          GestureDetector(
+                            onTap: () => setState(() => _showSoundPanel = false),
+                            child: const Icon(Icons.close,
+                                color: AppColors.textPlaceholder, size: 18),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                ),
+                const SizedBox(height: 12),
 
-                  // 音频播放开关
-                  _buildPanelRow(
-                    label: '音频播放',
-                    child: GestureDetector(
-                      onTap: _toggleMute,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: _isMuted
-                              ? AppColors.hoverBgLight
-                              : AppColors.hoverBg,
-                          borderRadius: BorderRadius.circular(16),
+                // 当前曲目信息
+                if (_currentTrack != null)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: AppColors.hoverBgLight,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _currentTrack!.name,
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
+                        const SizedBox(height: 4),
+                        Row(
                           children: [
-                            Icon(
-                              _isMuted ? Icons.volume_off : Icons.volume_up,
-                              color: _isMuted
-                                  ? AppColors.textWeak
-                                  : AppColors.textPrimary,
-                              size: 16,
-                            ),
-                            const SizedBox(width: 6),
                             Text(
-                              _isMuted ? '已静音' : '已开启',
-                              style: TextStyle(
-                                color: _isMuted
-                                    ? AppColors.textWeak
-                                    : AppColors.textSecondary,
-                                fontSize: 12,
+                              _formatDuration(_currentPosition),
+                              style: const TextStyle(color: AppColors.textPlaceholder, fontSize: 10),
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: SizedBox(
+                                height: 2,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(1),
+                                  child: LinearProgressIndicator(
+                                    value: _totalDuration.inMilliseconds > 0
+                                        ? _currentPosition.inMilliseconds /
+                                            _totalDuration.inMilliseconds
+                                        : 0,
+                                    backgroundColor: AppColors.borderDefault,
+                                    valueColor: const AlwaysStoppedAnimation<Color>(AppColors.auroraCyan),
+                                  ),
+                                ),
                               ),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              _formatDuration(_totalDuration),
+                              style: const TextStyle(color: AppColors.textPlaceholder, fontSize: 10),
                             ),
                           ],
                         ),
-                      ),
+                      ],
                     ),
                   ),
-                  const Divider(height: 24, color: AppColors.borderDefault),
+                const SizedBox(height: 12),
 
-                  // 播放控制
-                  _buildPanelRow(
-                    label: '播放控制',
-                    child: GestureDetector(
+                // 主控制按钮
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // 静音
+                    _buildPanelControlButton(
+                      icon: _isMuted ? Icons.volume_off : Icons.volume_up,
+                      onTap: _toggleMute,
+                      isActive: _isMuted,
+                    ),
+                    const SizedBox(width: 12),
+                    // 上一首
+                    _buildPanelControlButton(
+                      icon: Icons.skip_previous,
+                      onTap: _playPrevious,
+                    ),
+                    const SizedBox(width: 12),
+                    // 播放/暂停
+                    GestureDetector(
                       onTap: _togglePlayPause,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
+                        width: 44,
+                        height: 44,
                         decoration: BoxDecoration(
-                          color: _isPlaying
-                              ? AppColors.hoverBg
-                              : AppColors.hoverBgLight,
-                          borderRadius: BorderRadius.circular(16),
+                          shape: BoxShape.circle,
+                          gradient: AppColors.auroraGradientWithOpacity(0.6),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              _isPlaying
-                                  ? Icons.pause
-                                  : Icons.play_arrow,
+                        child: Padding(
+                          padding: const EdgeInsets.all(1),
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: AppColors.bgColor,
+                            ),
+                            child: Icon(
+                              _isPlaying ? Icons.pause : Icons.play_arrow,
                               color: AppColors.textPrimary,
-                              size: 16,
+                              size: 22,
                             ),
-                            const SizedBox(width: 6),
-                            Text(
-                              _isPlaying ? '暂停' : '播放',
-                              style: const TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  const Divider(height: 24, color: AppColors.borderDefault),
-
-                  // 播放模式
-                  _buildPanelRow(
-                    label: '播放模式',
-                    child: GestureDetector(
-                      onTap: _cyclePlayMode,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: AppColors.hoverBg,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(_getPlayModeIcon(),
-                                color: AppColors.textPrimary, size: 16),
-                            const SizedBox(width: 6),
-                            Text(
-                              _getPlayModeLabel(),
-                              style: const TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  const Divider(height: 24, color: AppColors.borderDefault),
-
-                  // 播放列表
-                  _buildPlaylist(),
-                  const SizedBox(height: 16),
-
-                  // 房主上传
-                  if (_isOwner) ...[
-                    GestureDetector(
-                      onTap: _uploadingAudio ? null : _uploadAudio,
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        decoration: BoxDecoration(
-                          color: AppColors.hoverBg,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.upload,
-                                color: AppColors.textPrimary, size: 18),
-                            const SizedBox(width: 8),
-                            Text(
-                              _uploadingAudio
-                                  ? _uploadProgress.isNotEmpty
-                                      ? _uploadProgress
-                                      : '上传中...'
-                                  : '上传音频文件',
-                              style: const TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    const Divider(height: 1, color: AppColors.borderDefault),
-                    const SizedBox(height: 12),
-                    // 解散房间
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _showSoundPanel = false;
-                          _showDisbandConfirm = true;
-                        });
-                      },
-                      child: ShaderMask(
-                        shaderCallback: (rect) =>
-                            AppColors.auroraGradient.createShader(rect),
-                        child: const Text(
-                          '解散房间',
-                          style: TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 14,
                           ),
                         ),
                       ),
                     ),
+                    const SizedBox(width: 12),
+                    // 下一首
+                    _buildPanelControlButton(
+                      icon: Icons.skip_next,
+                      onTap: _playNext,
+                    ),
+                    const SizedBox(width: 12),
+                    // 播放模式
+                    _buildPanelControlButton(
+                      icon: _getPlayModeIcon(),
+                      onTap: _cyclePlayMode,
+                      tooltip: _getPlayModeLabel(),
+                    ),
                   ],
+                ),
+                const SizedBox(height: 12),
+
+                // 音量控制
+                Row(
+                  children: [
+                    Icon(Icons.volume_down, color: AppColors.textWeak, size: 16),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: SliderTheme(
+                        data: SliderThemeData(
+                          trackHeight: 2,
+                          thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 5),
+                          activeTrackColor: AppColors.auroraCyan,
+                          inactiveTrackColor: AppColors.borderDefault,
+                          thumbColor: AppColors.auroraCyan,
+                          overlayColor: AppColors.auroraCyan.withOpacity(0.2),
+                        ),
+                        child: Slider(
+                          value: _isMuted ? 0.0 : 0.5,
+                          min: 0.0,
+                          max: 1.0,
+                          onChanged: (value) {
+                            setState(() {
+                              _isMuted = value == 0.0;
+                            });
+                            _audioPlayer.setVolume(value);
+                          },
+                        ),
+                      ),
+                    ),
+                    Icon(Icons.volume_up, color: AppColors.textWeak, size: 16),
+                  ],
+                ),
+                const SizedBox(height: 8),
+
+                // 播放列表
+                _buildPlaylist(),
+                const SizedBox(height: 12),
+
+                // 房主上传
+                if (_isOwner) ...[
+                  GestureDetector(
+                    onTap: _uploadingAudio ? null : _uploadAudio,
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        color: AppColors.hoverBg,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.borderDefault),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.upload,
+                              color: AppColors.textPrimary, size: 16),
+                          const SizedBox(width: 6),
+                          Text(
+                            _uploadingAudio
+                                ? _uploadProgress.isNotEmpty
+                                    ? _uploadProgress
+                                    : '上传中...'
+                                : '上传音频文件',
+                            style: const TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _showSoundPanel = false;
+                        _showDisbandConfirm = true;
+                      });
+                    },
+                    child: ShaderMask(
+                      shaderCallback: (rect) =>
+                          AppColors.auroraGradient.createShader(rect),
+                      child: const Text(
+                        '解散房间',
+                        style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
-              ),
+              ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPanelControlButton({
+    required IconData icon,
+    required VoidCallback onTap,
+    bool isActive = false,
+    String? tooltip,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: isActive ? AppColors.auroraCyan.withOpacity(0.15) : AppColors.hoverBg,
+        ),
+        child: Icon(
+          icon,
+          color: isActive ? AppColors.auroraCyan : AppColors.textSecondary,
+          size: 18,
         ),
       ),
     );

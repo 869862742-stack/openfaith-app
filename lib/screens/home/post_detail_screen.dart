@@ -750,10 +750,37 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
   }
 
   Widget _buildSingleImage(String imageUrl) {
+    final transformationController = TransformationController();
     return ClipRRect(
       borderRadius: BorderRadius.zero,
-      child: _buildCoverImageWidget(imageUrl, height: 300),
+      child: GestureDetector(
+        onDoubleTap: () {
+          final currentScale = transformationController.value.getMaxScaleOnAxis();
+          if (currentScale > 1.0) {
+            // Zoom out - animate back to original
+            final resetMatrix = Matrix4.identity();
+            _animateZoom(transformationController, resetMatrix);
+          } else {
+            // Zoom in to center at 2x
+            final zoomMatrix = Matrix4.identity()..scale(2.0);
+            _animateZoom(transformationController, zoomMatrix);
+          }
+        },
+        child: InteractiveViewer(
+          transformationController: transformationController,
+          panEnabled: true,
+          scaleEnabled: true,
+          minScale: 1.0,
+          maxScale: 4.0,
+          boundaryMargin: const EdgeInsets.all(20),
+          child: _buildCoverImageWidget(imageUrl, height: 300),
+        ),
+      ),
     );
+  }
+
+  void _animateZoom(TransformationController controller, Matrix4 target) {
+    controller.value = target;
   }
 
   /// 作者信息行（头像 + 昵称 + 信仰标签 + 关注/编辑按钮）

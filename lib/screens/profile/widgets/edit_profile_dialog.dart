@@ -47,6 +47,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
   String? _editAvatarUrl;
   String? _editBgUrl;
   bool _isSaving = false;
+  String _editGender = "neutral";
   bool _showTagDropdown = false;
   bool _allowStrangerVisit = true;
   bool _allowFriendVisit = true;
@@ -75,6 +76,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
     _editFaithTag = p['faith_tag'] as String? ?? '寻求者';
     _editAvatarUrl = p['avatar_url'] as String?;
     _editBgUrl = p['background_url'] as String?;
+    _editGender = (p['gender'] as String?) ?? 'neutral';
     _allowStrangerVisit = p['allow_stranger_visit'] != false;
     _allowFriendVisit = p['allow_friend_visit'] != false;
     _isVip = p['is_vip'] == true;
@@ -196,6 +198,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
         'bio': _bioCtrl.text.trim(),
         'allow_stranger_visit': _allowStrangerVisit,
         'allow_friend_visit': _allowFriendVisit,
+        'gender': _editGender,
       };
       if (_editFaithTag != oldFaithTag) {
         updates['faith_tag'] = _editFaithTag;
@@ -358,6 +361,18 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                       ),
                       const SizedBox(height: 16),
 
+
+                      // ---- 性别 ----
+                      _label('性别'),
+                      const SizedBox(height: 8),
+                      Row(children: [
+                        _buildGenderChoice('male', '男', Icons.male),
+                        const SizedBox(width: 8),
+                        _buildGenderChoice('female', '女', Icons.female),
+                        const SizedBox(width: 8),
+                        _buildGenderChoice('neutral', '其他', Icons.transgender),
+                      ]),
+                      const SizedBox(height: 16),
                       // ---- 信仰标签 ----
                       Row(children: [
                         const Text('信仰标签', style: TextStyle(color: AppColors.textPrimary, fontSize: 14)),
@@ -539,5 +554,35 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
         ),
       ),
     ]);
+  }
+
+  Widget _buildGenderChoice(String value, String label, IconData icon) {
+    final isSelected = _editGender == value;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _editGender = value),
+        child: Container(
+          height: 40,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            gradient: isSelected ? AppColors.auroraGradient : null,
+            color: isSelected ? null : AppColors.background,
+            border: isSelected ? null : Border.all(color: AppColors.borderColor),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 16, color: isSelected ? AppColors.textPrimary : AppColors.textSecondary),
+              const SizedBox(width: 4),
+              Text(label, style: TextStyle(
+                color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
+                fontSize: 13,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              )),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

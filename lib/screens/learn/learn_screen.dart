@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../theme/colors.dart';
 import 'book_detail_screen.dart';
 import 'religion_detail_screen.dart';
@@ -148,7 +149,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(child: Column(children: [_buildHeader(), Expanded(child: TabBarView(controller: _tabController, children: [_buildEncyclopediaTab(), _buildLibraryTab(), _buildCalendarTab()]))])),
+      body: SafeArea(child: Column(children: [_buildHeader(), Expanded(child: TabBarView(controller: _tabController, children: [_buildEncyclopediaTab(), _buildLibraryTab(), _buildCalendarTab()])), _buildContributionFooter()])),
     );
   }
 
@@ -800,6 +801,138 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
             )),
             Icon(Icons.chevron_right, color: AppColors.textPlaceholder, size: 20),
           ],
+        ),
+      ),
+    );
+  }
+
+
+  // ========== CONTRIBUTION FOOTER (参与共建) ==========
+  Widget _buildContributionFooter() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+      child: GestureDetector(
+        onTap: _showContributionDialog,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            gradient: AppColors.auroraGradient,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.volunteer_activism, color: Colors.white, size: 16),
+              const SizedBox(width: 6),
+              const Text(
+                '参与共建',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showContributionDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: AppColors.cardBg,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: AppColors.borderColor, width: 0.5),
+        ),
+        child: Container(
+          width: 320,
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: AppColors.auroraGradient,
+                ),
+                child: const Icon(Icons.volunteer_activism, color: Colors.white, size: 28),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                '参与共建',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'OpenFaith 是一个开源项目，欢迎参与书籍整理、翻译、校对等工作。\n\n'
+                '您可以通过以下方式参与：\n'
+                '• 整理经典文献数字化\n'
+                '• 翻译多语种版本\n'
+                '• 校对已有内容\n'
+                '• 贡献新的研究成果\n\n'
+                '每一份贡献都将帮助更多人了解世界信仰文化。',
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 14,
+                  height: 1.6,
+                ),
+                textAlign: TextAlign.left,
+              ),
+              const SizedBox(height: 20),
+              GestureDetector(
+                onTap: () async {
+                  final uri = Uri.parse('https://openfaithhub.com/#/support');
+                  if (await canLaunchUrl(uri)) {
+                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                  }
+                  if (ctx.mounted) Navigator.pop(ctx);
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    gradient: AppColors.auroraGradient,
+                  ),
+                  child: const Center(
+                    child: Text(
+                      '访问共建页面',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: () => Navigator.pop(ctx),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Text(
+                    '关闭',
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
