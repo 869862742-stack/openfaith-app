@@ -96,7 +96,7 @@ class _RoomListScreenState extends State<RoomListScreen> {
             await _supabase.from('room_participants').delete().eq('room_id', roomId);
             await _supabase.from('room_sentences').delete().eq('room_id', roomId);
             await _supabase.from('rooms').delete().eq('id', roomId);
-          } catch (_) {}
+          } catch (e) { debugPrint('删除共经房间失败: $e'); }
         }
         // 清理后刷新列表
         _fetchRooms();

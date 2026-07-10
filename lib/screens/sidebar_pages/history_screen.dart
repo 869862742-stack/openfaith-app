@@ -70,7 +70,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       SharedPreferences.getInstance().then((prefs) {
         prefs.setStringList('browse_history', raw);
       });
-    } catch (_) {}
+    } catch (e) { debugPrint('保存浏览历史失败: $e'); }
     setState(() {
       _history.removeWhere((m) => m['id']?.toString() == id);
       _longPressItemId = null;
@@ -111,7 +111,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           label = '${dt.month}月${dt.day}日';
         }
         groups.putIfAbsent(label, () => []).add(item);
-      } catch (_) {}
+      } catch (e) { debugPrint('格式化日期失败: $e'); }
     }
     return groups;
   }
@@ -327,7 +327,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ));
           }
         } catch (e) {
-          debugPrint('打开帖子详情失败: \$e');
+          debugPrint('打开帖子详情失败: $e');
         }
       },
       onLongPress: () {

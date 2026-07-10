@@ -278,7 +278,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
           'target_user_id': user.id,
           'exp_amount': 2,
         });
-      } catch (_) {}
+      } catch (e) { debugPrint('增加经验值失败: $e'); }
 
       if (mounted) {
         _showExpAnimation(2);

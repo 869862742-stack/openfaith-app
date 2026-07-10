@@ -166,7 +166,7 @@ class _MessagesScreenState extends State<MessagesScreen>
       }
       if (!mounted) return;
       setState(() => _latestChatMessages = lm);
-    } catch (_) {}
+    } catch (e) { debugPrint('加载聊天消息列表失败: $e'); }
   }
 
   Future<void> _loadAnnouncements() async {
@@ -176,7 +176,7 @@ class _MessagesScreenState extends State<MessagesScreen>
         .eq('is_active', true).order('is_pinned', ascending: false)
         .order('created_at', ascending: false).limit(50);
       _announcementsData = List<Map<String, dynamic>>.from(d);
-    } catch (_) {}
+    } catch (e) { debugPrint('加载公告失败: $e'); }
   }
 
   Future<void> _loadNotifications() async {
@@ -187,7 +187,7 @@ class _MessagesScreenState extends State<MessagesScreen>
         .select('id,type,title,content,is_read,created_at')
         .eq('user_id', uid).order('created_at', ascending: false).limit(50);
       _notificationsData = List<Map<String, dynamic>>.from(d);
-    } catch (_) {}
+    } catch (e) { debugPrint('加载通知列表失败: $e'); }
   }
 
   Future<void> _loadCommentRecords() async {
@@ -214,7 +214,7 @@ class _MessagesScreenState extends State<MessagesScreen>
           'commenter_nickname': pf['nickname'], 'commenter_avatar_url': pf['avatar_url'],
           'note_title': ntm[c['post_id']] ?? ''};
       }).toList();
-    } catch (_) {}
+    } catch (e) { debugPrint('加载评论回复通知失败: $e'); }
   }
 
   Future<void> _loadGroupChatsData() async => _loadGroupChats();
@@ -301,7 +301,7 @@ class _MessagesScreenState extends State<MessagesScreen>
       }
       if (!mounted) return;
       setState(() { _followingIds = fo; _pendingRequests = pe; });
-    } catch (_) {}
+    } catch (e) { debugPrint('加载关注列表失败: $e'); }
   }
 
   Future<void> _handleFriendSearch() async {

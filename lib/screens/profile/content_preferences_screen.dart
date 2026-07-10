@@ -71,7 +71,7 @@ class _ContentPreferencesScreenState extends State<ContentPreferencesScreen> {
           }
         }
       }
-    } catch (_) {}
+    } catch (e) { debugPrint('加载内容偏好设置失败: $e'); }
     if (mounted) setState(() => _loading = false);
   }
 

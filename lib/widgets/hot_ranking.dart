@@ -92,7 +92,7 @@ class _HotRankingState extends State<HotRanking> {
         if (!mounted) return;
         setState(() => _topPosts = top10.cast<Map<String, dynamic>>());
       }
-    } catch (_) {}
+    } catch (e) { debugPrint('加载热门排行失败: $e'); }
   }
 
   Future<void> _fetchHotPosts() async {

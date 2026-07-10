@@ -95,7 +95,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
           _currentUserProfileId = res[0]['id'] as String?;
         });
       }
-    } catch (_) {}
+    } catch (e) { debugPrint('加载当前用户资料失败: $e'); }
   }
 
   Future<void> _loadMembers() async {
@@ -145,7 +145,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
       });
       _fetchSenderProfiles();
       _scrollToBottom();
-    } catch (_) {}
+    } catch (e) { debugPrint('加载群聊消息失败: $e'); }
   }
 
   Future<void> _fetchSenderProfiles() async {
@@ -169,7 +169,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
         if (!mounted) return;
         setState(() => _senderProfiles.addAll(newProfiles));
       }
-    } catch (_) {}
+    } catch (e) { debugPrint('加载消息发送者资料失败: $e'); }
   }
 
   void _startMessagePolling() {
@@ -197,7 +197,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
         'message_type': msgType,
       });
       _loadMessages();
-    } catch (_) {}
+    } catch (e) { debugPrint('发送群聊消息失败: $e'); }
     if (!mounted) return;
     setState(() => _isSending = false);
   }
@@ -217,7 +217,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
         if (!mounted) return;
         setState(() => _isMember = false);
         _loadMembers();
-      } catch (_) {}
+      } catch (e) { debugPrint('退出群聊失败: $e'); }
     } else {
       try {
         final res = await _supabase.from('posts').select('id,tags').eq('id', _groupId!);
@@ -229,7 +229,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
         if (!mounted) return;
         setState(() => _isMember = true);
         _loadMembers();
-      } catch (_) {}
+      } catch (e) { debugPrint('加入群聊失败: $e'); }
     }
   }
 
@@ -709,7 +709,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
     try {
       final match = RegExp(r'\[voice:(.+):(\d+)\]').firstMatch(content);
       if (match != null) duration = int.parse(match.group(2) ?? '0');
-    } catch (_) {}
+    } catch (e) { debugPrint('解析语音时长失败: $e'); }
 
     // 对齐网页版语音气泡样式
     return Container(

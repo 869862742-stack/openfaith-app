@@ -83,7 +83,7 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
           _currentUserProfileId = res[0]['id'] as String?;
         });
       }
-    } catch (_) {}
+    } catch (e) { debugPrint('加载当前用户资料失败: $e'); }
   }
 
   Future<void> _fetchFriendProfile() async {
@@ -110,7 +110,7 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
           _friendProfile = Map<String, dynamic>.from(res[0]);
         });
       }
-    } catch (_) {}
+    } catch (e) { debugPrint('加载好友资料失败: $e'); }
   }
 
   Future<void> _loadMessages() async {
@@ -143,7 +143,7 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
                 'callType': data['callType'],
               };
             }
-          } catch (_) {}
+          } catch (e) { debugPrint('解析通话状态数据失败: $e'); }
         }
       }
 
@@ -603,7 +603,7 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
     try {
       final match = RegExp(r'\[voice:(.+):(\d+)\]').firstMatch(content);
       if (match != null) duration = int.parse(match.group(2) ?? '0');
-    } catch (_) {}
+    } catch (e) { debugPrint('解析语音时长失败: $e'); }
 
     return Container(
       constraints: BoxConstraints(
@@ -660,7 +660,7 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
         }
       }
       callData = jsonDecode(raw) as Map<String, dynamic>?;
-    } catch (_) {}
+    } catch (e) { debugPrint('解析通话信令数据失败: $e'); }
 
     // 使用 callStatusMap 获取最新状态
     final callId = callData?['callId'] as String? ?? msg['id'] as String?;

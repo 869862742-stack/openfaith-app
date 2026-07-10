@@ -109,7 +109,7 @@ class _GongjingScreenState extends State<GongjingScreen> {
           .gte('last_online_at', fiveMinAgo);
       if (!mounted) return;
       if (res != null) setState(() => _onlineCount = res.length);
-    } catch (_) {}
+    } catch (e) { debugPrint('获取在线人数失败: $e'); }
   }
 
   // ── 加载回声列表 ──

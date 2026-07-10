@@ -53,7 +53,7 @@ class _SupportScreenState extends State<SupportScreen>
         if (!mounted) return;
         setState(() => _isVip = res['is_vip'] == true);
       }
-    } catch (_) {}
+    } catch (e) { debugPrint('检查VIP状态失败: $e'); }
   }
 
   Future<void> _loadTickets() async {

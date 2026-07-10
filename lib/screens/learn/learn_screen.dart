@@ -127,13 +127,13 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
     final history = prefs.getStringList('reading_history') ?? [];
     final notesList = prefs.getStringList('reading_notes') ?? [];
     List<Map<String, dynamic>> parsedHistory = [];
-    for (final h in history) { try { parsedHistory.add(jsonDecode(h) as Map<String, dynamic>); } catch (_) {} }
+    for (final h in history) { try { parsedHistory.add(jsonDecode(h) as Map<String, dynamic>); } catch (e) { debugPrint('解析阅读历史数据失败: $e'); } }
     List<Map<String, dynamic>> parsedNotes = [];
-    for (final n in notesList) { try { parsedNotes.add(jsonDecode(n) as Map<String, dynamic>); } catch (_) {} }
+    for (final n in notesList) { try { parsedNotes.add(jsonDecode(n) as Map<String, dynamic>); } catch (e) { debugPrint('解析阅读笔记数据失败: $e'); } }
     Map<String, Map<String, dynamic>> progress = {};
     for (final bid in bookmarks) {
       final p = prefs.getString('reading_progress_$bid');
-      if (p != null) { try { progress[bid] = jsonDecode(p) as Map<String, dynamic>; } catch (_) {} }
+      if (p != null) { try { progress[bid] = jsonDecode(p) as Map<String, dynamic>; } catch (e) { debugPrint('解析阅读进度数据失败: $e'); } }
     }
     if (mounted) { setState(() { _bookmarks = bookmarks; _readingHistory = parsedHistory; _notes = parsedNotes; _readingProgress = progress; }); }
   }

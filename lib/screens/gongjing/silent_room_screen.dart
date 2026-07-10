@@ -434,7 +434,7 @@ class _SilentRoomScreenState extends State<SilentRoomScreen>
               .toList();
         });
       }
-    } catch (_) {}
+    } catch (e) { debugPrint('加载房间参与者失败: $e'); }
   }
 
   Future<void> _fetchSentences() async {
@@ -461,7 +461,7 @@ class _SilentRoomScreenState extends State<SilentRoomScreen>
           }
         });
       }
-    } catch (_) {}
+    } catch (e) { debugPrint('加载最近聊天消息失败: $e'); }
   }
 
   void _cleanExpiredSentences() {
@@ -495,8 +495,7 @@ class _SilentRoomScreenState extends State<SilentRoomScreen>
           'status': 'quiet',
         });
       }
-    } catch (_) {}
-  }
+    } catch (e) { debugPrint('加入房间失败: $e'); }
 
   Future<void> _leaveRoom() async {
     if (_currentUserId == null) return;
@@ -506,8 +505,7 @@ class _SilentRoomScreenState extends State<SilentRoomScreen>
           .delete()
           .eq('room_id', widget.roomId)
           .eq('user_id', _currentUserId!);
-    } catch (_) {}
-  }
+    } catch (e) { debugPrint('退出房间失败: $e'); }
 
   Future<void> _sendHeartbeat() async {
     if (_currentUserId == null) return;
@@ -520,7 +518,7 @@ class _SilentRoomScreenState extends State<SilentRoomScreen>
           })
           .eq('room_id', widget.roomId)
           .eq('user_id', _currentUserId!);
-    } catch (_) {}
+    } catch (e) { debugPrint('发送房间心跳失败: $e'); }
   }
 
   Future<void> _checkRoomCleanup() async {
@@ -544,7 +542,7 @@ class _SilentRoomScreenState extends State<SilentRoomScreen>
           lastActivity.isBefore(oneHourAgo)) {
         await _disbandRoom();
       }
-    } catch (_) {}
+    } catch (e) { debugPrint('检查房间活跃状态失败: $e'); }
   }
 
   Future<void> _syncParticipantCount() async {
@@ -554,7 +552,7 @@ class _SilentRoomScreenState extends State<SilentRoomScreen>
           .from('rooms')
           .update({'user_count': _participants.length})
           .eq('id', widget.roomId);
-    } catch (_) {}
+    } catch (e) { debugPrint('更新房间人数失败: $e'); }
   }
 
   // ══════════════════════════════════════════════════════════════
@@ -570,7 +568,7 @@ class _SilentRoomScreenState extends State<SilentRoomScreen>
           .update({'status': newStatus})
           .eq('room_id', widget.roomId)
           .eq('user_id', _currentUserId!);
-    } catch (_) {}
+    } catch (e) { debugPrint('更新参与者状态失败: $e'); }
   }
 
   // ══════════════════════════════════════════════════════════════
@@ -838,7 +836,7 @@ class _SilentRoomScreenState extends State<SilentRoomScreen>
             'audio_tracks': tracks.map((t) => t.toJson()).toList(),
           })
           .eq('id', widget.roomId);
-    } catch (_) {}
+    } catch (e) { debugPrint('同步音频轨道数据失败: $e'); }
   }
 
   Future<void> _deleteAudioTrack(String trackId) async {

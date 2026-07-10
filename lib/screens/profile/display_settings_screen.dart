@@ -46,7 +46,7 @@ class _DisplaySettingsScreenState extends State<DisplaySettingsScreen> {
             .from('profiles')
             .update({'font_size': size}).eq('user_id', userId);
       }
-    } catch (_) {}
+    } catch (e) { debugPrint('保存字体大小设置失败: $e'); }
     if (mounted) setState(() => _saving = false);
   }
 

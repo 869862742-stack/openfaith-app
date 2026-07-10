@@ -145,7 +145,7 @@ class _UserProfileScreenState extends State<UserProfileScreen>
         _followersCount = followersRes.length;
         _followingCount = followingRes.length;
       });
-    } catch (_) {}
+    } catch (e) { debugPrint('加载关注和粉丝数失败: $e'); }
   }
 
   Future<void> _loadFollowStatus() async {
@@ -177,7 +177,7 @@ class _UserProfileScreenState extends State<UserProfileScreen>
         if (!mounted) return;
         setState(() => _isFriend = reverse.isNotEmpty);
       }
-    } catch (_) {}
+    } catch (e) { debugPrint('检查好友关系失败: $e'); }
   }
 
   Future<void> _loadUserPosts() async {
@@ -314,7 +314,7 @@ class _UserProfileScreenState extends State<UserProfileScreen>
         setState(() => _isFollowing = true);
         await _loadFollowCounts();
       }
-    } catch (_) {}
+    } catch (e) { debugPrint('关注用户失败: $e'); }
     if (!mounted) return;
     setState(() => _followLoading = false);
   }

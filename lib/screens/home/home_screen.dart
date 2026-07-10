@@ -654,7 +654,7 @@ class _HomeScreenState extends State<HomeScreen> {
             .eq('user_id', user.id)
             .maybeSingle();
         isVip = profile?['is_vip'] == true;
-      } catch (_) {}
+      } catch (e) { debugPrint('检查VIP状态失败: $e'); }
 
       final points = isVip ? 10 : 2;
 
