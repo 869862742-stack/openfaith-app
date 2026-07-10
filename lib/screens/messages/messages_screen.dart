@@ -878,7 +878,7 @@ class _MessagesScreenState extends State<MessagesScreen>
       ]),
       actions: [
         TextButton(onPressed: () => Navigator.pop(context),
-          child: Text('取消', style: TextStyle(color: AppColors.textSecondary, fontSize: 14)))
+          child: Text('取消', style: TextStyle(color: AppColors.textSecondary, fontSize: 14))),
         ElevatedButton(onPressed: () {
           _sendFriendRequest(u['user_id'] as String? ?? u['id'] as String, mc.text);
           Navigator.pop(context);
