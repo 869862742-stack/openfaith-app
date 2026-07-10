@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../theme/app_colors.dart';
@@ -236,14 +237,107 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       final user = _supabase.auth.currentUser;
       if (user == null) return;
 
+      // 1. 读取当前用户的热点余额
+      final profileRes = await _supabase
+          .from('profiles')
+          .select('hot_points')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+      final hotPoints = (profileRes?['hot_points'] as num?)?.toInt() ?? 0;
+
+      // 2. 余额不足提示
+      if (hotPoints <= 0) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('热点不足，请等待每日赠送或升级VIP'),
+              backgroundColor: AppColors.error,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+        return;
+      }
+
+      // 3. 扣减 1 个热点
+      await _supabase
+          .from('profiles')
+          .update({'hot_points': hotPoints - 1})
+          .eq('user_id', user.id);
+
+      // 4. 帖子热度 +1
       await _supabase
           .from('posts')
           .update({'heat_count': _heatCount + 1})
           .eq('id', postId);
 
+      // 5. 更新本地状态并提示
       setState(() => _heatCount += 1);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('加热成功，剩余热点: ${hotPoints - 1}'),
+            backgroundColor: AppColors.success,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
     } catch (e) {
       debugPrint('加热操作失败: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('加热失败: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
+  /// 分享帖子：复制链接 + 更新分享计数
+  Future<void> _sharePost() async {
+    try {
+      final postId = widget.post['id'] as String;
+      final title = widget.post['title'] as String? ?? 'OpenFaith 帖子';
+      
+      // 构造分享文本
+      final shareText = '【OpenFaith】$title\nhttps://openfaith.app/post/$postId';
+      
+      // 复制链接到剪贴板
+      await Clipboard.setData(ClipboardData(text: shareText));
+      
+      // 更新 posts 表的 shares_count
+      final currentShares = (widget.post['shares_count'] as num?)?.toInt() ?? 0;
+      await _supabase
+          .from('posts')
+          .update({'shares_count': currentShares + 1})
+          .eq('id', postId);
+      
+      // 同步更新本地 widget.post 的 shares_count
+      widget.post['shares_count'] = currentShares + 1;
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('链接已复制，快去分享吧！'),
+            backgroundColor: AppColors.success,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('分享操作失败: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('分享失败: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
   }
 
@@ -821,9 +915,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                       icon: Icons.share_outlined,
                       label: '分享',
                       color: AppColors.textWeak,
-                      onTap: () {
-                        // TODO: 调用系统分享
-                      },
+                      onTap: _sharePost,
                     ),
                   ],
                 ),

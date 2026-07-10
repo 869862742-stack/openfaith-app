@@ -82,6 +82,7 @@ class _HotRankingState extends State<HotRanking> {
           .from('posts')
           .select('id,title,views_count,heat_count,comments_count,shares_count,favorites_count,created_at')
           .eq('status', 'published')
+          .neq('is_group_chat', true)
           .order('heat_count', ascending: false)
           .limit(20);
       if (res.isNotEmpty) {
@@ -118,7 +119,8 @@ class _HotRankingState extends State<HotRanking> {
       var baseQuery = _supabase
           .from('posts')
           .select('id,title,views_count,heat_count,comments_count,shares_count,favorites_count,created_at')
-          .eq('status', 'published');
+          .eq('status', 'published')
+          .neq('is_group_chat', true);
 
       if (startDate != null) {
         baseQuery = baseQuery.gte('created_at', startDate.toIso8601String());
