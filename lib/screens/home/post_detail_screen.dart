@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
 import 'dart:convert';
+import 'dart:ui';
+import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../theme/colors.dart';
+import '../../theme/app_colors.dart';
 
 class PostDetailScreen extends StatefulWidget {
   final Map<String, dynamic> post;
@@ -17,6 +18,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   final _supabase = Supabase.instance.client;
   final _commentController = TextEditingController();
   final _scrollController = ScrollController();
+  final _pageController = PageController();
 
   List<Map<String, dynamic>> _comments = [];
   bool _loadingComments = true;
@@ -28,8 +30,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   int _likeCount = 0;
   int _commentCount = 0;
   int _viewsCount = 0;
+  int _heatCount = 0;
+  int _currentPageImage = 0;
 
   Map<String, dynamic>? _authorProfile;
+  List<String> _images = [];
 
   @override
   void initState() {
@@ -37,7 +42,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     _likeCount = (widget.post['likes_count'] as num?)?.toInt() ?? 0;
     _commentCount = (widget.post['comments_count'] as num?)?.toInt() ?? 0;
     _viewsCount = (widget.post['views_count'] as num?)?.toInt() ?? 0;
+    _heatCount = (widget.post['heat_count'] as num?)?.toInt() ?? 0;
     _authorProfile = widget.post['profiles'] as Map<String, dynamic>?;
+    _images = _extractImages(widget.post);
     _incrementViews();
     _loadComments();
     _checkLikeStatus();
@@ -49,10 +56,20 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   void dispose() {
     _commentController.dispose();
     _scrollController.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 
-  /// 增加浏览次数
+  List<String> _extractImages(Map<String, dynamic> post) {
+    final imgs = post['images'];
+    if (imgs is List && imgs.isNotEmpty) {
+      return imgs.map((e) => e.toString()).where((e) => e.isNotEmpty).toList();
+    }
+    final cover = post['cover_image'] as String?;
+    if (cover != null && cover.isNotEmpty) return [cover];
+    return [];
+  }
+
   Future<void> _incrementViews() async {
     try {
       final postId = widget.post['id'] as String;
@@ -65,7 +82,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     }
   }
 
-  /// 检查点赞状态
   Future<void> _checkLikeStatus() async {
     try {
       final user = _supabase.auth.currentUser;
@@ -85,7 +101,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     }
   }
 
-  /// 检查收藏状态
   Future<void> _checkBookmarkStatus() async {
     try {
       final user = _supabase.auth.currentUser;
@@ -101,11 +116,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         setState(() => _isBookmarked = true);
       }
     } catch (e) {
-      debugPrint('检查收藏状态失败: $e');
+      debugPrint('收藏状态失败: $e');
     }
   }
 
-  /// 检查关注状态
   Future<void> _checkFollowStatus() async {
     try {
       final user = _supabase.auth.currentUser;
@@ -123,17 +137,16 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         setState(() => _isFollowing = true);
       }
     } catch (e) {
-      debugPrint('检查关注状态失败: $e');
+      debugPrint('关注状态失败: $e');
     }
   }
 
-  /// 加载评论列表
   Future<void> _loadComments() async {
     try {
       final postId = widget.post['id'] as String;
       final response = await _supabase
           .from('comments')
-          .select('*, profiles:user_id(nickname, username, avatar_url)')
+          .select('*, profiles:user_id(nickname, username, avatar_url, faith_tag)')
           .eq('post_id', postId)
           .order('created_at', ascending: false)
           .limit(50);
@@ -150,7 +163,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     }
   }
 
-  /// 发送评论
   Future<void> _sendComment() async {
     final content = _commentController.text.trim();
     if (content.isEmpty) return;
@@ -168,7 +180,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         'content': content,
       });
 
-      // 更新评论计数
       await _supabase
           .from('posts')
           .update({'comments_count': _commentCount + 1})
@@ -189,7 +200,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     }
   }
 
-  /// 切换点赞
   Future<void> _toggleLike() async {
     try {
       final postId = widget.post['id'] as String;
@@ -220,7 +230,23 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     }
   }
 
-  /// 切换收藏
+  Future<void> _toggleHeat() async {
+    try {
+      final postId = widget.post['id'] as String;
+      final user = _supabase.auth.currentUser;
+      if (user == null) return;
+
+      await _supabase
+          .from('posts')
+          .update({'heat_count': _heatCount + 1})
+          .eq('id', postId);
+
+      setState(() => _heatCount += 1);
+    } catch (e) {
+      debugPrint('加热操作失败: $e');
+    }
+  }
+
   Future<void> _toggleBookmark() async {
     try {
       final postId = widget.post['id'] as String;
@@ -245,7 +271,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     }
   }
 
-  /// 切换关注
   Future<void> _toggleFollow() async {
     try {
       final authorId = widget.post['user_id'] as String?;
@@ -271,6 +296,16 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     }
   }
 
+  void _scrollToComments() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeOutCubic,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final profile = _authorProfile;
@@ -279,7 +314,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     final faithTag = profile?['faith_tag'] as String?;
     final title = widget.post['title'] as String? ?? '';
     final content = widget.post['content'] as String? ?? '';
-    final coverImage = widget.post['cover_image'] as String?;
     final createdAt = widget.post['created_at'] as String?;
     final tags = _extractTags(widget.post);
     final isOwnPost = _supabase.auth.currentUser?.id == widget.post['user_id'];
@@ -288,124 +322,132 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       backgroundColor: AppColors.background,
       body: Column(
         children: [
-          // ====== 顶部导航栏 ======
-          _buildAppBar(nickname, avatarUrl, faithTag, isOwnPost),
+          // ====== 毛玻璃顶部导航栏 ======
+          _buildHeader(nickname, avatarUrl, faithTag, isOwnPost),
 
           // ====== 可滚动内容区 ======
           Expanded(
             child: SingleChildScrollView(
               controller: _scrollController,
               physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 16),
+                  // 图片轮播
+                  if (_images.isNotEmpty) _buildImageCarousel(),
 
-                  // 标题
-                  if (title.isNotEmpty)
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        height: 1.4,
-                      ),
-                    ),
+                  // 帖子详情区
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 16),
 
-                  const SizedBox(height: 12),
+                        // 作者信息行
+                        _buildAuthorRow(nickname, avatarUrl, faithTag, isOwnPost),
 
-                  // 封面图
-                  if (coverImage != null && coverImage.isNotEmpty)
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: _buildCoverImage(coverImage),
-                    ),
+                        const SizedBox(height: 12),
 
-                  const SizedBox(height: 16),
-
-                  // 正文内容
-                  if (content.isNotEmpty)
-                    Text(
-                      content,
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 15,
-                        height: 1.7,
-                      ),
-                    ),
-
-                  // 标签
-                  if (tags.isNotEmpty) ...[
-                    const SizedBox(height: 20),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: tags.map((tag) {
-                        return Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.06),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: Colors.white.withOpacity(0.08)),
-                          ),
-                          child: Text(
-                            '#$tag',
+                        // 标题
+                        if (title.isNotEmpty)
+                          Text(
+                            title,
                             style: const TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 12,
+                              color: AppColors.textPrimary,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              height: 1.4,
                             ),
                           ),
-                        );
-                      }).toList(),
-                    ),
-                  ],
 
-                  // 数据统计行
-                  const SizedBox(height: 20),
-                  _buildStatsRow(),
+                        const SizedBox(height: 8),
 
-                  // 分割线
-                  const SizedBox(height: 16),
-                  Container(height: 0.5, color: AppColors.borderColor),
-                  const SizedBox(height: 16),
+                        // 正文内容
+                        if (content.isNotEmpty)
+                          Text(
+                            content,
+                            style: const TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 15,
+                              height: 1.7,
+                            ),
+                          ),
 
-                  // 评论标题
-                  Text(
-                    '评论 ($_commentCount)',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
+                        // 标签
+                        if (tags.isNotEmpty) ...[
+                          const SizedBox(height: 14),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: tags.map((tag) {
+                              return Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: AppColors.inputBg,
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                child: Text(
+                                  '#$tag',
+                                  style: const TextStyle(
+                                    color: AppColors.textWeak,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ],
+
+                        // 数据统计行
+                        const SizedBox(height: 20),
+                        _buildStatsRow(),
+
+                        // 分割线 + 评论标题
+                        const SizedBox(height: 16),
+                        Container(height: 0.5, color: AppColors.borderSubtle),
+                        const SizedBox(height: 16),
+
+                        // 评论标题
+                        Text(
+                          '评论 ($_commentCount)',
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        // 评论列表
+                        if (_loadingComments)
+                          const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(24),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.auroraBlue,
+                              ),
+                            ),
+                          )
+                        else if (_comments.isEmpty)
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 24),
+                            child: Center(
+                              child: Text(
+                                '暂无评论，快来抢沙发',
+                                style: TextStyle(color: AppColors.textWeak, fontSize: 13),
+                              ),
+                            ),
+                          )
+                        else
+                          ..._comments.map((c) => _buildCommentItem(c)),
+
+                        const SizedBox(height: 120), // 底部留白给固定栏
+                      ],
                     ),
                   ),
-
-                  const SizedBox(height: 14),
-
-                  // 评论列表
-                  if (_loadingComments)
-                    const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(24),
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: AppColors.rainbowEnd,
-                        ),
-                      ),
-                    )
-                  else if (_comments.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 24),
-                      child: Text(
-                        '暂无评论，来说两句吧~',
-                        style: TextStyle(color: AppColors.textMuted, fontSize: 13),
-                      ),
-                    )
-                  else
-                    ..._comments.map((c) => _buildCommentItem(c)),
-
-                  const SizedBox(height: 100), // 底部留白
                 ],
               ),
             ),
@@ -418,122 +460,221 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     );
   }
 
-  /// 顶部导航栏
-  Widget _buildAppBar(String nickname, String? avatarUrl, String? faithTag, bool isOwnPost) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(8, 8, 16, 8),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        border: Border(
-          bottom: BorderSide(color: AppColors.borderColor, width: 0.5),
+  /// 毛玻璃 Header
+  Widget _buildHeader(String nickname, String? avatarUrl, String? faithTag, bool isOwnPost) {
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(8, 8, 16, 8),
+          decoration: BoxDecoration(
+            color: AppColors.headerBg,
+            border: Border(
+              bottom: BorderSide(color: AppColors.borderDefault, width: 0.5),
+            ),
+          ),
+          child: SafeArea(
+            bottom: false,
+            child: Row(
+              children: [
+                // 返回按钮
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.inputBg,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.chevron_left, color: AppColors.textPrimary, size: 22),
+                  ),
+                ),
+                const Spacer(),
+                // 分享按钮
+                GestureDetector(
+                  onTap: () {
+                    // TODO: 调用系统分享
+                  },
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.inputBg,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.share_outlined, color: AppColors.textPrimary, size: 18),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
-      child: SafeArea(
-        bottom: false,
-        child: Row(
-          children: [
-            // 返回按钮
-            IconButton(
-              icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
-              onPressed: () => Navigator.pop(context),
+    );
+  }
+
+  /// 图片轮播（支持滑动切换 + 圆点指示器）
+  Widget _buildImageCarousel() {
+    if (_images.length == 1) {
+      return _buildSingleImage(_images[0]);
+    }
+
+    return Column(
+      children: [
+        SizedBox(
+          height: 300,
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: _images.length,
+            onPageChanged: (index) => setState(() => _currentPageImage = index),
+            itemBuilder: (context, index) {
+              return _buildSingleImage(_images[index]);
+            },
+          ),
+        ),
+        // 圆点指示器
+        if (_images.length > 1)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(_images.length, (index) {
+                final isActive = index == _currentPageImage;
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  width: isActive ? 16 : 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: isActive ? AppColors.textPrimary : AppColors.textPlaceholder,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                );
+              }),
             ),
+          ),
+      ],
+    );
+  }
 
-            // 作者头像
-            CircleAvatar(
-              radius: 16,
-              backgroundColor: AppColors.inputBg,
-              backgroundImage: (avatarUrl != null && avatarUrl.isNotEmpty)
-                  ? CachedNetworkImageProvider(avatarUrl)
-                  : null,
-              child: (avatarUrl == null || avatarUrl.isEmpty)
-                  ? const Icon(Icons.person, size: 16, color: Colors.white54)
-                  : null,
-            ),
+  Widget _buildSingleImage(String imageUrl) {
+    return ClipRRect(
+      borderRadius: BorderRadius.zero,
+      child: _buildCoverImageWidget(imageUrl, height: 300),
+    );
+  }
 
-            const SizedBox(width: 10),
+  /// 作者信息行（头像 + 昵称 + 信仰标签 + 关注/编辑按钮）
+  Widget _buildAuthorRow(String nickname, String? avatarUrl, String? faithTag, bool isOwnPost) {
+    return Row(
+      children: [
+        // 头像
+        CircleAvatar(
+          radius: 18,
+          backgroundColor: AppColors.inputBg,
+          backgroundImage: (avatarUrl != null && avatarUrl.isNotEmpty)
+              ? CachedNetworkImageProvider(avatarUrl)
+              : null,
+          child: (avatarUrl == null || avatarUrl.isEmpty)
+              ? const Icon(Icons.person, size: 18, color: AppColors.iconColorWeak)
+              : null,
+        ),
+        const SizedBox(width: 10),
 
-            // 昵称 + 信仰标签
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+        // 昵称 + 信仰标签
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
-                  Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          nickname,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
+                  Flexible(
+                    child: Text(
+                      nickname,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  if (faithTag != null && faithTag.isNotEmpty) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        gradient: AppColors.auroraGradientWithOpacity(0.6),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        faithTag,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                      if (faithTag != null && faithTag.isNotEmpty) ...[
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [AppColors.rainbowStart, AppColors.rainbowEnd],
-                            ),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            faithTag,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 9,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                  Text(
-                    _formatDate(widget.post['created_at'] as String?),
-                    style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
-                  ),
+                    ),
+                  ],
                 ],
               ),
-            ),
+              Text(
+                _formatDate(widget.post['created_at'] as String?),
+                style: const TextStyle(color: AppColors.textWeak, fontSize: 11),
+              ),
+            ],
+          ),
+        ),
 
-            // 关注按钮（非自己的帖子时显示）
-            if (!isOwnPost)
-              GestureDetector(
-                onTap: _toggleFollow,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(18),
-                    gradient: _isFollowing
-                        ? null
-                        : const LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,colors: AppColors.rainbowColors),
-                    color: _isFollowing ? Colors.white.withOpacity(0.08) : null,
-                    border: _isFollowing
-                        ? Border.all(color: Colors.white.withOpacity(0.15))
-                        : null,
-                  ),
-                  child: Text(
-                    _isFollowing ? '已关注' : '关注',
-                    style: TextStyle(
-                      color: _isFollowing ? AppColors.textSecondary : Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
+        // 关注 / 编辑+删除按钮
+        if (!isOwnPost)
+          GestureDetector(
+            onTap: _toggleFollow,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(18),
+                gradient: _isFollowing ? null : AppColors.auroraGradient,
+                color: _isFollowing ? AppColors.hoverBg : null,
+                border: _isFollowing
+                    ? Border.all(color: AppColors.borderActive)
+                    : null,
+              ),
+              child: Text(
+                _isFollowing ? '已关注' : '+ 关注',
+                style: TextStyle(
+                  color: _isFollowing ? AppColors.textWeak : AppColors.textPrimary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          )
+        else
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: AppColors.borderActive),
+                ),
+                child: const Text(
+                  '编辑',
+                  style: TextStyle(
+                    color: AppColors.textWeak,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
-          ],
-        ),
-      ),
+            ],
+          ),
+      ],
     );
   }
 
@@ -541,26 +682,33 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   Widget _buildStatsRow() {
     return Row(
       children: [
-        _buildStatItem(Icons.visibility_outlined, _viewsCount, AppColors.textMuted),
-        const SizedBox(width: 16),
-        _buildStatItem(Icons.chat_bubble_outline, _commentCount, AppColors.textMuted),
-        const SizedBox(width: 16),
-        _buildStatItem(Icons.local_fire_department, _computeHotValue(), AppColors.rainbowEnd),
+        _buildStatChip(Icons.visibility_outlined, _viewsCount, AppColors.textWeak),
+        const SizedBox(width: 12),
+        _buildStatChip(Icons.chat_bubble_outline, _commentCount, AppColors.textWeak),
+        const SizedBox(width: 12),
+        _buildStatChip(Icons.local_fire_department, _computeHotValue(), AppColors.auroraOrange),
       ],
     );
   }
 
-  Widget _buildStatItem(IconData icon, int value, Color color) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 14, color: color),
-        const SizedBox(width: 4),
-        Text(
-          _formatCount(value),
-          style: TextStyle(color: color, fontSize: 12),
-        ),
-      ],
+  Widget _buildStatChip(IconData icon, int value, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.inputBg,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: color),
+          const SizedBox(width: 4),
+          Text(
+            _formatCount(value),
+            style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w500),
+          ),
+        ],
+      ),
     );
   }
 
@@ -573,123 +721,115 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     return (views * 0.5 + heat * 5 + comments * 2 + shares * 3 + favorites * 2).toInt();
   }
 
-  /// 底部操作栏
+  /// 底部固定操作栏
   Widget _buildBottomBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: AppColors.cardBg,
-        border: Border(
-          top: BorderSide(color: AppColors.borderColor, width: 0.5),
-        ),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // 评论输入框
-            Row(
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: AppColors.headerBg,
+            border: Border(
+              top: BorderSide(color: AppColors.borderDefault, width: 0.5),
+            ),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Expanded(
-                  child: Container(
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: AppColors.inputBg,
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: AppColors.borderColor, width: 0.5),
-                    ),
-                    child: Row(
-                      children: [
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: TextField(
-                            controller: _commentController,
-                            style: const TextStyle(color: Colors.white, fontSize: 13),
-                            decoration: const InputDecoration(
-                              hintText: '说点什么...',
-                              hintStyle: TextStyle(color: AppColors.textMuted, fontSize: 13),
-                              border: InputBorder.none,
-                              isDense: true,
-                              contentPadding: EdgeInsets.symmetric(vertical: 8),
-                            ),
-                            maxLines: 1,
+                // 评论输入框
+                Container(
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: AppColors.inputBg,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: AppColors.borderSubtle, width: 0.5),
+                  ),
+                  child: Row(
+                    children: [
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: TextField(
+                          controller: _commentController,
+                          style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
+                          decoration: const InputDecoration(
+                            hintText: '说点什么...',
+                            hintStyle: TextStyle(color: AppColors.textPlaceholder, fontSize: 13),
+                            border: InputBorder.none,
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(vertical: 8),
                           ),
+                          maxLines: 1,
                         ),
-                        GestureDetector(
-                          onTap: _sendingComment ? null : _sendComment,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
-                            child: _sendingComment
-                                ? const SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 1.5,
-                                      color: AppColors.rainbowEnd,
-                                    ),
-                                  )
-                                : ShaderMask(
-                                    shaderCallback: (bounds) => const LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: AppColors.rainbowColors,
-                                    ).createShader(bounds),
-                                    child: const Icon(Icons.send, color: Colors.white, size: 18),
+                      ),
+                      GestureDetector(
+                        onTap: _sendingComment ? null : _sendComment,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          child: _sendingComment
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 1.5,
+                                    color: AppColors.auroraBlue,
                                   ),
-                          ),
+                                )
+                              : ShaderMask(
+                                  shaderCallback: (bounds) => AppColors.auroraGradient.createShader(bounds),
+                                  child: const Icon(Icons.send, color: AppColors.textPrimary, size: 18),
+                                ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
 
-            const SizedBox(height: 8),
+                const SizedBox(height: 6),
 
-            // 互动按钮行
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildBottomAction(
-                  icon: _isLiked ? Icons.favorite : Icons.favorite_border,
-                  label: _formatCount(_likeCount),
-                  color: _isLiked ? AppColors.accentRed : AppColors.textMuted,
-                  onTap: _toggleLike,
-                ),
-                _buildBottomAction(
-                  icon: Icons.chat_bubble_outline,
-                  label: _formatCount(_commentCount),
-                  color: AppColors.textMuted,
-                  onTap: () {
-                    // 滚动到评论区
-                    if (_scrollController.hasClients) {
-                      _scrollController.animateTo(
-                        _scrollController.position.maxScrollExtent,
-                        duration: const Duration(milliseconds: 500),
-                        curve: Curves.easeOutCubic,
-                      );
-                    }
-                  },
-                ),
-                _buildBottomAction(
-                  icon: _isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-                  label: '收藏',
-                  color: _isBookmarked ? AppColors.rainbowEnd : AppColors.textMuted,
-                  onTap: _toggleBookmark,
-                ),
-                _buildBottomAction(
-                  icon: Icons.share_outlined,
-                  label: '分享',
-                  color: AppColors.textMuted,
-                  onTap: () {
-                    // TODO: 调用系统分享
-                  },
+                // 互动按钮行
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildBottomAction(
+                      icon: _isLiked ? Icons.favorite : Icons.favorite_border,
+                      label: _formatCount(_likeCount),
+                      color: _isLiked ? AppColors.auroraRed : AppColors.textWeak,
+                      onTap: _toggleLike,
+                    ),
+                    _buildBottomAction(
+                      icon: Icons.chat_bubble_outline,
+                      label: _formatCount(_commentCount),
+                      color: AppColors.textWeak,
+                      onTap: _scrollToComments,
+                    ),
+                    _buildBottomAction(
+                      icon: _isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                      label: '收藏',
+                      color: _isBookmarked ? AppColors.auroraYellow : AppColors.textWeak,
+                      onTap: _toggleBookmark,
+                    ),
+                    _buildBottomAction(
+                      icon: Icons.local_fire_department,
+                      label: _formatCount(_heatCount),
+                      color: AppColors.auroraOrange,
+                      onTap: _toggleHeat,
+                    ),
+                    _buildBottomAction(
+                      icon: Icons.share_outlined,
+                      label: '分享',
+                      color: AppColors.textWeak,
+                      onTap: () {
+                        // TODO: 调用系统分享
+                      },
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -705,19 +845,16 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: SizedBox(
-        width: 64,
-        child: Row(
+        width: 56,
+        child: Column(
           mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, size: 20, color: color),
-            const SizedBox(width: 4),
-            Flexible(
-              child: Text(
-                label,
-                style: TextStyle(color: color, fontSize: 11),
-                overflow: TextOverflow.ellipsis,
-              ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: TextStyle(color: color, fontSize: 10),
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -732,6 +869,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     final avatarUrl = profile?['avatar_url'] as String?;
     final content = comment['content'] as String? ?? '';
     final createdAt = comment['created_at'] as String?;
+    final commentFaithTag = profile?['faith_tag'] as String?;
+    final isAuthor = widget.post['user_id'] == comment['user_id'];
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -745,7 +884,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 ? CachedNetworkImageProvider(avatarUrl)
                 : null,
             child: (avatarUrl == null || avatarUrl.isEmpty)
-                ? const Icon(Icons.person, size: 14, color: Colors.white54)
+                ? const Icon(Icons.person, size: 14, color: AppColors.iconColorWeak)
                 : null,
           ),
           const SizedBox(width: 10),
@@ -753,30 +892,75 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // 昵称行
                 Row(
                   children: [
                     Text(
                       nickname,
                       style: const TextStyle(
-                        color: Colors.white70,
+                        color: AppColors.textSecondary,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 6),
+                    // 作者标识 or 信仰标签
+                    if (isAuthor)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: AppColors.inputBg,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Text(
+                          '作者',
+                          style: TextStyle(color: AppColors.textWeak, fontSize: 9),
+                        ),
+                      )
+                    else if (commentFaithTag != null && commentFaithTag.isNotEmpty)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: AppColors.inputBg,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          commentFaithTag,
+                          style: const TextStyle(color: AppColors.textWeak, fontSize: 9),
+                        ),
+                      ),
+                    const SizedBox(width: 6),
                     Text(
                       _formatDate(createdAt),
-                      style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+                      style: const TextStyle(color: AppColors.textPlaceholder, fontSize: 11),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
+                // 评论内容
                 Text(
                   content,
                   style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 13,
                     height: 1.5,
+                  ),
+                ),
+                // 回复按钮
+                const SizedBox(height: 4),
+                GestureDetector(
+                  onTap: () {
+                    _commentController.text = '@$nickname ';
+                    _commentController.selection = TextSelection.fromPosition(
+                      TextPosition(offset: _commentController.text.length),
+                    );
+                  },
+                  child: const Text(
+                    '回复',
+                    style: TextStyle(
+                      color: AppColors.textWeak,
+                      fontSize: 12,
+                    ),
                   ),
                 ),
               ],
@@ -787,13 +971,18 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     );
   }
 
-  /// 封面图
-  Widget _buildCoverImage(String coverImage) {
+  /// 封面图 Widget（支持 base64 和 URL）
+  Widget _buildCoverImageWidget(String coverImage, {double? height}) {
     if (coverImage.startsWith('data:image/')) {
       try {
         final base64Data = coverImage.split(',').last;
         final bytes = base64Decode(base64Data);
-        return Image.memory(bytes, width: double.infinity, fit: BoxFit.cover);
+        return Image.memory(
+          bytes,
+          width: double.infinity,
+          height: height,
+          fit: BoxFit.cover,
+        );
       } catch (e) {
         return const SizedBox.shrink();
       }
@@ -801,15 +990,20 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       return CachedNetworkImage(
         imageUrl: coverImage,
         width: double.infinity,
+        height: height,
         fit: BoxFit.cover,
         placeholder: (context, url) => Container(
-          height: 200,
+          height: height ?? 200,
           color: AppColors.inputBg,
           child: const Center(
-            child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.rainbowEnd),
+            child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.auroraBlue),
           ),
         ),
-        errorWidget: (context, url, error) => const SizedBox.shrink(),
+        errorWidget: (context, url, error) => Container(
+          height: height ?? 200,
+          color: AppColors.inputBg,
+          child: const Icon(Icons.broken_image, color: AppColors.textPlaceholder, size: 40),
+        ),
       );
     }
     return const SizedBox.shrink();

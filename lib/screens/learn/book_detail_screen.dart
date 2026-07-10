@@ -1,8 +1,9 @@
 import 'dart:convert';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../theme/colors.dart';
+import '../../theme/app_colors.dart';
 
 class Chapter {
   final String id;
@@ -96,7 +97,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(_isBookmarked ? '已加入书架' : '已从书架移除'),
-          backgroundColor: const Color(0xFF1A1F36),
+          backgroundColor: AppColors.cardBg,
           duration: const Duration(seconds: 1),
           behavior: SnackBarBehavior.floating,
         ),
@@ -104,38 +105,123 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     }
   }
 
+  void _openReader(Chapter chapter) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ReaderScreen(
+          bookId: widget.bookId,
+          bookTitle: widget.bookTitle,
+          chapters: _chapters,
+          initialChapter: chapter,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          widget.bookTitle,
-          style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
-          overflow: TextOverflow.ellipsis,
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(_isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-                color: _isBookmarked ? const Color(0xFFFFD60A) : Colors.white70),
-            onPressed: _toggleBookmark,
+      // 毛玻璃 Header
+      extendBodyBehindAppBar: true,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: ClipRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.headerBg,
+                border: Border(
+                  bottom: BorderSide(color: AppColors.borderDefault, width: 0.5),
+                ),
+              ),
+              child: SafeArea(
+                bottom: false,
+                child: Row(
+                  children: [
+                    // 返回按钮
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4),
+                      child: GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: AppColors.inputBg,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.chevron_left, color: AppColors.textPrimary, size: 22),
+                        ),
+                      ),
+                    ),
+                    // 书名
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Text(
+                          widget.bookTitle,
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                    // 加入书架按钮
+                    GestureDetector(
+                      onTap: _toggleBookmark,
+                      child: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: AppColors.inputBg,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          _isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                          color: _isBookmarked ? AppColors.auroraYellow : AppColors.textPrimary,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    // 目录按钮
+                    GestureDetector(
+                      onTap: () => _showChapterList(context),
+                      child: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: AppColors.inputBg,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.list, color: AppColors.textPrimary, size: 20),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                ),
+              ),
+            ),
           ),
-          IconButton(
-            icon: const Icon(Icons.list, color: Colors.white70),
-            onPressed: () => _showChapterList(context),
-          ),
-        ],
+        ),
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF8B949E)))
+          ? const Center(
+              child: CircularProgressIndicator(
+                color: AppColors.auroraBlue,
+                strokeWidth: 2,
+              ),
+            )
           : _chapters.isEmpty
-              ? const Center(child: Text('暂无章节', style: TextStyle(color: Color(0xFF8B949E))))
+              ? const Center(
+                  child: Text('暂无章节', style: TextStyle(color: AppColors.textWeak)),
+                )
               : _buildContent(),
     );
   }
@@ -143,65 +229,112 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   Widget _buildContent() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
+      physics: const BouncingScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // 书籍信息卡（七彩边框铁律）
           _buildBookInfoCard(),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
+
+          // 章节目录标题
           _buildChapterListHeader(),
           const SizedBox(height: 12),
+
+          // 章节列表
           ..._chapters.map((ch) => _buildChapterItem(ch)),
+
+          const SizedBox(height: 32),
         ],
       ),
     );
   }
 
+  /// 书籍信息卡 - 七彩边框铁律
   Widget _buildBookInfoCard() {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(1),
       decoration: BoxDecoration(
-        color: const Color(0x0DFFFFFF),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0x1AFFFFFF), width: 0.5),
+        gradient: AppColors.auroraGradientWithOpacity(0.5),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 48, height: 48,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFFF4D6D), Color(0xFF9D4EDD)],
-                    transform: GradientRotation(0.785398),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.bgColor,
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                // 图标（渐变背景）
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    gradient: AppColors.auroraGradient,
+                  ),
+                  child: const Icon(Icons.menu_book, color: AppColors.textPrimary, size: 24),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.bookTitle,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${widget.bookReligion} · ${widget.bookCategory}',
+                        style: const TextStyle(color: AppColors.textWeak, fontSize: 13),
+                      ),
+                    ],
                   ),
                 ),
-                child: const Icon(Icons.menu_book, color: Colors.white, size: 24),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(widget.bookTitle,
-                        style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 4),
-                    Text('${widget.bookReligion} \u00b7 ${widget.bookCategory}',
-                        style: const TextStyle(color: Color(0x80FFFFFF), fontSize: 13)),
-                  ],
+              ],
+            ),
+            if (widget.bookDescription.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Text(
+                widget.bookDescription,
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 13,
+                  height: 1.6,
                 ),
               ),
             ],
-          ),
-          if (widget.bookDescription.isNotEmpty) ...[
             const SizedBox(height: 12),
-            Text(widget.bookDescription,
-                style: const TextStyle(color: Color(0xB3FFFFFF), fontSize: 13, height: 1.6)),
+            // 章节数量统计
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: AppColors.inputBg,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.library_books, size: 14, color: AppColors.textWeak),
+                  const SizedBox(width: 5),
+                  Text(
+                    '${_chapters.length} 章节',
+                    style: const TextStyle(color: AppColors.textWeak, fontSize: 12, fontWeight: FontWeight.w500),
+                  ),
+                ],
+              ),
+            ),
           ],
-        ],
+        ),
       ),
     );
   }
@@ -209,44 +342,92 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   Widget _buildChapterListHeader() {
     return Row(
       children: [
-        const Text('章节目录', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: AppColors.inputBg,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.list_alt, size: 14, color: AppColors.textWeak),
+              SizedBox(width: 5),
+              Text(
+                '章节目录',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
         const Spacer(),
-        Text('${_chapters.length}', style: const TextStyle(color: Color(0x80FFFFFF), fontSize: 13)),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: BoxDecoration(
+            color: AppColors.inputBg,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            '${_chapters.length}',
+            style: const TextStyle(color: AppColors.textWeak, fontSize: 12, fontWeight: FontWeight.w500),
+          ),
+        ),
       ],
     );
   }
 
   Widget _buildChapterItem(Chapter chapter) {
-    return GestureDetector(
-      onTap: () => _openReader(chapter),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: AppColors.cardBg,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.borderColor),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 32, height: 32,
-              decoration: BoxDecoration(
-                color: Color(0x0FFFFFFF),
-                borderRadius: BorderRadius.circular(8),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: GestureDetector(
+        onTap: () => _openReader(chapter),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          decoration: BoxDecoration(
+            color: AppColors.cardBg,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.borderSubtle, width: 0.5),
+          ),
+          child: Row(
+            children: [
+              // 章节序号
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: AppColors.inputBg,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(
+                  child: Text(
+                    '${chapter.number}',
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
               ),
-              child: Center(
-                child: Text('${chapter.number}',
-                    style: const TextStyle(color: Color(0xB3FFFFFF), fontSize: 12, fontWeight: FontWeight.w500)),
+              const SizedBox(width: 12),
+              // 章节标题
+              Expanded(
+                child: Text(
+                  chapter.title,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 14,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(chapter.title,
-                  style: const TextStyle(color: Colors.white, fontSize: 14), overflow: TextOverflow.ellipsis),
-            ),
-            const Icon(Icons.chevron_right, color: Color(0x4DFFFFFF), size: 20),
-          ],
+              const Icon(Icons.chevron_right, color: AppColors.textPlaceholder, size: 20),
+            ],
+          ),
         ),
       ),
     );
@@ -259,61 +440,99 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       builder: (ctx) => Container(
         constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.7),
         decoration: const BoxDecoration(
-          color: AppColors.cardBg,
+          color: AppColors.bgColor,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          border: Border(top: BorderSide(color: AppColors.borderDefault, width: 0.5)),
         ),
         child: Column(
           children: [
+            // 标题栏
             Container(
               padding: const EdgeInsets.all(16),
               decoration: const BoxDecoration(
-                border: Border(bottom: BorderSide(color: AppColors.borderColor)),
+                border: Border(bottom: BorderSide(color: AppColors.borderDefault, width: 0.5)),
               ),
               child: Row(
                 children: [
-                  const Text('目录', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
-                  const Spacer(),
-                  IconButton(
-                    icon: const Icon(Icons.close, color: Color(0x80FFFFFF), size: 20),
-                    onPressed: () => Navigator.pop(ctx),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
+                  const Expanded(
+                    child: Text(
+                      '目录',
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(ctx),
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: AppColors.inputBg,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.close, color: AppColors.textWeak, size: 18),
+                    ),
                   ),
                 ],
               ),
             ),
+            // 目录列表
             Expanded(
               child: ListView.builder(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(12),
                 itemCount: _chapters.length,
                 itemBuilder: (c, i) {
                   final ch = _chapters[i];
-                  return ListTile(
-                    title: Text(ch.title, style: const TextStyle(color: Colors.white, fontSize: 14)),
-                    subtitle: Text('第${ch.number}章', style: const TextStyle(color: Color(0x80FFFFFF), fontSize: 12)),
-                    onTap: () {
-                      Navigator.pop(ctx);
-                      _openReader(ch);
-                    },
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        _openReader(ch);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: AppColors.cardBg,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: AppColors.borderSubtle, width: 0.5),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 28,
+                              height: 28,
+                              decoration: BoxDecoration(
+                                color: AppColors.inputBg,
+                                borderRadius: BorderRadius.circular(7),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  '${ch.number}',
+                                  style: const TextStyle(color: AppColors.textWeak, fontSize: 11),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                ch.title,
+                                style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   );
                 },
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  void _openReader(Chapter chapter) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ReaderScreen(
-          bookId: widget.bookId,
-          bookTitle: widget.bookTitle,
-          chapters: _chapters,
-          initialChapter: chapter,
         ),
       ),
     );
@@ -347,13 +566,13 @@ class _ReaderScreenState extends State<ReaderScreen> {
   final ScrollController _scrollController = ScrollController();
 
   static const Map<ReaderTheme, Color> _bgColors = {
-    ReaderTheme.dark: Color(0xFF050816),
+    ReaderTheme.dark: AppColors.bgColor,
     ReaderTheme.light: Color(0xFFF5F5F5),
     ReaderTheme.eyeProtect: Color(0xFFC7EDCC),
   };
 
   static const Map<ReaderTheme, Color> _textColors = {
-    ReaderTheme.dark: Colors.white,
+    ReaderTheme.dark: AppColors.textPrimary,
     ReaderTheme.light: Color(0xFF333333),
     ReaderTheme.eyeProtect: Color(0xFF333333),
   };
@@ -441,49 +660,50 @@ class _ReaderScreenState extends State<ReaderScreen> {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setModalState) => Container(
           decoration: const BoxDecoration(
-            color: AppColors.cardBg,
+            color: AppColors.bgColor,
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            border: Border(top: BorderSide(color: AppColors.borderDefault, width: 0.5)),
           ),
           padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('字号', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
+              const Text('字号', style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500)),
               const SizedBox(height: 12),
               Row(children: [
-                const Text('A', style: TextStyle(color: Color(0x80FFFFFF), fontSize: 12)),
+                const Text('A', style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
                 Expanded(
                   child: Slider(
                     value: _fontSize, min: 12, max: 32, divisions: 20,
-                    activeColor: const Color(0xFF3A86FF),
-                    inactiveColor: AppColors.borderColor,
+                    activeColor: AppColors.auroraBlue,
+                    inactiveColor: AppColors.borderDefault,
                     onChanged: (v) => setModalState(() { setState(() => _fontSize = v); }),
                   ),
                 ),
-                const Text('A', style: TextStyle(color: Colors.white, fontSize: 20)),
+                const Text('A', style: TextStyle(color: AppColors.textPrimary, fontSize: 20)),
                 const SizedBox(width: 8),
-                Text('${_fontSize.toInt()}', style: const TextStyle(color: Color(0x80FFFFFF), fontSize: 13)),
+                Text('${_fontSize.toInt()}', style: const TextStyle(color: AppColors.textWeak, fontSize: 13)),
               ]),
               const SizedBox(height: 20),
-              const Text('行距', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
+              const Text('行距', style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500)),
               const SizedBox(height: 12),
               Row(children: [
-                const Text('N', style: TextStyle(color: Color(0x80FFFFFF), fontSize: 12)),
+                const Text('N', style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
                 Expanded(
                   child: Slider(
                     value: _lineHeight, min: 1.2, max: 3.0, divisions: 18,
-                    activeColor: const Color(0xFF3A86FF),
-                    inactiveColor: AppColors.borderColor,
+                    activeColor: AppColors.auroraBlue,
+                    inactiveColor: AppColors.borderDefault,
                     onChanged: (v) => setModalState(() { setState(() => _lineHeight = v); }),
                   ),
                 ),
-                const Text('W', style: TextStyle(color: Color(0x80FFFFFF), fontSize: 12)),
+                const Text('W', style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
                 const SizedBox(width: 8),
-                Text('${_lineHeight.toStringAsFixed(1)}', style: const TextStyle(color: Color(0x80FFFFFF), fontSize: 13)),
+                Text('${_lineHeight.toStringAsFixed(1)}', style: const TextStyle(color: AppColors.textWeak, fontSize: 13)),
               ]),
               const SizedBox(height: 20),
-              const Text('主题', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
+              const Text('主题', style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500)),
               const SizedBox(height: 12),
               Row(children: ReaderTheme.values.map((t) {
                 final isActive = _theme == t;
@@ -500,7 +720,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                         color: _bgColors[t],
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: isActive ? const Color(0xFF3A86FF) : AppColors.borderColor,
+                          color: isActive ? AppColors.auroraBlue : AppColors.borderDefault,
                           width: isActive ? 2 : 1,
                         ),
                       ),
@@ -527,23 +747,36 @@ class _ReaderScreenState extends State<ReaderScreen> {
       builder: (ctx) => Container(
         constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.7),
         decoration: const BoxDecoration(
-          color: AppColors.cardBg,
+          color: AppColors.bgColor,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          border: Border(top: BorderSide(color: AppColors.borderDefault, width: 0.5)),
         ),
         child: Column(
           children: [
             Container(
               padding: const EdgeInsets.all(16),
               decoration: const BoxDecoration(
-                border: Border(bottom: BorderSide(color: AppColors.borderColor)),
+                border: Border(bottom: BorderSide(color: AppColors.borderDefault, width: 0.5)),
               ),
               child: Row(
                 children: [
-                  Expanded(child: Text(widget.bookTitle, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600))),
-                  IconButton(
-                    icon: const Icon(Icons.close, color: Color(0x80FFFFFF), size: 20),
-                    onPressed: () => Navigator.pop(ctx),
-                    padding: EdgeInsets.zero, constraints: const BoxConstraints(),
+                  Expanded(
+                    child: Text(
+                      widget.bookTitle,
+                      style: const TextStyle(color: AppColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(ctx),
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: AppColors.inputBg,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.close, color: AppColors.textWeak, size: 18),
+                    ),
                   ),
                 ],
               ),
@@ -555,15 +788,29 @@ class _ReaderScreenState extends State<ReaderScreen> {
                 itemBuilder: (c, i) {
                   final ch = widget.chapters[i];
                   final isCurrent = ch.id == _currentChapter.id;
-                  return ListTile(
-                    dense: true,
-                    title: Text(ch.title,
-                        style: TextStyle(
-                          color: isCurrent ? const Color(0xFF3A86FF) : Colors.white,
-                          fontSize: 14,
-                          fontWeight: isCurrent ? FontWeight.w600 : FontWeight.normal,
-                        )),
-                    onTap: () { Navigator.pop(ctx); _goToChapter(i); },
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 2),
+                    child: GestureDetector(
+                      onTap: () { Navigator.pop(ctx); _goToChapter(i); },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: isCurrent ? AppColors.hoverBg : Colors.transparent,
+                          borderRadius: BorderRadius.circular(10),
+                          border: isCurrent
+                              ? Border.all(color: AppColors.auroraBlue.withOpacity(0.3))
+                              : null,
+                        ),
+                        child: Text(
+                          ch.title,
+                          style: TextStyle(
+                            color: isCurrent ? AppColors.auroraBlue : AppColors.textPrimary,
+                            fontSize: 14,
+                            fontWeight: isCurrent ? FontWeight.w600 : FontWeight.normal,
+                          ),
+                        ),
+                      ),
+                    ),
                   );
                 },
               ),
@@ -600,64 +847,125 @@ class _ReaderScreenState extends State<ReaderScreen> {
 
     return Scaffold(
       backgroundColor: bgColor,
-      appBar: AppBar(
-        backgroundColor: bgColor,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: textColor),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          _currentChapter.title,
-          style: TextStyle(color: textColor, fontSize: 15, fontWeight: FontWeight.w500),
-          overflow: TextOverflow.ellipsis,
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.format_size, color: textColor.withOpacity(0.7)),
-            onPressed: _showSettings,
-          ),
-          IconButton(
-            icon: Icon(Icons.list, color: textColor.withOpacity(0.7)),
-            onPressed: _showChapterSidebar,
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Scrollbar(
-              controller: _scrollController,
-              child: SingleChildScrollView(
-                controller: _scrollController,
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+      extendBodyBehindAppBar: true,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: ClipRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+            child: Container(
+              decoration: BoxDecoration(
+                color: bgColor.withOpacity(0.92),
+                border: Border(
+                  bottom: BorderSide(color: textColor.withOpacity(0.1), width: 0.5),
+                ),
+              ),
+              child: SafeArea(
+                bottom: false,
+                child: Row(
                   children: [
-                    Text(
-                      _currentChapter.title,
-                      style: TextStyle(
-                        color: textColor,
-                        fontSize: _fontSize + 4,
-                        fontWeight: FontWeight.bold,
-                        height: 1.4,
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4),
+                      child: GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: textColor.withOpacity(0.08),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(Icons.chevron_left, color: textColor, size: 22),
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    ...paragraphs.map((p) => Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: Text(p,
-                          style: TextStyle(color: textColor, fontSize: _fontSize, height: _lineHeight)),
-                    )),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Text(
+                          _currentChapter.title,
+                          style: TextStyle(
+                            color: textColor,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: _showSettings,
+                      child: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: textColor.withOpacity(0.08),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(Icons.format_size, color: textColor.withOpacity(0.7), size: 20),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    GestureDetector(
+                      onTap: _showChapterSidebar,
+                      child: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: textColor.withOpacity(0.08),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(Icons.list, color: textColor.withOpacity(0.7), size: 20),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
                   ],
                 ),
               ),
             ),
           ),
+        ),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              controller: _scrollController,
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _currentChapter.title,
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: _fontSize + 4,
+                      fontWeight: FontWeight.bold,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  ...paragraphs.map((p) => Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Text(
+                      p,
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: _fontSize,
+                        height: _lineHeight,
+                      ),
+                    ),
+                  )),
+                ],
+              ),
+            ),
+          ),
+          // 底部翻页导航
           Container(
             decoration: BoxDecoration(
               color: bgColor,
-              border: Border(top: BorderSide(color: textColor.withOpacity(0.1))),
+              border: Border(top: BorderSide(color: textColor.withOpacity(0.1), width: 0.5)),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: SafeArea(
@@ -687,9 +995,16 @@ class _ReaderScreenState extends State<ReaderScreen> {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  Text(
-                    '${_currentIndex + 1}/${widget.chapters.length}',
-                    style: TextStyle(color: textColor.withOpacity(0.5), fontSize: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: textColor.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      '${_currentIndex + 1}/${widget.chapters.length}',
+                      style: TextStyle(color: textColor.withOpacity(0.5), fontSize: 12),
+                    ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
