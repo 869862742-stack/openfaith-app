@@ -122,7 +122,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                   color: AppColors.iconColorWeak,
                   size: 22,
                 ),
-                onPressed: () {},
+                onPressed: () => _showComingSoon('扫码功能即将开放'),
                 padding: const EdgeInsets.all(4),
                 constraints: const BoxConstraints(),
               ),
@@ -176,7 +176,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
 
   Widget _buildCategoryCard(_Category cat) {
     return GestureDetector(
-      onTap: () {},
+      onTap: () => _showComingSoon('「${cat.name}」功能即将开放'),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
         decoration: BoxDecoration(
