@@ -89,24 +89,17 @@ class _HeatingRecordsScreenState extends State<HeatingRecordsScreen> {
         'user_id': user.id,
       });
 
-      // Try RPC first, fallback to direct update
-      try {
-        await Supabase.instance.client.rpc('increment_hot_points', params: {
-          'p_user_id': user.id,
-          'p_amount': points,
-        });
-      } catch (_) {
-        final current = await Supabase.instance.client
-            .from('profiles')
-            .select('hot_points')
-            .eq('user_id', user.id)
-            .maybeSingle();
-        final currentPoints = (current?['hot_points'] as num?)?.toInt() ?? 0;
-        await Supabase.instance.client
-            .from('profiles')
-            .update({'hot_points': currentPoints + points})
-            .eq('user_id', user.id);
-      }
+      // 直接更新 hot_points
+      final current = await Supabase.instance.client
+          .from('profiles')
+          .select('hot_points')
+          .eq('user_id', user.id)
+          .maybeSingle();
+      final currentPoints = (current?['hot_points'] as num?)?.toInt() ?? 0;
+      await Supabase.instance.client
+          .from('profiles')
+          .update({'hot_points': currentPoints + points})
+          .eq('user_id', user.id);
 
       setState(() {
         _checkedInToday = true;

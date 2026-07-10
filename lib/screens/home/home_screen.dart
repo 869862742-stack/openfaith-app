@@ -653,11 +653,17 @@ class _HomeScreenState extends State<HomeScreen> {
         'user_id': user.id,
       });
 
-      // Update hot_points
-      await _supabase.rpc('increment_hot_points', params: {
-        'p_user_id': user.id,
-        'p_amount': points,
-      });
+      // 直接更新 hot_points
+      final current = await _supabase
+          .from('profiles')
+          .select('hot_points')
+          .eq('user_id', user.id)
+          .maybeSingle();
+      final currentPoints = (current?['hot_points'] as num?)?.toInt() ?? 0;
+      await _supabase
+          .from('profiles')
+          .update({'hot_points': currentPoints + points})
+          .eq('user_id', user.id);
 
       setState(() {
         _checkedInToday = true;

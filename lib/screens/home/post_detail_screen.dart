@@ -269,8 +269,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
       // 增加经验值 +2
       try {
         await _supabase.rpc('increment_experience', params: {
-          'p_user_id': user.id,
-          'p_amount': 2,
+          'target_user_id': user.id,
+          'exp_amount': 2,
         });
       } catch (_) {}
 

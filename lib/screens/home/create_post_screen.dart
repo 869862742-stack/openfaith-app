@@ -359,8 +359,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       // 增加经验值 +10
       try {
         await _supabase.rpc('increment_experience', params: {
-          'p_user_id': user.id,
-          'p_amount': 10,
+          'target_user_id': user.id,
+          'exp_amount': 10,
         });
       } catch (_) {
         // RPC not available, skip EXP update
