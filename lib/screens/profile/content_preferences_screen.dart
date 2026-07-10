@@ -217,7 +217,7 @@ class _ContentPreferencesScreenState extends State<ContentPreferencesScreen> {
         const SizedBox(height: 4),
         Text(subtitle,
             style: const TextStyle(
-                color: AppColors.textSecondary, fontSize: 12)),
+                color: Color.fromRGBO(255, 255, 255, 0.6), fontSize: 12)),
         const SizedBox(height: 12),
       ],
     );

@@ -46,8 +46,8 @@ class BookGroup {
 }
 
 const _rainbowColors = [
-  Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A),
-  Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD),
+  AppColors.auroraRed, AppColors.auroraOrange, AppColors.auroraYellow,
+  AppColors.auroraGreen, AppColors.auroraCyan, AppColors.auroraBlue, AppColors.auroraPurple,
 ];
 
 LinearGradient _diagonalGradient(Size size) {
@@ -302,7 +302,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
                     )),
                     const SizedBox(width: 8),
                     Expanded(child: Text(r.name,
-                      style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+                      style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500),
                       overflow: TextOverflow.ellipsis,
                     )),
                   ]),
@@ -435,7 +435,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
                     Expanded(child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(g.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
+                        Text(g.name, style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w500)),
                         Text([
                           if (children.isNotEmpty) '${children.length} sub',
                           if (children.isNotEmpty && books.isNotEmpty) ' \u00b7 ',
@@ -481,7 +481,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('My Shelf (${bBooks.length})', style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600)),
+          Text('My Shelf (${bBooks.length})', style: const TextStyle(color: AppColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w600)),
           const SizedBox(height: 12),
           ...bBooks.map((book) {
             final progress = _readingProgress[book.id];
@@ -524,7 +524,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
                       Expanded(child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(book.title, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
+                          Text(book.title, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500)),
                           const SizedBox(height: 2),
                           Text('${book.religion} \u00b7 ${book.category}', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
                         ],
@@ -548,8 +548,8 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(2),
                                 gradient: const LinearGradient(colors: [
-                                  Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A),
-                                  Color(0xFF70E000), Color(0xFF00E5FF),
+                                  AppColors.auroraRed, AppColors.auroraOrange, AppColors.auroraYellow,
+                                  AppColors.auroraGreen, AppColors.auroraCyan,
                                 ]),
                               ),
                             ),
@@ -629,7 +629,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(note['bookTitle']?.toString() ?? '',
-                            style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
+                            style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500)),
                           if (note['chapterTitle'] != null) ...[
                             const SizedBox(height: 4),
                             Text(note['chapterTitle'].toString(),
@@ -700,7 +700,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
                 Expanded(child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(bTitle, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis),
+                    Text(bTitle, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis),
                     const SizedBox(height: 2),
                     Text(cTitle.isNotEmpty ? 'Reading: $cTitle' : '',
                       style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
@@ -791,7 +791,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
             Expanded(child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(book.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
+                Text(book.title, style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w500)),
                 Text([
                   book.category.isNotEmpty ? book.category : book.religion,
                   if (_chaptersMap.containsKey(book.id)) ' \u00b7 ${_chaptersMap[book.id]} ch',
@@ -847,7 +847,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
                       GestureDetector(
                         onTap: _showYearPicker,
                         child: Row(mainAxisSize: MainAxisSize.min, children: [
-                          Text('$year', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                          Text('$year', style: const TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
                           Icon(Icons.arrow_drop_down, color: AppColors.textPrimary, size: 20),
                         ]),
                       ),
@@ -855,7 +855,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
                       GestureDetector(
                         onTap: _showMonthPicker,
                         child: Row(mainAxisSize: MainAxisSize.min, children: [
-                          Text(mn[month - 1], style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                          Text(mn[month - 1], style: const TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
                           Icon(Icons.arrow_drop_down, color: AppColors.textPrimary, size: 20),
                         ]),
                       ),
@@ -912,7 +912,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
                                     color: AppColors.bgColor,
                                     borderRadius: BorderRadius.circular(7),
                                   ),
-                                  child: Center(child: Text('$day', style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500))),
+                                  child: Center(child: Text('$day', style: const TextStyle(color: AppColors.textPrimary, fontSize: 13, fontWeight: FontWeight.w500))),
                                 )
                               : Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -979,7 +979,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('${_selectedDate!.month}/${_selectedDate!.day}', style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500)),
+          Text('${_selectedDate!.month}/${_selectedDate!.day}', style: const TextStyle(color: AppColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w500)),
           const SizedBox(height: 8),
           if (holidays.isEmpty)
             Text('None today', style: TextStyle(color: AppColors.textSecondary, fontSize: 13))
@@ -992,7 +992,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
                   gradient: AppColors.auroraGradient,
                 )),
                 const SizedBox(width: 8),
-                Text(h.name, style: const TextStyle(color: Colors.white, fontSize: 13)),
+                Text(h.name, style: const TextStyle(color: AppColors.textPrimary, fontSize: 13)),
                 const SizedBox(width: 6),
                 Text('(${h.religion})', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
               ]),
@@ -1034,7 +1034,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
                       ).createShader(bounds);
                     },
                     child: Text('${holiday.day}',
-                      style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
+                      style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.bold)),
                   );
                 }),
               ),
@@ -1043,7 +1043,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
             Expanded(child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(holiday.name, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
+                Text(holiday.name, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500)),
                 Text(holiday.religion, style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
               ],
             )),
@@ -1070,7 +1070,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Expanded(child: Text(holiday.name, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold))),
+                  Expanded(child: Text(holiday.name, style: const TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold))),
                   IconButton(
                     icon: Icon(Icons.close, color: AppColors.textPrimary.withOpacity(0.5), size: 20),
                     onPressed: () => Navigator.pop(ctx),
@@ -1082,12 +1082,12 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
               const SizedBox(height: 12),
               Row(children: [
                 Text('Date: ', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
-                Text('${holiday.month}/${holiday.day}', style: const TextStyle(color: Colors.white, fontSize: 13)),
+                Text('${holiday.month}/${holiday.day}', style: const TextStyle(color: AppColors.textPrimary, fontSize: 13)),
               ]),
               const SizedBox(height: 8),
               Row(children: [
                 Text('Religion: ', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
-                Text(holiday.religion, style: const TextStyle(color: Colors.white, fontSize: 13)),
+                Text(holiday.religion, style: const TextStyle(color: AppColors.textPrimary, fontSize: 13)),
               ]),
               const SizedBox(height: 12),
               Container(
@@ -1098,7 +1098,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: AppColors.borderSubtle),
                 ),
-                child: Text(holiday.desc, style: const TextStyle(color: Colors.white, fontSize: 13, height: 1.5)),
+                child: Text(holiday.desc, style: const TextStyle(color: AppColors.textPrimary, fontSize: 13, height: 1.5)),
               ),
               if (holiday.detail.isNotEmpty) ...[
                 const SizedBox(height: 12),
@@ -1178,7 +1178,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Year', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text('Year', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             SizedBox(
               height: 240,
@@ -1222,7 +1222,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Month', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text('Month', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             SizedBox(
               height: 320,
@@ -1272,8 +1272,8 @@ class GroupDetailScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        leading: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.white), onPressed: () => Navigator.pop(context)),
-        title: Text(group.name, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+        leading: IconButton(icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary), onPressed: () => Navigator.pop(context)),
+        title: Text(group.name, style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -1309,7 +1309,7 @@ class GroupDetailScreen extends StatelessWidget {
                       Expanded(child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(sg.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
+                          Text(sg.name, style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w500)),
                           Text([
                             if (sc.isNotEmpty) '${sc.length} sub',
                             if (sc.isNotEmpty && sb.isNotEmpty) ' \u00b7 ',
@@ -1358,7 +1358,7 @@ class GroupDetailScreen extends StatelessWidget {
                       Expanded(child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(b.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
+                          Text(b.title, style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w500)),
                           Text([
                             b.category.isNotEmpty ? b.category : b.religion,
                             if (chaptersMap.containsKey(b.id)) ' \u00b7 ${chaptersMap[b.id]} ch',

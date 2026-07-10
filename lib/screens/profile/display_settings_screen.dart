@@ -129,7 +129,7 @@ class _DisplaySettingsScreenState extends State<DisplaySettingsScreen> {
                     onTap: () => _setFontSize(s['id'] as String),
                     child: Container(
                       margin: const EdgeInsets.symmetric(horizontal: 4),
-                      padding: const EdgeInsets.all(1),
+                      padding: isSelected ? const EdgeInsets.all(1.5) : null,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
                         gradient: isSelected
@@ -140,7 +140,7 @@ class _DisplaySettingsScreenState extends State<DisplaySettingsScreen> {
                         padding: const EdgeInsets.symmetric(
                             vertical: 14, horizontal: 8),
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(11),
+                          borderRadius: BorderRadius.circular(isSelected ? 10.5 : 12),
                           color: isSelected
                               ? AppColors.bgColor
                               : AppColors.hoverBgLight,
@@ -218,7 +218,7 @@ class _DisplaySettingsScreenState extends State<DisplaySettingsScreen> {
                           Text(
                             '这是一段预览文本，用于展示当前字体大小效果。OpenFaith - 探索灵性世界。',
                             style: TextStyle(
-                              color: AppColors.textSecondary,
+                              color: const Color.fromRGBO(255, 255, 255, 0.6),
                               fontSize: _previewTextSize(),
                               height: 1.5,
                             ),
@@ -227,7 +227,7 @@ class _DisplaySettingsScreenState extends State<DisplaySettingsScreen> {
                           Row(
                             children: [
                               Container(
-                                padding: const EdgeInsets.all(1),
+                                padding: const EdgeInsets.all(1.5),
                                 decoration: BoxDecoration(
                                   borderRadius:
                                       BorderRadius.circular(20),
@@ -238,7 +238,7 @@ class _DisplaySettingsScreenState extends State<DisplaySettingsScreen> {
                                       horizontal: 12, vertical: 6),
                                   decoration: BoxDecoration(
                                     borderRadius:
-                                        BorderRadius.circular(19),
+                                        BorderRadius.circular(18.5),
                                     color: AppColors.bgColor,
                                   ),
                                   child: const Text('确认',

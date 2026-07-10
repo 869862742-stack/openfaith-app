@@ -148,7 +148,7 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
                         child: Text(
                           _unreadCount > 99 ? '99+' : '$_unreadCount',
                           style: const TextStyle(
-                            color: Colors.white,
+                            color: AppColors.textPrimary,
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                             height: 1,
@@ -189,7 +189,7 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
         child: ShaderMask(
           shaderCallback: (bounds) => _auroraGradient.createShader(bounds),
           blendMode: BlendMode.srcIn,
-          child: Icon(activeIcon, color: Colors.white, size: iconSize),
+          child: Icon(activeIcon, color: AppColors.textPrimary, size: iconSize),
         ),
       );
     }
@@ -223,7 +223,7 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
             ),
             child: Center(
               // 网页版: w-5 h-5 = 20x20, 颜色白色
-              child: Icon(Icons.add, color: Colors.white, size: 20),
+              child: Icon(Icons.add, color: AppColors.textPrimary, size: 20),
             ),
           ),
         ),
@@ -276,7 +276,7 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
                   child: Text(
                     '取消',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.5),
+                      color: AppColors.textMuted,
                       fontSize: 15,
                       fontWeight: FontWeight.w500,
                     ),
@@ -346,7 +346,7 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
         // background: rgba(255,255,255,0.05)
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: AppColors.inputBg,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(

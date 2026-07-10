@@ -66,36 +66,68 @@ class _NotificationSettingsScreenState
   }) {
     return GestureDetector(
       onTap: onChanged,
-      child: Container(
-        width: 48,
-        height: 28,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14),
-          border: value
-              ? Border.all(color: Colors.transparent)
-              : Border.all(color: AppColors.borderColor, width: 1),
-          gradient: value ? AppColors.auroraGradient : null,
-          color: value ? null : AppColors.hoverBg,
-        ),
-        padding: const EdgeInsets.all(2),
-        child: Container(
-          width: 20,
-          height: 20,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: value
-                ? AppColors.textPrimary
-                : AppColors.textPlaceholder,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 4,
-                offset: const Offset(0, 1),
+      child: value
+          ? Container(
+              width: 48,
+              height: 28,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14),
+                gradient: AppColors.auroraGradient,
               ),
-            ],
-          ),
-        ),
-      ),
+              padding: const EdgeInsets.all(1),
+              child: Container(
+                width: 46,
+                height: 26,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(13),
+                  color: AppColors.bgColor,
+                ),
+                padding: const EdgeInsets.only(left: 2, right: 2, top: 2, bottom: 2),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Container(
+                    width: 20,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppColors.textPrimary,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 4,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            )
+          : Container(
+              width: 48,
+              height: 28,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14),
+                color: AppColors.borderColor,
+                border: Border.all(color: AppColors.borderSubtle, width: 1),
+              ),
+              padding: const EdgeInsets.all(2),
+              child: Container(
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.textPlaceholder,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+                ),
+              ),
+            ),
     );
   }
 

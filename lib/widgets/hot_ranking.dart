@@ -168,12 +168,12 @@ class _HotRankingState extends State<HotRanking> {
                   padding: const EdgeInsets.only(top: 12),
                   child: Container(
                     width: 40, height: 4,
-                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(2)),
+                    decoration: BoxDecoration(color: AppColors.borderActive, borderRadius: BorderRadius.circular(2)),
                   ),
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 16),
-                  child: Text('热门排行', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                  child: Text('热门排行', style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
                 ),
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
@@ -192,7 +192,7 @@ class _HotRankingState extends State<HotRanking> {
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(20),
-                            color: isActive ? Colors.white.withOpacity(0.08) : Colors.white.withOpacity(0.03),
+                            color: isActive ? AppColors.hoverBg : Colors.white.withOpacity(0.03),
                           ),
                           child: Text(
                             tab['label'] as String,
@@ -216,9 +216,9 @@ class _HotRankingState extends State<HotRanking> {
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(Icons.local_fire_department, color: Colors.white.withOpacity(0.3), size: 48),
+                                  Icon(Icons.local_fire_department, color: AppColors.textPlaceholder, size: 48),
                                   const SizedBox(height: 8),
-                                  Text('暂无热门内容', style: TextStyle(color: Colors.white.withOpacity(0.4))),
+                                  Text('暂无热门内容', style: TextStyle(color: AppColors.textWeak)),
                                 ],
                               ),
                             )
@@ -254,7 +254,7 @@ class _HotRankingState extends State<HotRanking> {
             _buildMedal(index),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(title, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500), maxLines: 2, overflow: TextOverflow.ellipsis),
+              child: Text(title, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500), maxLines: 2, overflow: TextOverflow.ellipsis),
             ),
             const SizedBox(width: 8),
             _buildHotValue(hotValue),
@@ -309,8 +309,8 @@ class _HotRankingState extends State<HotRanking> {
                             ? const LinearGradient(begin: Alignment(0, -0.33), end: Alignment(1, 1), colors: [Color(0xFF3A86FF), Color(0xFF7B2CBF), Color(0xFF9D4EDD)])
                             : const LinearGradient(begin: Alignment(0, -0.33), end: Alignment(1, 1), colors: [Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF38B000)]))
                     : null,
-                color: index >= 3 ? Colors.white.withOpacity(0.06) : null,
-                border: Border.all(color: Colors.white.withOpacity(0.25), width: 1.5),
+                color: index >= 3 ? AppColors.borderColor : null,
+                border: Border.all(color: AppColors.borderActive, width: 1.5),
                 boxShadow: index < 3
                     ? [
                         BoxShadow(
@@ -351,11 +351,11 @@ class _HotRankingState extends State<HotRanking> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.local_fire_department, size: 12, color: Colors.white),
+          const Icon(Icons.local_fire_department, size: 12, color: AppColors.textPrimary),
           const SizedBox(width: 2),
           Text(
             _formatHotValue(hotValue),
-            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+            style: const TextStyle(color: AppColors.textPrimary, fontSize: 12, fontWeight: FontWeight.w600),
           ),
         ],
       ),
@@ -393,12 +393,12 @@ class _HotRankingState extends State<HotRanking> {
                 children: [
                   ShaderMask(
                     shaderCallback: (bounds) => _diagonalGradient(bounds.size).createShader(bounds),
-                    child: const Icon(Icons.local_fire_department, size: 18, color: Colors.white),
+                    child: const Icon(Icons.local_fire_department, size: 18, color: AppColors.textPrimary),
                   ),
                   const SizedBox(width: 6),
                   ShaderMask(
                     shaderCallback: (bounds) => _diagonalGradient(bounds.size).createShader(bounds),
-                    child: const Text('热点排行', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
+                    child: const Text('热点排行', style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.bold)),
                   ),
                   const Spacer(),
                   const Icon(Icons.chevron_right, size: 16, color: Color(0xFF6B7280)),
@@ -423,7 +423,7 @@ class _HotRankingState extends State<HotRanking> {
                       Expanded(
                         child: Text(
                           title,
-                          style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 14, fontWeight: FontWeight.w500),
+                          style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),

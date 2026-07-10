@@ -113,7 +113,7 @@ class _SidebarState extends State<Sidebar>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF0A0E1A),
-        title: const Text('退出登录', style: TextStyle(color: Colors.white)),
+        title: const Text('退出登录', style: TextStyle(color: AppColors.textPrimary)),
         content: const Text('确定要退出登录吗？',
             style: TextStyle(color: AppColors.textSecondary)),
         actions: [
@@ -229,7 +229,7 @@ class _SidebarState extends State<Sidebar>
                               child: const Text(
                                 'OpenFaith',
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  color: AppColors.textPrimary,
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -282,10 +282,10 @@ class _SidebarState extends State<Sidebar>
                                         ? CachedNetworkImage(
                                             imageUrl: _currentUser!['avatar_url'],
                                             fit: BoxFit.cover,
-                                            placeholder: (_, __) => const Icon(Icons.person, color: Colors.white54, size: 20),
-                                            errorWidget: (_, __, ___) => const Icon(Icons.person, color: Colors.white54, size: 20),
+                                            placeholder: (_, __) => const Icon(Icons.person, color: AppColors.textPlaceholder, size: 20),
+                                            errorWidget: (_, __, ___) => const Icon(Icons.person, color: AppColors.textPlaceholder, size: 20),
                                           )
-                                        : const Icon(Icons.person, color: Colors.white54, size: 20),
+                                        : const Icon(Icons.person, color: AppColors.textPlaceholder, size: 20),
                                   ),
                                 ),
                               ),
@@ -300,7 +300,7 @@ class _SidebarState extends State<Sidebar>
                                         Flexible(
                                           child: Text(
                                             _currentUser!['nickname'] ?? _currentUser!['username'] ?? '用户',
-                                            style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
+                                            style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                           ),
@@ -409,7 +409,7 @@ class _SidebarState extends State<Sidebar>
                     end: Alignment.bottomRight,
                     colors: AppColors.rainbowColors,
                   ).createShader(bounds),
-                  child: Icon(item.icon, color: Colors.white, size: 20),
+                  child: Icon(item.icon, color: AppColors.textPrimary, size: 20),
                 ),
                 const SizedBox(width: 16),
                 ShaderMask(
@@ -421,7 +421,7 @@ class _SidebarState extends State<Sidebar>
                   child: Text(
                     item.label,
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                     ),
@@ -442,14 +442,14 @@ class _SidebarState extends State<Sidebar>
       child: InkWell(
         onTap: () => _handleMenuTap(item.id),
         borderRadius: BorderRadius.circular(12),
-        splashColor: Colors.white.withOpacity(0.06),
-        highlightColor: Colors.white.withOpacity(0.04),
+        splashColor: AppColors.borderColor,
+        highlightColor: AppColors.borderSubtle,
         child: Container(
           width: double.infinity,
           margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.04),
+            color: AppColors.borderSubtle,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
@@ -460,7 +460,7 @@ class _SidebarState extends State<Sidebar>
                 child: Text(
                   item.label,
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
                   ),

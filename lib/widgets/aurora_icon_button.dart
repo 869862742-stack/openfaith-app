@@ -40,7 +40,7 @@ class AuroraIconButton extends StatelessWidget {
                     ? ShaderMask(
                         shaderCallback: (rect) =>
                             AppColors.auroraGradient.createShader(rect),
-                        child: Icon(icon, color: Colors.white, size: size),
+                        child: Icon(icon, color: AppColors.textPrimary, size: size),
                       )
                     : Icon(icon, color: AppColors.textSecondary, size: size),
 
@@ -69,7 +69,7 @@ class AuroraIconButton extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: AppColors.textPrimary,
                             height: 1.2,
                           ),
                         ),

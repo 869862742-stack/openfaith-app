@@ -178,7 +178,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ShaderMask(
                 shaderCallback: (rect) => AppColors.auroraGradient
                     .createShader(rect),
-                child: Icon(icon, size: 20, color: Colors.white),
+                child: Icon(icon, size: 20, color: AppColors.textPrimary),
               )
             else
               Icon(icon, color: AppColors.iconColor, size: 20),

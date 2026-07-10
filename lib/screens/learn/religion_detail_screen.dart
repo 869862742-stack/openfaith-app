@@ -233,7 +233,7 @@ class _ReligionDetailScreenState extends State<ReligionDetailScreen> {
                 borderRadius: BorderRadius.circular(6),
                 color: AppColors.cardBg,
               ),
-              child: Icon(icon, color: Colors.white, size: 16),
+              child: Icon(icon, color: AppColors.textPrimary, size: 16),
             ),
           ),
           const SizedBox(width: 8),
@@ -302,7 +302,7 @@ class _ReligionDetailScreenState extends State<ReligionDetailScreen> {
               color: AppColors.hoverBg,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(icon, color: Colors.white, size: 16),
+            child: Icon(icon, color: AppColors.textPrimary, size: 16),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -350,12 +350,12 @@ class _ReligionDetailScreenState extends State<ReligionDetailScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.star, color: Colors.white, size: 20),
+              const Icon(Icons.star, color: AppColors.textPrimary, size: 20),
               const SizedBox(width: 8),
               const Text(
                 '核心信仰',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
                 ),
@@ -410,7 +410,7 @@ class _ReligionDetailScreenState extends State<ReligionDetailScreen> {
                   child: Text(
                     '${idx + 1}',
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
                     ),
@@ -433,7 +433,7 @@ class _ReligionDetailScreenState extends State<ReligionDetailScreen> {
                           padding: const EdgeInsets.only(top: 4),
                           child: Text(item[1],
                               style: const TextStyle(
-                                  color: Colors.white, fontSize: 11)),
+                                  color: AppColors.textPrimary, fontSize: 11)),
                         ),
                       if (item.length > 2 && item[2].isNotEmpty)
                         Padding(
@@ -470,7 +470,7 @@ class _ReligionDetailScreenState extends State<ReligionDetailScreen> {
                     child: Text(
                       item[0],
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                         fontSize: 12,
                       ),
                     ),
@@ -530,7 +530,7 @@ class _ReligionDetailScreenState extends State<ReligionDetailScreen> {
                 child: Text(
                   section.title,
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
@@ -617,7 +617,7 @@ class _ReligionDetailScreenState extends State<ReligionDetailScreen> {
                       child: Text(
                         '${sectionIdx + 1}',
                         style: const TextStyle(
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                         ),
@@ -670,7 +670,7 @@ class _ReligionDetailScreenState extends State<ReligionDetailScreen> {
                                     child: Text(
                                       item.name,
                                       style: const TextStyle(
-                                        color: Colors.white,
+                                        color: AppColors.textPrimary,
                                         fontSize: 13,
                                         fontWeight: FontWeight.w500,
                                       ),
@@ -720,12 +720,12 @@ class _ReligionDetailScreenState extends State<ReligionDetailScreen> {
             children: [
               Text(label,
                   style: TextStyle(
-                      color: Colors.white.withOpacity(0.6), fontSize: 11)),
+                      color: const Color.fromRGBO(255, 255, 255, 0.6), fontSize: 11)),
               const SizedBox(height: 4),
               Text(
                 value,
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                 ),
@@ -759,12 +759,12 @@ class _ReligionDetailScreenState extends State<ReligionDetailScreen> {
             children: [
               Text(label,
                   style: TextStyle(
-                      color: Colors.white.withOpacity(0.6), fontSize: 11)),
+                      color: const Color.fromRGBO(255, 255, 255, 0.6), fontSize: 11)),
               const SizedBox(height: 4),
               Text(
                 value,
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                 ),
@@ -874,7 +874,7 @@ class _ReligionDetailScreenState extends State<ReligionDetailScreen> {
                     AppColors.auroraGradient.createShader(b),
                 child: Text('$month/$day',
                     style: const TextStyle(
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                         fontSize: 11,
                         fontWeight: FontWeight.bold)),
               ),
@@ -887,7 +887,7 @@ class _ReligionDetailScreenState extends State<ReligionDetailScreen> {
                 children: [
                   Text(name,
                       style: const TextStyle(
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                           fontSize: 14,
                           fontWeight: FontWeight.w500)),
                   const SizedBox(height: 2),
@@ -934,7 +934,7 @@ class _ReligionDetailScreenState extends State<ReligionDetailScreen> {
                         Expanded(
                             child: Text(name,
                                 style: const TextStyle(
-                                    color: Colors.white,
+                                    color: AppColors.textPrimary,
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold))),
                         IconButton(
@@ -951,7 +951,7 @@ class _ReligionDetailScreenState extends State<ReligionDetailScreen> {
                             color: AppColors.iconColorWeak, fontSize: 13)),
                     Text('${month}月${day}日',
                         style: const TextStyle(
-                            color: Colors.white, fontSize: 13)),
+                            color: AppColors.textPrimary, fontSize: 13)),
                   ]),
                   const SizedBox(height: 8),
                   Row(children: [
@@ -960,7 +960,7 @@ class _ReligionDetailScreenState extends State<ReligionDetailScreen> {
                             color: AppColors.iconColorWeak, fontSize: 13)),
                     Text(religion,
                         style: const TextStyle(
-                            color: Colors.white, fontSize: 13)),
+                            color: AppColors.textPrimary, fontSize: 13)),
                   ]),
                   const SizedBox(height: 12),
                   Container(
@@ -973,7 +973,7 @@ class _ReligionDetailScreenState extends State<ReligionDetailScreen> {
                               Border.all(color: AppColors.hoverBg)),
                       child: Text(desc,
                           style: const TextStyle(
-                              color: Colors.white,
+                              color: AppColors.textPrimary,
                               fontSize: 13,
                               height: 1.5))),
                   if (detail.isNotEmpty) ...[
@@ -1207,10 +1207,10 @@ class _ReligionDetailScreenState extends State<ReligionDetailScreen> {
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
                                       color:
-                                          Colors.white.withOpacity(0.1),
+                                          AppColors.borderColor,
                                     ),
                                     child: const Icon(Icons.arrow_back,
-                                        color: Colors.white, size: 20),
+                                        color: AppColors.textPrimary, size: 20),
                                   ),
                                 ),
                                 const SizedBox(width: 12),
@@ -1218,7 +1218,7 @@ class _ReligionDetailScreenState extends State<ReligionDetailScreen> {
                                   child: Text(
                                     name,
                                     style: const TextStyle(
-                                      color: Colors.white,
+                                      color: AppColors.textPrimary,
                                       fontSize: 20,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -1232,10 +1232,10 @@ class _ReligionDetailScreenState extends State<ReligionDetailScreen> {
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
                                       color:
-                                          Colors.white.withOpacity(0.1),
+                                          AppColors.borderColor,
                                     ),
                                     child: Icon(Icons.share,
-                                        color: Colors.white.withOpacity(0.7),
+                                        color: AppColors.textSecondary,
                                         size: 16),
                                   ),
                                 ),
@@ -1248,10 +1248,10 @@ class _ReligionDetailScreenState extends State<ReligionDetailScreen> {
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
                                       color:
-                                          Colors.white.withOpacity(0.1),
+                                          AppColors.borderColor,
                                     ),
                                     child: Icon(Icons.chat_bubble,
-                                        color: Colors.white.withOpacity(0.7),
+                                        color: AppColors.textSecondary,
                                         size: 16),
                                   ),
                                 ),
@@ -1439,7 +1439,7 @@ class _ReligionDetailScreenState extends State<ReligionDetailScreen> {
                                 children: [
                                   const Text('参与共建',
                                       style: TextStyle(
-                                          color: Colors.white,
+                                          color: AppColors.textPrimary,
                                           fontSize: 18,
                                           fontWeight:
                                               FontWeight.bold)),
@@ -1525,7 +1525,7 @@ class _ReligionDetailScreenState extends State<ReligionDetailScreen> {
                                 onChanged: (v) => setState(
                                     () => _contributionSource = v),
                                 style: const TextStyle(
-                                    color: Colors.white,
+                                    color: AppColors.textPrimary,
                                     fontSize: 14),
                                 decoration: InputDecoration(
                                   hintText: '如：某章节、某段内容',
@@ -1569,7 +1569,7 @@ class _ReligionDetailScreenState extends State<ReligionDetailScreen> {
                                 onChanged: (v) => setState(
                                     () => _contributionContent = v),
                                 style: const TextStyle(
-                                    color: Colors.white,
+                                    color: AppColors.textPrimary,
                                     fontSize: 14),
                                 maxLines: 4,
                                 decoration: InputDecoration(
@@ -1638,7 +1638,7 @@ class _ReligionDetailScreenState extends State<ReligionDetailScreen> {
                                             ? '提交中...'
                                             : '提交建议',
                                         style: const TextStyle(
-                                          color: Colors.white,
+                                          color: AppColors.textPrimary,
                                           fontSize: 14,
                                           fontWeight:
                                               FontWeight.w500,
@@ -1690,7 +1690,7 @@ class _StarfieldPainter extends CustomPainter {
       AppColors.auroraGreen,
       AppColors.auroraCyan,
       AppColors.auroraPurple,
-      Colors.white.withOpacity(0.4),
+      AppColors.textWeak,
       const Color(0xFFC8DCFF).withOpacity(0.4),
     ];
 

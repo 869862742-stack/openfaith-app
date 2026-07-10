@@ -53,7 +53,7 @@ class AuroraButton extends StatelessWidget {
               if (icon != null) ...[
                 ShaderMask(
                   shaderCallback: (rect) => AppColors.auroraGradient.createShader(rect),
-                  child: Icon(icon, color: Colors.white, size: 18),
+                  child: Icon(icon, color: AppColors.textPrimary, size: 18),
                 ),
                 const SizedBox(width: AppSpacing.sm),
               ],
@@ -61,7 +61,7 @@ class AuroraButton extends StatelessWidget {
                 shaderCallback: (rect) => AppColors.auroraGradient.createShader(rect),
                 child: Text(
                   text,
-                  style: AppTextStyles.button.copyWith(color: Colors.white),
+                  style: AppTextStyles.button.copyWith(color: AppColors.textPrimary),
                 ),
               ),
             ],
@@ -108,12 +108,12 @@ class AuroraButtonFilled extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (icon != null) ...[
-              Icon(icon, color: Colors.white, size: 18),
+              Icon(icon, color: AppColors.textPrimary, size: 18),
               const SizedBox(width: AppSpacing.sm),
             ],
             Text(
               text,
-              style: AppTextStyles.button.copyWith(color: Colors.white),
+              style: AppTextStyles.button.copyWith(color: AppColors.textPrimary),
             ),
           ],
         ),

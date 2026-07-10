@@ -344,7 +344,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 16),
                 Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.borderColor, borderRadius: BorderRadius.circular(2))),
                 const SizedBox(height: 16),
-                const Text('选择标签筛选', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                const Text('选择标签筛选', style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 12),
                 if (_selectedTags.isNotEmpty)
                   Padding(
@@ -366,9 +366,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               end: Alignment.bottomRight,colors: AppColors.rainbowColors),
                           ),
                           child: Row(mainAxisSize: MainAxisSize.min, children: [
-                            Text(tag, style: const TextStyle(color: Colors.white, fontSize: 12)),
+                            Text(tag, style: const TextStyle(color: AppColors.textPrimary, fontSize: 12)),
                             const SizedBox(width: 4),
-                            const Icon(Icons.close, color: Colors.white, size: 12),
+                            const Icon(Icons.close, color: AppColors.textPrimary, size: 12),
                           ]),
                         ),
                       )).toList(),
@@ -398,9 +398,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(16),
-                              color: isSelected ? AppColors.rainbowEnd.withOpacity(0.2) : Colors.white.withOpacity(0.06),
+                              color: isSelected ? AppColors.rainbowEnd.withOpacity(0.2) : AppColors.hoverBg,
                               border: Border.all(
-                                color: isSelected ? AppColors.rainbowEnd : Colors.white.withOpacity(0.1),
+                                color: isSelected ? AppColors.rainbowEnd : AppColors.borderColor,
                               ),
                             ),
                             child: Text(tag, style: TextStyle(
@@ -428,7 +428,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           padding: const EdgeInsets.symmetric(vertical: 10),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: Colors.white.withOpacity(0.2)),
+                            border: Border.all(color: AppColors.borderActive),
                           ),
                           child: const Center(child: Text('清除', style: TextStyle(color: AppColors.textSecondary, fontSize: 14))),
                         ),
@@ -446,7 +446,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,colors: AppColors.rainbowColors),
                           ),
-                          child: const Center(child: Text('确定', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600))),
+                          child: const Center(child: Text('确定', style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600))),
                         ),
                       ),
                     ),
@@ -735,7 +735,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       child: const Icon(
                         Icons.menu,
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                         size: 24,
                       ),
                     ),
@@ -833,7 +833,7 @@ class _HomeScreenState extends State<HomeScreen> {
               label,
               // 对齐网页版: text color = var(--text-color) = white
               style: const TextStyle(
-                color: Colors.white,
+                color: AppColors.textPrimary,
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
@@ -856,7 +856,7 @@ class _HomeScreenState extends State<HomeScreen> {
           label,
           // 对齐网页版: text color = rgba(255,255,255,0.5)
           style: TextStyle(
-            color: Colors.white.withOpacity(0.5),
+            color: AppColors.textMuted,
             fontSize: 14,
             fontWeight: FontWeight.w500,
           ),
@@ -933,13 +933,13 @@ class _HomeScreenState extends State<HomeScreen> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0x4DFF4D6D),
-            Color(0x4DFF9F1C),
-            Color(0x4DFFD60A),
-            Color(0x4D70E000),
-            Color(0x4D00E5FF),
-            Color(0x4D3A86FF),
-            Color(0x4D9D4EDD),
+            AppColors.auroraRed.withOpacity(0.3),
+            AppColors.auroraOrange.withOpacity(0.3),
+            AppColors.auroraYellow.withOpacity(0.3),
+            AppColors.auroraGreen.withOpacity(0.3),
+            AppColors.auroraCyan.withOpacity(0.3),
+            AppColors.auroraBlue.withOpacity(0.3),
+            AppColors.auroraPurple.withOpacity(0.3),
           ],
         ),
       ),
@@ -956,16 +956,16 @@ class _HomeScreenState extends State<HomeScreen> {
             // 置顶标题行
             Row(
               children: [
-                const Icon(Icons.push_pin, size: 14, color: Color(0xFFFF9F1C)),
+                const Icon(Icons.push_pin, size: 14, color: AppColors.auroraOrange),
                 const SizedBox(width: 6),
                 const Text(
                   '置顶',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFFFF9F1C)),
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.auroraOrange),
                 ),
                 const SizedBox(width: 4),
                 Text(
                   '· 轮播展示',
-                  style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.25)),
+                  style: TextStyle(fontSize: 10, color: AppColors.textPlaceholder),
                 ),
               ],
             ),
@@ -988,7 +988,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Container(
                       width: 140,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.03),
+                        color: AppColors.hoverBgLight,
                         borderRadius: BorderRadius.circular(10),
                       ),
                       clipBehavior: Clip.antiAlias,
@@ -1009,7 +1009,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
-                                color: Colors.white,
+                                color: AppColors.textPrimary,
                                 fontSize: 11,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -1022,7 +1022,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               nickname,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 10),
+                              style: TextStyle(color: AppColors.textPlaceholder, fontSize: 10),
                             ),
                           ),
                         ],
@@ -1049,7 +1049,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Icon(Icons.explore, size: 64, color: AppColors.textMuted),
             SizedBox(height: 16),
-            Text('共境', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+            Text('共境', style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
             SizedBox(height: 8),
             Text('功能即将上线', textAlign: TextAlign.center, style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
           ],
@@ -1159,7 +1159,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           overflow: TextOverflow.ellipsis,
                           // 对齐网页版: text-sm font-medium text-white
                           style: const TextStyle(
-                            color: Colors.white,
+                            color: AppColors.textPrimary,
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                           ),
@@ -1170,12 +1170,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           margin: const EdgeInsets.only(left: 8),
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.1),
+                            color: AppColors.borderColor,
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text(
                             firstTag,
-                            style: const TextStyle(color: Colors.white, fontSize: 10),
+                            style: const TextStyle(color: AppColors.textPrimary, fontSize: 10),
                           ),
                         ),
                     ],
@@ -1222,14 +1222,14 @@ class _HomeScreenState extends State<HomeScreen> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.06),
+                                  color: AppColors.hoverBg,
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Text(
                                   faithTag,
                                   // 对齐网页版: color: rgba(255,255,255,0.4)
                                   style: const TextStyle(
-                                    color: Color(0x66FFFFFF),
+                                    color: Color.fromRGBO(255, 255, 255, 0.4),
                                     fontSize: 8,
                                   ),
                                   maxLines: 1,
@@ -1268,12 +1268,12 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.local_fire_department, color: Colors.white, size: 12),
+                                const Icon(Icons.local_fire_department, color: AppColors.textPrimary, size: 12),
                                 const SizedBox(width: 2),
                                 Text(
                                   _formatHotValue(hotValue),
                                   style: const TextStyle(
-                                    color: Colors.white,
+                                    color: AppColors.textPrimary,
                                     fontSize: 10,
                                     fontWeight: FontWeight.w500,
                                   ),
@@ -1355,7 +1355,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Center(
         child: Icon(
           Icons.local_fire_department,
-          color: Colors.white.withOpacity(0.08),
+          color: AppColors.borderColor,
           size: 48,
         ),
       ),
@@ -1371,7 +1371,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ? CachedNetworkImageProvider(avatarUrl)
             : null,
         child: (avatarUrl == null || avatarUrl.isEmpty)
-            ? const Icon(Icons.person, size: 12, color: Colors.white54)
+            ? const Icon(Icons.person, size: 12, color: AppColors.textPlaceholder)
             : null,
       ),
     );
@@ -1494,13 +1494,13 @@ class _SearchPageState extends State<_SearchPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
         title: Container(
           height: 40,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.08),
+            color: AppColors.borderColor,
             borderRadius: BorderRadius.circular(20),
           ),
           child: Row(
@@ -1512,7 +1512,7 @@ class _SearchPageState extends State<_SearchPage> {
                 child: TextField(
                   controller: _controller,
                   autofocus: true,
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
                   decoration: const InputDecoration(
                     hintText: '搜索笔记、用户、话题...',
                     hintStyle: TextStyle(color: AppColors.textSecondary, fontSize: 14),
@@ -1546,7 +1546,7 @@ class _SearchPageState extends State<_SearchPage> {
                   padding: const EdgeInsets.all(16),
                   children: [
                     if (_userResults.isNotEmpty) ...[
-                      const Text('用户', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                      const Text('用户', style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
                       const SizedBox(height: 8),
                       ..._userResults.map((u) => Padding(
                         padding: const EdgeInsets.only(bottom: 8),
@@ -1558,12 +1558,12 @@ class _SearchPageState extends State<_SearchPage> {
                                   ? CachedNetworkImageProvider(u['avatar_url'])
                                   : null,
                               child: (u['avatar_url'] == null || (u['avatar_url'] as String).isEmpty)
-                                  ? const Icon(Icons.person, color: Colors.white54)
+                                  ? const Icon(Icons.person, color: AppColors.textPlaceholder)
                                   : null,
                             ),
                             const SizedBox(width: 12),
                             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                              Text(u['nickname'] ?? u['username'] ?? '', style: const TextStyle(color: Colors.white, fontSize: 14)),
+                              Text(u['nickname'] ?? u['username'] ?? '', style: const TextStyle(color: AppColors.textPrimary, fontSize: 14)),
                               if (u['faith_tag'] != null) Text(u['faith_tag'] as String, style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
                             ]),
                           ],
@@ -1572,7 +1572,7 @@ class _SearchPageState extends State<_SearchPage> {
                       const SizedBox(height: 16),
                     ],
                     if (_results.isNotEmpty) ...[
-                      const Text('笔记', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                      const Text('笔记', style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
                       const SizedBox(height: 8),
                       ..._results.map((post) => Padding(
                         padding: const EdgeInsets.only(bottom: 12),
@@ -1589,7 +1589,7 @@ class _SearchPageState extends State<_SearchPage> {
                             ),
                             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                               Text(post['title'] ?? '无标题',
-                                  style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+                                  style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500),
                                   maxLines: 1, overflow: TextOverflow.ellipsis),
                               if ((post['content'] ?? '').toString().isNotEmpty)
                                 Padding(

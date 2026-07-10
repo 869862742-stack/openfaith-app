@@ -119,8 +119,11 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.shield_outlined,
-                  color: AppColors.auroraBlue, size: 20),
+              ShaderMask(
+                shaderCallback: (rect) => AppColors.auroraGradient.createShader(rect),
+                child: const Icon(Icons.shield_outlined,
+                    color: AppColors.textPrimary, size: 20),
+              ),
               const SizedBox(width: 8),
               Text(
                 '安全保护已开启',
@@ -128,17 +131,8 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
                   foreground: Paint()
-                    ..shader = const LinearGradient(
-                      colors: [
-                        AppColors.auroraRed,
-                        AppColors.auroraOrange,
-                        AppColors.auroraYellow,
-                        AppColors.auroraGreen,
-                        AppColors.auroraCyan,
-                        AppColors.auroraBlue,
-                        AppColors.auroraPurple,
-                      ],
-                    ).createShader(const Rect.fromLTWH(0, 0, 200, 70)),
+                    ..shader = AppColors.auroraGradient
+                        .createShader(const Rect.fromLTWH(0, 0, 200, 70)),
                 ),
               ),
             ],
@@ -146,9 +140,9 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
           const SizedBox(height: 8),
           Text(
             '您的账号正在受到 OpenFaith 加密盾的实时保护。建议定期修改密码并保持手机/邮箱可用。',
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 12,
-              color: AppColors.textSecondary,
+              color: Color.fromRGBO(255, 255, 255, 0.6),
             ),
           ),
         ],

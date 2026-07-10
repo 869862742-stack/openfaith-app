@@ -48,6 +48,35 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
     }
   }
 
+  Widget _buildLangRow(Map<String, String> lang) {
+    return Row(
+      children: [
+        Text(lang['flag'] ?? '',
+            style: const TextStyle(fontSize: 20)),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(lang['native']!,
+                  style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500)),
+              Text(lang['name']!,
+                  style: const TextStyle(
+                      color: AppColors.textWeak,
+                      fontSize: 12)),
+            ],
+          ),
+        ),
+        if (lang['code'] == _currentLang)
+          const Icon(Icons.check,
+              color: AppColors.textPrimary, size: 20),
+      ],
+    );
+  }
+
   Future<void> _saveLang(String code) async {
     if (_saving) return;
     setState(() {
@@ -132,54 +161,33 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
                     padding: const EdgeInsets.only(bottom: 8),
                     child: GestureDetector(
                       onTap: () => _saveLang(lang['code']!),
-                      child: Container(
-                        padding: const EdgeInsets.all(1),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          gradient:
-                              isSelected ? AppColors.auroraGradient : null,
-                        ),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 14),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(11),
-                            color: isSelected
-                                ? AppColors.bgColor
-                                : AppColors.hoverBgLight,
-                            border: isSelected
-                                ? null
-                                : Border.all(color: AppColors.borderColor),
-                          ),
-                          child: Row(
-                            children: [
-                              Text(lang['flag'] ?? '',
-                                  style: const TextStyle(fontSize: 20)),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
-                                  children: [
-                                    Text(lang['native']!,
-                                        style: const TextStyle(
-                                            color: AppColors.textPrimary,
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w500)),
-                                    Text(lang['name']!,
-                                        style: const TextStyle(
-                                            color: AppColors.textWeak,
-                                            fontSize: 12)),
-                                  ],
-                                ),
+                      child: isSelected
+                          ? Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                gradient: AppColors.auroraGradient,
                               ),
-                              if (isSelected)
-                                const Icon(Icons.check,
-                                    color: AppColors.textPrimary, size: 20),
-                            ],
-                          ),
-                        ),
-                      ),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 14),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                  color: AppColors.bgColor,
+                                ),
+                                child: _buildLangRow(lang),
+                              ),
+                            )
+                          : Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 14),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                color: AppColors.hoverBgLight,
+                                border: Border.all(color: AppColors.borderColor),
+                              ),
+                              child: _buildLangRow(lang),
+                            ),
                     ),
                   );
                 }),

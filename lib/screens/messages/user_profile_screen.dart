@@ -506,7 +506,7 @@ class _UserProfileScreenState extends State<UserProfileScreen>
           height: 40,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.white.withOpacity(0.8),
+            color: AppColors.textSecondary,
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.15),
@@ -803,7 +803,7 @@ class _UserProfileScreenState extends State<UserProfileScreen>
                     ),
                     child: const Text('返回',
                         style: TextStyle(
-                            color: Colors.white,
+                            color: AppColors.textPrimary,
                             fontSize: 14,
                             fontWeight: FontWeight.w500)),
                   ),
@@ -838,7 +838,7 @@ class _UserProfileScreenState extends State<UserProfileScreen>
                   ),
                   child: const Text('返回',
                       style:
-                          TextStyle(color: Colors.white, fontSize: 14)),
+                          TextStyle(color: AppColors.textPrimary, fontSize: 14)),
                 ),
               ),
             ],
@@ -926,7 +926,7 @@ class _UserProfileScreenState extends State<UserProfileScreen>
                                         AppColors.auroraGradient
                                             .createShader(bounds),
                                     child: const Icon(Icons.shield,
-                                        size: 16, color: Colors.white),
+                                        size: 16, color: AppColors.textPrimary),
                                   ),
                                 ],
                               ],

@@ -498,7 +498,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       height: 28,
                       child: Icon(
                         Icons.edit,
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                         size: 14,
                       ),
                     ),
@@ -1092,12 +1092,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                               border: isSelected
                                   ? Border.all(
-                                      color: Colors.white, width: 2)
+                                      color: AppColors.textPrimary, width: 2)
                                   : null,
                             ),
                             child: isSelected
                                 ? const Icon(Icons.check,
-                                    color: Colors.white, size: 16)
+                                    color: AppColors.textPrimary, size: 16)
                                 : null,
                           ),
                         );
@@ -1276,7 +1276,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           colors: [displayColor, displayColor.withOpacity(0.67)],
         ),
       ),
-      child: const Icon(Icons.person, color: Colors.white, size: 36),
+      child: const Icon(Icons.person, color: AppColors.textPrimary, size: 36),
     );
   }
 
