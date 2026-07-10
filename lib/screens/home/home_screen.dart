@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:uni_links/uni_links.dart';
+import 'package:app_links/app_links.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
@@ -102,19 +102,19 @@ class _HomeScreenState extends State<HomeScreen> {
   void _initDeepLink() {
     // 处理冷启动 deep link
     try {
-      getInitialUri().then((uri) {
+      AppLinks().getInitialLink().then((uri) {
         if (uri != null) _handleDeepLink(uri);
       });
     } catch (e, s) {
-      debugPrint('[DeepLink] getInitialUri error: $e');
+      debugPrint('[DeepLink] getInitialLink error: $e');
       Sentry.captureException(e, stackTrace: s);
     }
 
     // 监听热启动 deep link
-    _uniLinkSub = uriLinkStream.listen((Uri? uri) {
+    _uniLinkSub = AppLinks().uriLinkStream.listen((Uri? uri) {
       if (uri != null) _handleDeepLink(uri);
     }, onError: (err) {
-      debugPrint('[DeepLink] uriLinkStream error: $err');
+      debugPrint('[DeepLink] appLinks stream error: $err');
     });
   }
 
