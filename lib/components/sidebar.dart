@@ -206,7 +206,7 @@ class _SidebarState extends State<Sidebar>
           child: Align(
             alignment: Alignment.centerLeft,
             child: SizedBox(
-              width: 272,
+              width: 288,
               height: double.infinity,
               child: Material(
                 color: const AppColors.bgColor, // 实色深色背景（对齐网页版 --card-bg）
