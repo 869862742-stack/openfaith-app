@@ -1,8 +1,7 @@
-import 'package:flutter/material.dart';
-import 'dart:math';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../theme/colors.dart';
+import '../../theme/app_colors.dart';
 
 class AddFriendScreen extends StatefulWidget {
   const AddFriendScreen({super.key});
@@ -14,20 +13,11 @@ class AddFriendScreen extends StatefulWidget {
 class _AddFriendScreenState extends State<AddFriendScreen> {
   final _searchController = TextEditingController();
   final _searchFocusNode = FocusNode();
+  final _greetingController = TextEditingController();
   List<Map<String, dynamic>> _results = [];
   bool _searching = false;
-  String? _error;  static const _rainbowColors = [
-
-
-    Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A),
-
-
-    Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD),
-  ];
-
-  LinearGradient _diagonalGradient(Size size) {
-    return LinearGradient(colors: _rainbowColors, transform: GradientRotation(0.785398));
-  }
+  String? _error;
+  Map<String, dynamic>? _greetingTarget;
 
   @override
   void initState() {
@@ -39,16 +29,20 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
   void dispose() {
     _searchController.dispose();
     _searchFocusNode.dispose();
+    _greetingController.dispose();
     super.dispose();
   }
 
   Future<void> _search() async {
     final query = _searchController.text.trim();
     if (query.isEmpty) return;
-    setState(() { _searching = true; _error = null; _results = []; });
+    setState(() {
+      _searching = true;
+      _error = null;
+      _results = [];
+    });
     try {
       final client = Supabase.instance.client;
-      // Search by email or username
       final resp = await client
           .from('profiles')
           .select('id, username, email, avatar_url')
@@ -56,10 +50,15 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
           .limit(20);
       final currentUser = client.auth.currentUser;
       if (currentUser != null) {
-        final filtered = (resp as List).where((u) => u['id'] != currentUser.id).toList();
-        if (mounted) setState(() => _results = filtered.cast<Map<String, dynamic>>());
+        final filtered =
+            (resp as List).where((u) => u['id'] != currentUser.id).toList();
+        if (mounted) {
+          setState(() => _results = filtered.cast<Map<String, dynamic>>());
+        }
       } else {
-        if (mounted) setState(() => _results = resp.cast<Map<String, dynamic>>());
+        if (mounted) {
+          setState(() => _results = resp.cast<Map<String, dynamic>>());
+        }
       }
     } catch (e) {
       if (mounted) setState(() => _error = e.toString());
@@ -67,7 +66,28 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
     if (mounted) setState(() => _searching = false);
   }
 
-  Future<void> _sendFriendRequest(String userId, String username) async {
+  void _openGreeting(Map<String, dynamic> user) {
+    _greetingTarget = user;
+    _greetingController.text = '你好，希望能添加你为好友';
+    showDialog(
+      context: context,
+      builder: (_) => _GreetingDialog(
+        user: user,
+        controller: _greetingController,
+        onSend: () => _sendFriendRequest(
+          user['id'],
+          user['username'] ?? 'user',
+          _greetingController.text,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _sendFriendRequest(
+    String userId,
+    String username,
+    String message,
+  ) async {
     try {
       final client = Supabase.instance.client;
       final currentUser = client.auth.currentUser;
@@ -77,168 +97,489 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
         'from_user_id': currentUser.id,
         'to_user_id': userId,
         'status': 'pending',
+        'message': message,
         'created_at': DateTime.now().toUtc().toIso8601String(),
       });
 
       if (mounted) {
+        Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('\u5df2\u5411 $username \u53d1\u9001\u597d\u53cb\u8bf7\u6c42'), backgroundColor: AppColors.inputBg),
+          SnackBar(
+            content: Text('已向 $username 发送好友请求'),
+            backgroundColor: AppColors.cardBg,
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('\u53d1\u9001\u5931\u8d25: $e'), backgroundColor: AppColors.inputBg),
+          SnackBar(
+            content: Text('发送失败: $e'),
+            backgroundColor: AppColors.cardBg,
+          ),
         );
       }
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF050816),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF050816),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
-          onPressed: () => Navigator.pop(context),
+  // ===== UI Helpers =====
+
+  Widget _glassHeader() {
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+          decoration: BoxDecoration(
+            color: AppColors.headerBg,
+            border: Border(
+              bottom: BorderSide(color: AppColors.borderDefault, width: 1),
+            ),
+          ),
+          child: Row(
+            children: [
+              IconButton(
+                icon: const Icon(
+                  Icons.arrow_back_ios,
+                  color: AppColors.textPrimary,
+                  size: 20,
+                ),
+                onPressed: () => Navigator.pop(context),
+                padding: const EdgeInsets.all(8),
+                constraints: const BoxConstraints(),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                '添加好友',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
         ),
-        title: const Text('\u6dfb\u52a0\u597d\u53cb', style: TextStyle(color: Colors.white, fontSize: 16)),
       ),
-      body: Column(
-        children: [
-          // Search bar
-          Padding(
-            padding: const EdgeInsets.all(16),
+    );
+  }
+
+  Widget _gradientButton({
+    required Widget child,
+    required VoidCallback? onPressed,
+  }) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          gradient: AppColors.auroraGradient,
+        ),
+        child: Center(child: child),
+      ),
+    );
+  }
+
+  Widget _searchBar() {
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            height: 44,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: AppColors.bgSecondary,
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Row(
               children: [
-                Expanded(
-                  child: LayoutBuilder(builder: (context, constraints) {
-                      final size = Size(constraints.maxWidth, constraints.maxHeight);
-                      return Container(
-                    height: 38,
-                    padding: const EdgeInsets.all(1),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      gradient: _searchFocusNode.hasFocus ? _diagonalGradient(size) : null,
-                    ),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(7),
-                        color: AppColors.inputBg,
-                        border: _searchFocusNode.hasFocus ? null : Border.all(color: Colors.white.withOpacity(0.08)),
-                      ),
-                      child: TextField(
-                        controller: _searchController,
-                        focusNode: _searchFocusNode,
-                        style: const TextStyle(color: Colors.white, fontSize: 14),
-                        decoration: InputDecoration(
-                          hintText: '\u641c\u7d22\u7528\u6237\u540d\u6216\u90ae\u7bb1',
-                          hintStyle: TextStyle(color: Colors.white.withOpacity(0.25), fontSize: 14),
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-                          isDense: true,
-                        ),
-                        onSubmitted: (_) => _search(),
-                        onTapOutside: (event) => _searchFocusNode.unfocus(),
-                      ),
-                    ),
-                  );
-                  }),
+                const Icon(
+                  Icons.search,
+                  color: AppColors.textSecondary,
+                  size: 16,
                 ),
                 const SizedBox(width: 8),
-                GestureDetector(
-                  onTap: _search,
-                  child: LayoutBuilder(builder: (context, constraints) {
-                      final size = Size(constraints.maxWidth, constraints.maxHeight);
-                      return Container(
-                    height: 38,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      gradient: _diagonalGradient(size),
+                Expanded(
+                  child: TextField(
+                    controller: _searchController,
+                    focusNode: _searchFocusNode,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 14,
                     ),
-                    child: Center(
-                      child: _searching
-                          ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                          : const Text('\u641c\u7d22', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
+                    decoration: InputDecoration(
+                      hintText: '搜索昵称、ID...',
+                      hintStyle: const TextStyle(
+                        color: AppColors.textPlaceholder,
+                        fontSize: 14,
+                      ),
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      contentPadding: EdgeInsets.zero,
+                      isDense: true,
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(
+                                Icons.close,
+                                color: AppColors.textSecondary,
+                                size: 16,
+                              ),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() {});
+                              },
+                            )
+                          : null,
                     ),
-                  );
-                  }),
+                    onSubmitted: (_) => _search(),
+                    onTapOutside: (event) => _searchFocusNode.unfocus(),
+                  ),
                 ),
               ],
             ),
           ),
-          if (_error != null)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(_error!, style: const TextStyle(color: Colors.redAccent, fontSize: 12)),
-            ),
-          // Results
-          Expanded(
-            child: _results.isEmpty && !_searching
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.person_search, size: 48, color: Colors.white.withOpacity(0.2)),
-                        const SizedBox(height: 12),
-                        Text('\u641c\u7d22\u7528\u6237\u540d\u6216\u90ae\u7bb1\u6dfb\u52a0\u597d\u53cb', style: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 13)),
-                      ],
-                    ),
-                  )
-                : ListView.separated(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: _results.length,
-                    separatorBuilder: (_, __) => Container(height: 1, color: Colors.white.withOpacity(0.04)),
-                    itemBuilder: (context, index) {
-                      final user = _results[index];
-                      return Container(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        child: Row(
-                          children: [
-                            // Avatar
-                            CircleAvatar(
-                              radius: 20,
-                              backgroundColor: AppColors.inputBg,
-                              backgroundImage: user['avatar_url'] != null ? NetworkImage(user['avatar_url']) : null,
-                              child: user['avatar_url'] == null
-                                  ? Text((user['username'] ?? '?')[0].toUpperCase(), style: const TextStyle(color: Colors.white54, fontSize: 14))
-                                  : null,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(user['username'] ?? 'Unknown', style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
-                                  if (user['email'] != null)
-                                    Text(user['email'], style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 12)),
-                                ],
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () => _sendFriendRequest(user['id'], user['username'] ?? 'user'),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(color: Colors.white.withOpacity(0.2)),
-                                ),
-                                child: Text('\u6dfb\u52a0', style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 12)),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
+        ),
+        const SizedBox(width: 8),
+        _gradientButton(
+          onPressed: _searching ? null : _search,
+          child: _searching
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.textPrimary,
                   ),
+                )
+              : const Text(
+                  '搜索',
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+        ),
+      ],
+    );
+  }
+
+  Widget _userCard(Map<String, dynamic> user) {
+    final username = user['username'] ?? '未命名用户';
+    final userId = (user['id'] ?? '').toString();
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.cardBg,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          // 头像
+          CircleAvatar(
+            radius: 24,
+            backgroundColor: AppColors.inputBg,
+            backgroundImage: user['avatar_url'] != null
+                ? NetworkImage(user['avatar_url'])
+                : null,
+            child: user['avatar_url'] == null
+                ? Icon(Icons.person, color: AppColors.iconColorWeak, size: 24)
+                : null,
+          ),
+          const SizedBox(width: 12),
+          // 信息
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  username,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (userId.isNotEmpty)
+                  Text(
+                    'ID: ${userId.length > 8 ? '${userId.substring(0, 8)}...' : userId}',
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          // 添加按钮
+          GestureDetector(
+            onTap: () => _openGreeting(user),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                gradient: AppColors.auroraGradient,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.person_add, size: 12, color: AppColors.textPrimary),
+                  const SizedBox(width: 4),
+                  const Text(
+                    '添加',
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Container(
+        color: AppColors.background,
+        child: Column(
+          children: [
+            _glassHeader(),
+            // 搜索框
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: _searchBar(),
+            ),
+            // 错误提示
+            if (_error != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  _error!,
+                  style: const TextStyle(color: AppColors.error, fontSize: 12),
+                ),
+              ),
+            // 结果列表
+            Expanded(
+              child: _searching
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.auroraBlue,
+                      ),
+                    )
+                  : _results.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.person_search,
+                                size: 48,
+                                color: AppColors.iconColorWeak,
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                _searchController.text.isEmpty
+                                    ? '搜索用户名或邮箱添加好友'
+                                    : '未找到匹配的用户',
+                                style: const TextStyle(
+                                  color: AppColors.textSecondary,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : ListView.separated(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          itemCount: _results.length,
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 8),
+                          itemBuilder: (context, index) {
+                            return _userCard(_results[index]);
+                          },
+                        ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ===== 打招呼弹窗 =====
+class _GreetingDialog extends StatelessWidget {
+  final Map<String, dynamic> user;
+  final TextEditingController controller;
+  final VoidCallback onSend;
+
+  const _GreetingDialog({
+    required this.user,
+    required this.controller,
+    required this.onSend,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final username = user['username'] ?? '未命名用户';
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: EdgeInsets.zero,
+      alignment: Alignment.bottomCenter,
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.background,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 标题行
+            Row(
+              children: [
+                const Text(
+                  '添加好友',
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Spacer(),
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: const Icon(
+                    Icons.close,
+                    color: AppColors.textSecondary,
+                    size: 20,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            // 目标用户信息
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.cardBg,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 24,
+                    backgroundColor: AppColors.inputBg,
+                    backgroundImage: user['avatar_url'] != null
+                        ? NetworkImage(user['avatar_url'])
+                        : null,
+                    child: user['avatar_url'] == null
+                        ? Icon(Icons.person,
+                            color: AppColors.iconColorWeak, size: 24)
+                        : null,
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        username,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const Text(
+                        '发送好友请求并打招呼',
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            // 打招呼消息
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                '打招呼消息',
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              decoration: BoxDecoration(
+                color: AppColors.cardBg,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.borderDefault),
+              ),
+              child: TextField(
+                controller: controller,
+                maxLines: 3,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 14,
+                ),
+                decoration: InputDecoration(
+                  hintText: '说点什么打个招呼吧...',
+                  hintStyle: const TextStyle(
+                    color: AppColors.textPlaceholder,
+                    fontSize: 14,
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.all(12),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            // 发送按钮
+            GestureDetector(
+              onTap: onSend,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  gradient: AppColors.auroraGradient,
+                ),
+                child: const Center(
+                  child: Text(
+                    '发送好友请求',
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

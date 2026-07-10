@@ -1,8 +1,7 @@
-import 'package:flutter/material.dart';
-import 'dart:math';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../theme/colors.dart';
+import '../../theme/app_colors.dart';
 
 class AddGroupScreen extends StatefulWidget {
   const AddGroupScreen({super.key});
@@ -13,12 +12,27 @@ class AddGroupScreen extends StatefulWidget {
 
 class _AddGroupScreenState extends State<AddGroupScreen> {
   final _nameController = TextEditingController();
+  final _descController = TextEditingController();
   final _searchController = TextEditingController();
+  final _customTagController = TextEditingController();
   final _nameFocusNode = FocusNode();
   final _searchFocusNode = FocusNode();
   final List<Map<String, dynamic>> _allFriends = [];
   final Set<String> _selectedIds = {};
+  final List<String> _selectedTags = [];
+  final List<String> _customTags = [];
   bool _loading = true;
+  String _activeTab = 'search';
+
+  static const _fallbackGroupTags = [
+    '基督教', '伊斯兰教', '犹太教', '佛教', '印度教', '道教', '锡克教',
+    '巴哈伊教', '摩门教', '耶和华见证人', '琐罗亚斯德教', '诺斯替',
+    '卡巴拉', '神道教', '耆那教', '德鲁兹教', '约鲁巴教', '伏都教',
+    '雅兹迪', '曼达安', '玛雅/阿兹特克', '毛利宗教', '天理教', '天道教',
+    '高台教',
+  ];
+
+  List<String> get _groupTags => _fallbackGroupTags;
 
   @override
   void initState() {
@@ -31,28 +45,55 @@ class _AddGroupScreenState extends State<AddGroupScreen> {
   @override
   void dispose() {
     _nameController.dispose();
+    _descController.dispose();
     _searchController.dispose();
+    _customTagController.dispose();
     _nameFocusNode.dispose();
     _searchFocusNode.dispose();
     super.dispose();
   }
 
   Future<void> _loadFriends() async {
-    // In real implementation, load from Supabase
-    // For now, placeholder
     setState(() => _loading = false);
+  }
+
+  void _toggleTag(String tag) {
+    setState(() {
+      if (_selectedTags.contains(tag)) {
+        _selectedTags.remove(tag);
+      } else {
+        _selectedTags.add(tag);
+      }
+    });
+  }
+
+  void _addCustomTag() {
+    final tag = _customTagController.text.trim();
+    if (tag.isEmpty) return;
+    if (_customTags.contains(tag) || _selectedTags.contains(tag)) return;
+    setState(() {
+      _customTags.add(tag);
+      _selectedTags.add(tag);
+      _customTagController.clear();
+    });
   }
 
   Future<void> _createGroup() async {
     if (_nameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('\u8bf7\u8f93\u5165\u7fa4\u804a\u540d\u79f0'), backgroundColor: AppColors.inputBg),
+        const SnackBar(
+          content: Text('请输入群聊名称'),
+          backgroundColor: AppColors.cardBg,
+        ),
       );
       return;
     }
-    if (_selectedIds.length < 2) {
+    if (_selectedTags.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('\u8bf7\u81f3\u5c11\u9009\u62e92\u4f4d\u597d\u53cb'), backgroundColor: AppColors.inputBg),
+        const SnackBar(
+          content: Text('请至少选择一个标签'),
+          backgroundColor: AppColors.cardBg,
+        ),
       );
       return;
     }
@@ -62,16 +103,16 @@ class _AddGroupScreenState extends State<AddGroupScreen> {
       final user = client.auth.currentUser;
       if (user == null) return;
 
-      // Create group chat
       final groupResp = await client.from('group_chats').insert({
         'name': _nameController.text.trim(),
+        'description': _descController.text.trim(),
         'owner_id': user.id,
+        'tags': _selectedTags,
         'created_at': DateTime.now().toUtc().toIso8601String(),
       }).select();
 
       if (groupResp.isNotEmpty) {
         final groupId = groupResp[0]['id'];
-        // Add selected members
         final memberIds = [user.id, ..._selectedIds];
         for (final memberId in memberIds) {
           await client.from('group_chat_members').insert({
@@ -86,213 +127,461 @@ class _AddGroupScreenState extends State<AddGroupScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('\u521b\u5efa\u5931\u8d25: $e'), backgroundColor: AppColors.inputBg),
+          SnackBar(
+            content: Text('创建失败: $e'),
+            backgroundColor: AppColors.cardBg,
+          ),
         );
       }
     }
-  }  static const _rainbowColors = [
+  }
 
+  // ===== UI Helpers =====
 
-    Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A),
+  Widget _glassHeader() {
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+          decoration: BoxDecoration(
+            color: AppColors.headerBg,
+            border: Border(
+              bottom: BorderSide(color: AppColors.borderDefault, width: 1),
+            ),
+          ),
+          child: Row(
+            children: [
+              IconButton(
+                icon: const Icon(
+                  Icons.arrow_back_ios,
+                  color: AppColors.textPrimary,
+                  size: 20,
+                ),
+                onPressed: () => Navigator.pop(context),
+                padding: const EdgeInsets.all(8),
+                constraints: const BoxConstraints(),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                '添加群聊',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
+  Widget _tabButton(String label, String tab) {
+    final isActive = _activeTab == tab;
+    if (isActive) {
+      return Expanded(
+        child: GestureDetector(
+          onTap: () => setState(() => _activeTab = tab),
+          child: Container(
+            height: 40,
+            padding: const EdgeInsets.all(1),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              gradient: AppColors.auroraGradient,
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(11),
+                color: AppColors.background,
+              ),
+              child: Center(
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _activeTab = tab),
+        child: Container(
+          height: 40,
+          decoration: BoxDecoration(
+            color: AppColors.hoverBg,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.borderActive),
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: AppColors.textWeak,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
-    Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD),
-  ];
+  Widget _gradientButton({
+    required Widget child,
+    required VoidCallback? onPressed,
+  }) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          gradient: AppColors.auroraGradient,
+        ),
+        child: Center(child: child),
+      ),
+    );
+  }
 
-  LinearGradient _diagonalGradient(Size size) {
-    return LinearGradient(colors: _rainbowColors, transform: GradientRotation(0.785398));
+  Widget _styledInput({
+    required TextEditingController controller,
+    required FocusNode focusNode,
+    required String hint,
+    int maxLines = 1,
+    bool showBorder = true,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.bgSecondary,
+        borderRadius: BorderRadius.circular(12),
+        border: showBorder
+            ? Border.all(color: AppColors.borderDefault)
+            : null,
+      ),
+      child: TextField(
+        controller: controller,
+        focusNode: focusNode,
+        maxLines: maxLines,
+        style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: const TextStyle(
+            color: AppColors.textPlaceholder,
+            fontSize: 14,
+          ),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 12,
+          ),
+        ),
+        onTapOutside: (event) => focusNode.unfocus(),
+      ),
+    );
+  }
+
+  Widget _tagChip(String tag) {
+    final isSelected = _selectedTags.contains(tag);
+    if (isSelected) {
+      return GestureDetector(
+        onTap: () => _toggleTag(tag),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.transparent, width: 1.5),
+            gradient: AppColors.auroraGradientWithOpacity(0.5),
+          ),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            margin: const EdgeInsets.all(-1),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              color: AppColors.background,
+            ),
+            child: Text(
+              tag,
+              style: const TextStyle(
+                color: AppColors.auroraCyan,
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    return GestureDetector(
+      onTap: () => _toggleTag(tag),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: AppColors.bgSecondary,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          tag,
+          style: const TextStyle(
+            color: AppColors.textSecondary,
+            fontSize: 12,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ===== Search Tab =====
+
+  Widget _searchTab() {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Container(
+                height: 44,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: AppColors.bgSecondary,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.search,
+                      color: AppColors.textSecondary,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: TextField(
+                        controller: _searchController,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 14,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: '搜索群名或群ID',
+                          hintStyle: const TextStyle(
+                            color: AppColors.textPlaceholder,
+                            fontSize: 14,
+                          ),
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.zero,
+                          isDense: true,
+                        ),
+                        onTapOutside: (event) =>
+                            FocusScope.of(context).unfocus(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            _gradientButton(
+              onPressed: () {},
+              child: const Text(
+                '搜索',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 48),
+        const Text(
+          '暂无群聊',
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+        ),
+      ],
+    );
+  }
+
+  // ===== Create Tab =====
+
+  Widget _createTab() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 群聊名称
+        const Text(
+          '群聊名称',
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 8),
+        _styledInput(
+          controller: _nameController,
+          focusNode: _nameFocusNode,
+          hint: '请输入群聊名称',
+        ),
+        const SizedBox(height: 16),
+        // 群聊描述
+        const Text(
+          '群聊描述',
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 8),
+        _styledInput(
+          controller: _descController,
+          focusNode: _searchFocusNode,
+          hint: '请输入群聊描述（选填）',
+          maxLines: 3,
+        ),
+        const SizedBox(height: 16),
+        // 选择标签
+        const Text(
+          '选择标签',
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: _groupTags.map(_tagChip).toList(),
+        ),
+        // 自定义标签
+        if (_customTags.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          const Text(
+            '自定义标签',
+            style: TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: _customTags.map(_tagChip).toList(),
+          ),
+        ],
+        const SizedBox(height: 16),
+        // 添加自定义标签
+        const Text(
+          '添加自定义标签',
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: _styledInput(
+                controller: _customTagController,
+                focusNode: FocusNode(),
+                hint: '输入标签名称',
+                showBorder: true,
+              ),
+            ),
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap:
+                  _customTagController.text.trim().isEmpty ? null : _addCustomTag,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: AppColors.hoverBg,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppColors.borderDefault),
+                ),
+                child: const Text(
+                  '添加',
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+        // 提交按钮
+        GestureDetector(
+          onTap: _createGroup,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              gradient: AppColors.auroraGradient,
+            ),
+            child: const Center(
+              child: Text(
+                '提交申请',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF050816),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF050816),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.white, size: 22),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text('\u521b\u5efa\u7fa4\u804a', style: TextStyle(color: Colors.white, fontSize: 16)),
-      ),
-      body: Column(
-        children: [
-          // Group name input
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: LayoutBuilder(builder: (context, constraints) {
-                final size = Size(constraints.maxWidth, constraints.maxHeight);
-                return Container(
-              height: 40,
-              padding: const EdgeInsets.all(1),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                gradient: _nameFocusNode.hasFocus ? _diagonalGradient(size) : null,
+      backgroundColor: Colors.transparent,
+      body: Container(
+        color: AppColors.background,
+        child: Column(
+          children: [
+            _glassHeader(),
+            // Tab 切换
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+              child: Row(
+                children: [
+                  _tabButton('搜索群聊', 'search'),
+                  const SizedBox(width: 8),
+                  _tabButton('创建群聊', 'create'),
+                ],
               ),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(7),
-                  color: AppColors.inputBg,
-                  border: _nameFocusNode.hasFocus ? null : Border.all(color: Colors.white.withOpacity(0.08)),
-                ),
-                child: TextField(
-                  controller: _nameController,
-                  focusNode: _nameFocusNode,
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
-                  decoration: InputDecoration(
-                    hintText: '\u8f93\u5165\u7fa4\u804a\u540d\u79f0',
-                    hintStyle: TextStyle(color: Colors.white.withOpacity(0.25), fontSize: 14),
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-                    isDense: true,
-                  ),
-                  onTapOutside: (event) => _nameFocusNode.unfocus(),
-                ),
-              ),
-            );
-            }),
-          ),
-          // Selected count
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                Text('\u5df2\u9009 ${ _selectedIds.length} \u4eba',
-                    style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 13)),
-                const Spacer(),
-                GestureDetector(
-                  onTap: _createGroup,
-                  child: LayoutBuilder(builder: (context, constraints) {
-                      final size = Size(constraints.maxWidth, constraints.maxHeight);
-                      return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(18),
-                      gradient: _diagonalGradient(size),
-                    ),
-                    child: const Text('\u521b\u5efa', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
-                  );
-                  }),
-                ),
-              ],
             ),
-          ),
-          const SizedBox(height: 12),
-          // Search
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: LayoutBuilder(builder: (context, constraints) {
-                final size = Size(constraints.maxWidth, constraints.maxHeight);
-                return Container(
-              height: 36,
-              padding: const EdgeInsets.all(1),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                gradient: _searchFocusNode.hasFocus ? _diagonalGradient(size) : null,
-                color: _searchFocusNode.hasFocus ? null : AppColors.inputBg,
-                border: _searchFocusNode.hasFocus ? null : Border.all(color: Colors.white.withOpacity(0.08)),
+            // 内容区域
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: _activeTab == 'search' ? _searchTab() : _createTab(),
               ),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(7),
-                  color: _searchFocusNode.hasFocus ? const Color(0xFF050816) : AppColors.inputBg,
-                ),
-                child: TextField(
-                  controller: _searchController,
-                  focusNode: _searchFocusNode,
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
-                  decoration: const InputDecoration(
-                    hintText: '\u641c\u7d22\u597d\u53cb',
-                    hintStyle: TextStyle(color: Colors.white24, fontSize: 13),
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                    isDense: true,
-                    prefixIcon: Icon(Icons.search, color: Colors.white38, size: 18),
-                    prefixIconConstraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-                  ),
-                  onTapOutside: (event) => _searchFocusNode.unfocus(),
-                  onChanged: (_) => setState(() {}),
-                ),
-              ),
-            );
-            }),
-          ),
-          const SizedBox(height: 8),
-          // Friends list
-          Expanded(
-            child: _loading
-                ? const Center(child: CircularProgressIndicator(color: Colors.white24))
-                : _allFriends.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.group_add, size: 48, color: Colors.white.withOpacity(0.2)),
-                            const SizedBox(height: 12),
-                            Text('\u6682\u65e0\u597d\u53cb\uff0c\u5148\u6dfb\u52a0\u597d\u53cb\u5427', style: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 13)),
-                          ],
-                        ),
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: _allFriends.where((f) {
-                          if (_searchController.text.isEmpty) return true;
-                          return (f['username'] ?? '').toLowerCase().contains(_searchController.text.toLowerCase());
-                        }).length,
-                        itemBuilder: (context, index) {
-                          final friend = _allFriends.where((f) {
-                            if (_searchController.text.isEmpty) return true;
-                            return (f['username'] ?? '').toLowerCase().contains(_searchController.text.toLowerCase());
-                          }).elementAt(index);
-                          final id = friend['id'] as String;
-                          final isSelected = _selectedIds.contains(id);
-                          return GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                if (isSelected) { _selectedIds.remove(id); } else { _selectedIds.add(id); }
-                              });
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 10),
-                              child: Row(
-                                children: [
-                                  // Checkbox
-                                  Container(
-                                    width: 20, height: 20,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(4),
-                                      border: Border.all(
-                                        color: isSelected ? Colors.white : Colors.white.withOpacity(0.2),
-                                        width: 1.5,
-                                      ),
-                                      color: isSelected ? const Color(0xFF3A86FF) : Colors.transparent,
-                                    ),
-                                    child: isSelected ? const Icon(Icons.check, size: 14, color: Colors.white) : null,
-                                  ),
-                                  const SizedBox(width: 12),
-                                  CircleAvatar(
-                                    radius: 18,
-                                    backgroundColor: AppColors.inputBg,
-                                    backgroundImage: friend['avatar_url'] != null ? NetworkImage(friend['avatar_url']) : null,
-                                    child: friend['avatar_url'] == null
-                                        ? Text((friend['username'] ?? '?')[0].toUpperCase(), style: const TextStyle(color: Colors.white54, fontSize: 13))
-                                        : null,
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Text(friend['username'] ?? 'Unknown', style: const TextStyle(color: Colors.white, fontSize: 14)),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }

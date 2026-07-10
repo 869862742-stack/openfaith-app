@@ -1,5 +1,6 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../../theme/colors.dart';
+import '../../theme/app_colors.dart';
 
 class DiscoverScreen extends StatefulWidget {
   const DiscoverScreen({super.key});
@@ -12,12 +13,12 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   final _searchController = TextEditingController();
 
   final List<_Category> _categories = [
-    _Category('圣经研读', Icons.menu_book, Color(0xFF6C5CE7)),
-    _Category('祷告指南', Icons.self_improvement, Color(0xFF00B894)),
-    _Category('灵修日记', Icons.edit_note, Color(0xFFE17055)),
-    _Category('教会动态', Icons.church, Color(0xFF0984E3)),
-    _Category('诗歌赞美', Icons.music_note, Color(0xFFFD79A8)),
-    _Category('团契生活', Icons.groups, Color(0xFFFDCB6E)),
+    _Category('圣经研读', Icons.menu_book, AppColors.auroraPurple),
+    _Category('祷告指南', Icons.self_improvement, AppColors.auroraGreen),
+    _Category('灵修日记', Icons.edit_note, AppColors.auroraOrange),
+    _Category('教会动态', Icons.church, AppColors.auroraBlue),
+    _Category('诗歌赞美', Icons.music_note, AppColors.auroraRed),
+    _Category('团契生活', Icons.groups, AppColors.auroraYellow),
   ];
 
   final List<_HotTopic> _hotTopics = [
@@ -30,86 +31,145 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        title: const Text(
-          '发现',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.qr_code_scanner, color: Colors.white70, size: 22),
-            onPressed: () {},
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+      backgroundColor: Colors.transparent,
+      body: Container(
+        color: AppColors.background,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 搜索框
-            Container(
-              height: 44,
-              decoration: BoxDecoration(
-                color: AppColors.cardBg,
-                borderRadius: BorderRadius.circular(22),
-              ),
-              child: TextField(
-                controller: _searchController,
-                style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
-                decoration: InputDecoration(
-                  hintText: '搜索内容、用户、话题...',
-                  hintStyle: TextStyle(color: AppColors.textMuted, fontSize: 14),
-                  prefixIcon: Icon(Icons.search, color: AppColors.textMuted, size: 20),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
+            // 毛玻璃 Header
+            _glassHeader(),
+            // 内容
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 16),
+                    // 搜索框
+                    _searchBar(),
+                    const SizedBox(height: 24),
+                    // 分类浏览
+                    const Text(
+                      '分类浏览',
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    GridView.count(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      crossAxisCount: 3,
+                      mainAxisSpacing: 12,
+                      crossAxisSpacing: 12,
+                      children:
+                          _categories.map((cat) => _buildCategoryCard(cat)).toList(),
+                    ),
+                    const SizedBox(height: 24),
+                    // 热门话题
+                    const Text(
+                      '热门话题',
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ..._hotTopics.map((topic) => _buildHotTopicCard(topic)),
+                    const SizedBox(height: 32),
+                  ],
                 ),
               ),
             ),
-            const SizedBox(height: 24),
-
-            // 分类网格
-            const Text(
-              '分类浏览',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 12),
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 3,
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
-              children: _categories.map((cat) => _buildCategoryCard(cat)).toList(),
-            ),
-            const SizedBox(height: 24),
-
-            // 热门话题
-            const Text(
-              '热门话题',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 12),
-            ..._hotTopics.map((topic) => _buildHotTopicCard(topic)),
-            const SizedBox(height: 32),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _glassHeader() {
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+          decoration: BoxDecoration(
+            color: AppColors.headerBg,
+            border: Border(
+              bottom: BorderSide(color: AppColors.borderDefault, width: 1),
+            ),
+          ),
+          child: Row(
+            children: [
+              const Expanded(
+                child: Text(
+                  '发现',
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              IconButton(
+                icon: const Icon(
+                  Icons.qr_code_scanner,
+                  color: AppColors.iconColorWeak,
+                  size: 22,
+                ),
+                onPressed: () {},
+                padding: const EdgeInsets.all(4),
+                constraints: const BoxConstraints(),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _searchBar() {
+    return Container(
+      height: 44,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: AppColors.cardBg,
+        borderRadius: BorderRadius.circular(22),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.search,
+            color: AppColors.textWeak,
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: TextField(
+              controller: _searchController,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 14,
+              ),
+              decoration: InputDecoration(
+                hintText: '搜索内容、用户、话题...',
+                hintStyle: const TextStyle(
+                  color: AppColors.textPlaceholder,
+                  fontSize: 14,
+                ),
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.zero,
+                isDense: true,
+              ),
+              onTapOutside: (event) => FocusScope.of(context).unfocus(),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -122,6 +182,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
         decoration: BoxDecoration(
           color: AppColors.cardBg,
           borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.borderSubtle),
         ),
         child: Column(
           children: [
@@ -138,7 +199,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             Text(
               cat.name,
               style: const TextStyle(
-                color: Colors.white,
+                color: AppColors.textPrimary,
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
@@ -157,14 +218,20 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       decoration: BoxDecoration(
         color: AppColors.cardBg,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const Text(
+            '热门话题',
+            style: TextStyle(color: AppColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 6),
           Text(
             topic.title,
             style: const TextStyle(
-              color: Colors.white,
+              color: AppColors.textPrimary,
               fontSize: 15,
               fontWeight: FontWeight.w600,
             ),
@@ -172,8 +239,8 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           const SizedBox(height: 6),
           Text(
             topic.desc,
-            style: TextStyle(
-              color: AppColors.textMuted,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
               fontSize: 13,
               height: 1.4,
             ),
@@ -183,18 +250,32 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           const SizedBox(height: 10),
           Row(
             children: [
-              Icon(Icons.person_outline, size: 14, color: AppColors.textMuted),
+              const Icon(
+                Icons.person_outline,
+                size: 14,
+                color: AppColors.textWeak,
+              ),
               const SizedBox(width: 4),
               Text(
                 '${topic.participants}人参与',
-                style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+                style: const TextStyle(
+                  color: AppColors.textWeak,
+                  fontSize: 12,
+                ),
               ),
               const SizedBox(width: 16),
-              Icon(Icons.chat_bubble_outline, size: 14, color: AppColors.textMuted),
+              const Icon(
+                Icons.chat_bubble_outline,
+                size: 14,
+                color: AppColors.textWeak,
+              ),
               const SizedBox(width: 4),
               Text(
                 '${topic.posts}条动态',
-                style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+                style: const TextStyle(
+                  color: AppColors.textWeak,
+                  fontSize: 12,
+                ),
               ),
             ],
           ),

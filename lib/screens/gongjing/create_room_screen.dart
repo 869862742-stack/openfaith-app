@@ -1,8 +1,8 @@
 import 'dart:io';
-import 'dart:math';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../theme/colors.dart';
+import '../../theme/app_colors.dart';
 
 class CreateRoomScreen extends StatefulWidget {
   const CreateRoomScreen({super.key});
@@ -24,8 +24,8 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
   String? _error;
 
   final List<String> _availableTags = [
-    '\u51a5\u60f3', '\u97f3\u4e50', '\u7597\u6108', '\u8bfb\u4e66', '\u7948\u7977',
-    '\u5b66\u4e60', '\u5de5\u4f5c', '\u8fd0\u52a8', '\u7f16\u7a0b', '\u5199\u4f5c',
+    '冥想', '音乐', '治愈', '读书', '祈祷',
+    '学习', '工作', '运动', '编程', '写作',
   ];
 
   @override
@@ -42,35 +42,31 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
     _nameFocusNode.dispose();
     _descFocusNode.dispose();
     super.dispose();
-  }  static const _rainbowColors = [
-
-
-    Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A),
-
-
-    Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD),
-  ];
-
-  LinearGradient _diagonalGradient(Size size) {
-    return LinearGradient(colors: _rainbowColors, transform: GradientRotation(0.785398));
   }
 
   Future<void> _createRoom() async {
     if (_nameController.text.trim().isEmpty) {
-      setState(() => _error = '\u8bf7\u8f93\u5165\u623f\u95f4\u540d\u79f0');
+      setState(() => _error = '请输入房间名称');
       return;
     }
-    setState(() { _creating = true; _error = null; });
+    setState(() {
+      _creating = true;
+      _error = null;
+    });
     try {
       final user = Supabase.instance.client.auth.currentUser;
-      if (user == null) throw Exception('\u672a\u767b\u5f55');
+      if (user == null) throw Exception('未登录');
 
       String? musicUrl;
       if (_musicFilePath != null) {
         final ext = _musicFilePath!.split('.').last;
-        final path = 'music/${user.id}/${DateTime.now().millisecondsSinceEpoch}.$ext';
-        await Supabase.instance.client.storage.from('media').upload(path, File(_musicFilePath!));
-        musicUrl = Supabase.instance.client.storage.from('media').getPublicUrl(path);
+        final path =
+            'music/${user.id}/${DateTime.now().millisecondsSinceEpoch}.$ext';
+        await Supabase.instance.client.storage
+            .from('media')
+            .upload(path, File(_musicFilePath!));
+        musicUrl =
+            Supabase.instance.client.storage.from('media').getPublicUrl(path);
       }
 
       await Supabase.instance.client.from('rooms').insert({
@@ -87,223 +83,429 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
       if (!mounted) return;
       Navigator.pop(context, true);
     } catch (e) {
-      if (mounted) setState(() { _error = e.toString().replaceAll('Exception: ', ''); _creating = false; });
+      if (mounted) {
+        setState(() {
+          _error = e.toString().replaceAll('Exception: ', '');
+          _creating = false;
+        });
+      }
     }
+  }
+
+  // ===== UI Helpers =====
+
+  Widget _glassHeader() {
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+          decoration: BoxDecoration(
+            color: AppColors.headerBg,
+            border: Border(
+              bottom: BorderSide(color: AppColors.borderDefault, width: 1),
+            ),
+          ),
+          child: Row(
+            children: [
+              IconButton(
+                icon: const Icon(
+                  Icons.close,
+                  color: AppColors.textPrimary,
+                  size: 22,
+                ),
+                onPressed: () => Navigator.pop(context),
+                padding: const EdgeInsets.all(8),
+                constraints: const BoxConstraints(),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                '创建房间',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const Spacer(),
+              // 创建按钮
+              GestureDetector(
+                onTap: _creating ? null : _createRoom,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    gradient: AppColors.auroraGradient,
+                  ),
+                  child: _creating
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.textPrimary,
+                          ),
+                        )
+                      : const Text(
+                          '创建',
+                          style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _styledInput({
+    required TextEditingController controller,
+    required FocusNode focusNode,
+    required String hint,
+    TextStyle? style,
+    TextStyle? hintStyle,
+    int maxLines = 1,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.bgSecondary,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.borderDefault),
+      ),
+      child: TextField(
+        controller: controller,
+        focusNode: focusNode,
+        maxLines: maxLines,
+        style: style ??
+            const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: hintStyle ??
+              const TextStyle(
+                color: AppColors.textPlaceholder,
+                fontSize: 14,
+              ),
+          border: InputBorder.none,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        ),
+        onTapOutside: (event) => focusNode.unfocus(),
+      ),
+    );
+  }
+
+  Widget _tagChip(String tag) {
+    final isSelected = _selectedTags.contains(tag);
+    if (isSelected) {
+      return GestureDetector(
+        onTap: () => setState(() => _selectedTags.remove(tag)),
+        child: Container(
+          padding: const EdgeInsets.all(1),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            gradient: AppColors.auroraGradientWithOpacity(0.5),
+          ),
+          child: Container(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(19),
+              color: AppColors.hoverBg,
+            ),
+            child: Text(
+              tag,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    return GestureDetector(
+      onTap: () => setState(() => _selectedTags.add(tag)),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: AppColors.hoverBgLight,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.borderSubtle),
+        ),
+        child: Text(
+          tag,
+          style: const TextStyle(
+            color: AppColors.iconColorWeak,
+            fontSize: 12,
+          ),
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF050816),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF050816),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.white, size: 22),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text('\u521b\u5efa\u623f\u95f4', style: TextStyle(color: Colors.white, fontSize: 16)),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: GestureDetector(
-              onTap: _creating ? null : _createRoom,
-              child: LayoutBuilder(builder: (context, constraints) {
-                  final size = Size(constraints.maxWidth, constraints.maxHeight);
-                  return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  gradient: _diagonalGradient(size),
-                ),
-                child: _creating
-                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : const Text('\u521b\u5efa', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
-              );
-              }),
-            ),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+      backgroundColor: Colors.transparent,
+      body: Container(
+        color: AppColors.background,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // \u623f\u95f4\u540d\u79f0
-            LayoutBuilder(builder: (context, constraints) {
-                final size = Size(constraints.maxWidth, constraints.maxHeight);
-                return Container(
-              padding: const EdgeInsets.all(1),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                gradient: _nameFocusNode.hasFocus ? _diagonalGradient(size) : null,
-              ),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(7),
-                  color: AppColors.inputBg,
-                  border: _nameFocusNode.hasFocus ? null : Border.all(color: Colors.white.withOpacity(0.08)),
-                ),
-                child: TextField(
-                  controller: _nameController,
-                  focusNode: _nameFocusNode,
-                  style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
-                  decoration: InputDecoration(
-                    hintText: '\u623f\u95f4\u540d\u79f0',
-                    hintStyle: TextStyle(color: Colors.white.withOpacity(0.25), fontSize: 16, fontWeight: FontWeight.w600),
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                  ),
-                  onTapOutside: (event) => _nameFocusNode.unfocus(),
-                ),
-              ),
-            );
-            }),
-            const SizedBox(height: 12),
-            // \u63cf\u8ff0
-            LayoutBuilder(builder: (context, constraints) {
-                final size = Size(constraints.maxWidth, constraints.maxHeight);
-                return Container(
-              padding: const EdgeInsets.all(1),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                gradient: _descFocusNode.hasFocus ? _diagonalGradient(size) : null,
-              ),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(7),
-                  color: AppColors.inputBg,
-                  border: _descFocusNode.hasFocus ? null : Border.all(color: Colors.white.withOpacity(0.08)),
-                ),
-                child: TextField(
-                  controller: _descController,
-                  focusNode: _descFocusNode,
-                  maxLines: 3,
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
-                  decoration: InputDecoration(
-                    hintText: '\u63cf\u8ff0\u4f60\u7684\u623f\u95f4...',
-                    hintStyle: TextStyle(color: Colors.white.withOpacity(0.25), fontSize: 14),
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                  ),
-                  onTapOutside: (event) => _descFocusNode.unfocus(),
-                ),
-              ),
-            );
-            }),
-            const SizedBox(height: 16),
-            // \u6807\u7b7e\u9009\u62e9
-            const Text('\u623f\u95f4\u6807\u7b7e', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: _availableTags.map((tag) {
-                final isSelected = _selectedTags.contains(tag);
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      if (isSelected) {
-                        _selectedTags.remove(tag);
-                      } else {
-                        _selectedTags.add(tag);
-                      }
-                    });
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      color: isSelected ? Colors.white.withOpacity(0.12) : Colors.white.withOpacity(0.04),
-                      border: Border.all(
-                        color: isSelected ? Colors.white.withOpacity(0.3) : Colors.white.withOpacity(0.08),
-                      ),
-                    ),
-                    child: Text(
-                      tag,
-                      style: TextStyle(
-                        color: isSelected ? Colors.white : Colors.white.withOpacity(0.5),
-                        fontSize: 12,
-                        fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 20),
-            // \u97f3\u4e50\u4e0a\u4f20
-            GestureDetector(
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('\u97f3\u4e50\u4e0a\u4f20\u5f85\u96c6\u6210'), backgroundColor: AppColors.inputBg),
-                );
-              },
-              child: Container(
+            _glassHeader(),
+            Expanded(
+              child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  color: AppColors.inputBg,
-                  border: Border.all(color: Colors.white.withOpacity(0.08)),
-                ),
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.music_note, color: Colors.white.withOpacity(0.5), size: 24),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    // 房间名称
+                    _styledInput(
+                      controller: _nameController,
+                      focusNode: _nameFocusNode,
+                      hint: '房间名称',
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      hintStyle: const TextStyle(
+                        color: AppColors.textPlaceholder,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${_nameController.text.length}/30',
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    // 描述
+                    _styledInput(
+                      controller: _descController,
+                      focusNode: _descFocusNode,
+                      hint: '描述你的房间...',
+                      maxLines: 3,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${_descController.text.length}/100',
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // 音频上传
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.music_note,
+                          color: AppColors.iconColorWeak,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '音频（可选）',
+                          style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      '可以在创建房间后上传音频文件到播放列表',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    // 音乐上传区域
+                    GestureDetector(
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('音乐上传待集成'),
+                            backgroundColor: AppColors.cardBg,
+                          ),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.bgSecondary,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppColors.borderDefault),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.music_note,
+                              color: AppColors.iconColorWeak,
+                              size: 24,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _musicFilePath != null
+                                        ? '已选择音乐'
+                                        : '添加背景音乐',
+                                    style: TextStyle(
+                                      color: _musicFilePath != null
+                                          ? AppColors.textPrimary
+                                          : AppColors.textPlaceholder,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  if (_musicTitle != null)
+                                    Text(
+                                      _musicTitle!,
+                                      style: const TextStyle(
+                                        color: AppColors.textSecondary,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                            const Icon(
+                              Icons.add,
+                              color: AppColors.textWeak,
+                              size: 20,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // 房间标签
+                    const Text(
+                      '房间标签',
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _availableTags.map(_tagChip).toList(),
+                    ),
+                    const SizedBox(height: 20),
+                    // 公开/私密
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 14,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.inputBg,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
                         children: [
-                          Text(
-                            _musicFilePath != null ? '\u5df2\u9009\u62e9\u97f3\u4e50' : '\u6dfb\u52a0\u80cc\u666f\u97f3\u4e50',
-                            style: TextStyle(
-                              color: _musicFilePath != null ? Colors.white : Colors.white.withOpacity(0.4),
-                              fontSize: 14,
+                          Icon(
+                            _isPublic ? Icons.public : Icons.lock_outline,
+                            color: AppColors.iconColorWeak,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              _isPublic ? '公开房间' : '私密房间',
+                              style: const TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 14,
+                              ),
                             ),
                           ),
-                          if (_musicTitle != null)
-                            Text(_musicTitle!, style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
+                          Switch(
+                            value: _isPublic,
+                            onChanged: (v) =>
+                                setState(() => _isPublic = v),
+                            activeColor: AppColors.auroraCyan,
+                            inactiveThumbColor: AppColors.textWeak,
+                            inactiveTrackColor: AppColors.hoverBg,
+                          ),
                         ],
                       ),
                     ),
-                    Icon(Icons.add, color: Colors.white.withOpacity(0.3), size: 20),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            // \u516c\u5f00/\u79c1\u5bc6
-            GestureDetector(
-              onTap: () => setState(() => _isPublic = !_isPublic),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  color: AppColors.inputBg,
-                ),
-                child: Row(
-                  children: [
-                    Icon(_isPublic ? Icons.public : Icons.lock_outline, color: Colors.white.withOpacity(0.5), size: 18),
-                    const SizedBox(width: 12),
-                    Expanded(child: Text(_isPublic ? '\u516c\u5f00\u623f\u95f4' : '\u79c1\u5bc6\u623f\u95f4', style: const TextStyle(color: Colors.white, fontSize: 14))),
-                    Switch(
-                      value: _isPublic,
-                      onChanged: (v) => setState(() => _isPublic = v),
-                      activeColor: const Color(0xFF00E5FF),
+                    // 错误提示
+                    if (_error != null) ...[
+                      const SizedBox(height: 16),
+                      Text(
+                        _error!,
+                        style: const TextStyle(
+                          color: AppColors.error,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 24),
+                    // 创建按钮（底部大按钮）
+                    GestureDetector(
+                      onTap: _creating ? null : _createRoom,
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          gradient: AppColors.auroraGradient,
+                        ),
+                        child: Center(
+                          child: _creating
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                )
+                              : const Text(
+                                  '创建房间',
+                                  style: TextStyle(
+                                    color: AppColors.textPrimary,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Center(
+                      child: Text(
+                        '创建房间即表示你愿意在这个空间陪伴他人',
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
                     ),
                   ],
                 ),
               ),
             ),
-            if (_error != null) ...[
-              const SizedBox(height: 16),
-              Text(_error!, style: const TextStyle(color: Colors.redAccent, fontSize: 12)),
-            ],
           ],
         ),
       ),
