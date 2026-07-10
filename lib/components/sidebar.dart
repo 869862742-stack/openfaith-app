@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../theme/colors.dart';
+import '../i18n/app_localizations.dart';
 import '../services/auth_service.dart';
 
 /// Sidebar overlay component (对齐网页版 Sidebar.tsx)
@@ -113,20 +114,20 @@ class _SidebarState extends State<Sidebar>
   Future<void> _handleLogout() async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         backgroundColor: AppColors.bgColor,
-        title: const Text('退出登录', style: TextStyle(color: AppColors.textPrimary)),
-        content: const Text('确定要退出登录吗？',
-            style: TextStyle(color: AppColors.textSecondary)),
+        title: Text(context.tr('logout_confirm_title'), style: const TextStyle(color: AppColors.textPrimary)),
+        content: Text(context.tr('logout_confirm_content'),
+            style: const TextStyle(color: AppColors.textSecondary)),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('取消',
-                style: TextStyle(color: AppColors.textSecondary)),
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(context.tr('cancel'),
+                style: const TextStyle(color: AppColors.textSecondary)),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('退出', style: TextStyle(color: AppColors.error)),
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(context.tr('logout'), style: const TextStyle(color: AppColors.error)),
           ),
         ],
       ),
@@ -146,37 +147,37 @@ class _SidebarState extends State<Sidebar>
       _MenuItem(
         id: 'history',
         icon: Icons.schedule,
-        label: '浏览记录',
+        label: context.tr('sidebar_history'),
         color: AppColors.textSecondary,
       ),
       _MenuItem(
         id: 'download',
         icon: Icons.download_outlined,
-        label: '我的下载',
+        label: context.tr('sidebar_downloads'),
         color: AppColors.textSecondary,
       ),
       _MenuItem(
         id: 'covenant',
         icon: Icons.article_outlined,
-        label: '信仰公约',
+        label: context.tr('sidebar_covenant'),
         color: AppColors.textSecondary,
       ),
       _MenuItem(
         id: 'scan',
         icon: Icons.qr_code_scanner,
-        label: '扫一扫',
+        label: context.tr('sidebar_scan'),
         color: AppColors.textSecondary,
       ),
       _MenuItem(
         id: 'support',
         icon: Icons.headphones,
-        label: '欢迎联系',
+        label: context.tr('sidebar_support'),
         color: AppColors.textSecondary,
       ),
       _MenuItem(
         id: 'vip',
         icon: Icons.workspace_premium,
-        label: '订阅会员',
+        label: context.tr('sidebar_vip'),
         color: AppColors.auroraYellow,
         highlight: true,
       ),
@@ -184,13 +185,13 @@ class _SidebarState extends State<Sidebar>
         _MenuItem(
           id: 'admin',
           icon: Icons.shield,
-          label: '管理后台',
+          label: context.tr('sidebar_admin'),
           color: AppColors.textSecondary,
         ),
       _MenuItem(
         id: 'settings',
         icon: Icons.settings,
-        label: '设置',
+        label: context.tr('sidebar_settings'),
         color: AppColors.textSecondary,
       ),
     ];
@@ -301,7 +302,7 @@ class _SidebarState extends State<Sidebar>
                                       children: [
                                         Flexible(
                                           child: Text(
-                                            _currentUser!['nickname'] ?? _currentUser!['username'] ?? '用户',
+                                            _currentUser!['nickname'] ?? _currentUser!['username'] ?? context.tr('user'),
                                             style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
@@ -355,9 +356,9 @@ class _SidebarState extends State<Sidebar>
                                 const Icon(Icons.logout,
                                     color: AppColors.error, size: 20),
                                 const SizedBox(width: 16),
-                                const Text(
-                                  '退出登录',
-                                  style: TextStyle(
+                                Text(
+                                  context.tr('sidebar_logout'),
+                                  style: const TextStyle(
                                     color: AppColors.error,
                                     fontSize: 15,
                                     fontWeight: FontWeight.w500,

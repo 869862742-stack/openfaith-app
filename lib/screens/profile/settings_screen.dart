@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../theme/colors.dart';
+import '../../i18n/app_localizations.dart';
 import 'account_security_screen.dart';
 import 'display_settings_screen.dart';
 import 'notification_settings_screen.dart';
@@ -42,31 +43,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 // ── 5 functional setting items (each independent rounded-xl card) ──
                 _buildSettingItem(
                   icon: Icons.person_outline,
-                  title: '账号安全',
+                  title: context.tr('settings_account_security'),
                   onTap: () => _navigateTo(const AccountSecurityScreen()),
                 ),
                 const SizedBox(height: 4), // space-y-1 ≈ 4px
                 _buildSettingItem(
                   icon: Icons.text_fields_outlined,
-                  title: '显示设置',
+                  title: context.tr('settings_display'),
                   onTap: () => _navigateTo(const DisplaySettingsScreen()),
                 ),
                 const SizedBox(height: 4),
                 _buildSettingItem(
                   icon: Icons.notifications_outlined,
-                  title: '通知设置',
+                  title: context.tr('settings_notification'),
                   onTap: () => _navigateTo(const NotificationSettingsScreen()),
                 ),
                 const SizedBox(height: 4),
                 _buildSettingItem(
                   icon: Icons.language,
-                  title: '语言设置',
+                  title: context.tr('settings_language'),
                   onTap: () => _navigateTo(const LanguageSettingsScreen()),
                 ),
                 const SizedBox(height: 4),
                 _buildSettingItem(
                   icon: Icons.article_outlined,
-                  title: '内容偏好',
+                  title: context.tr('settings_content_preference'),
                   onTap: () => _navigateTo(const ContentPreferencesScreen()),
                 ),
 
@@ -81,13 +82,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 // ── Account actions ──
                 _buildSettingItem(
                   icon: Icons.people_outline,
-                  title: '切换账户',
+                  title: context.tr('settings_switch_account'),
                   onTap: () => _navigateTo(const SwitchAccountScreen()),
                 ),
                 const SizedBox(height: 4),
                 _buildSettingItem(
                   icon: Icons.logout,
-                  title: '退出登录',
+                  title: context.tr('settings_logout'),
                   isDestructive: true,
                   onTap: _showLogoutDialog,
                 ),
@@ -133,8 +134,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                const Text(
-                  '设置',
+                Text(
+                  context.tr('settings'),
                   style: TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 18,
@@ -216,27 +217,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(color: AppColors.borderColor, width: 0.5),
         ),
-        title: const Text(
-          '退出登录',
-          style: TextStyle(color: AppColors.textPrimary, fontSize: 18),
+        title: Text(
+          context.tr('settings_logout'),
+          style: const TextStyle(color: AppColors.textPrimary, fontSize: 18),
         ),
-        content: const Text(
-          '确定要退出登录吗？',
-          style: TextStyle(color: AppColors.textSecondary, fontSize: 15),
+        content: Text(
+          context.tr('logout_confirm_content'),
+          style: const TextStyle(color: AppColors.textSecondary, fontSize: 15),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('取消',
-                style: TextStyle(color: AppColors.textSecondary)),
+            child: Text(context.tr('cancel'),
+                style: const TextStyle(color: AppColors.textSecondary)),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(dialogContext);
               _performLogout();
             },
-            child: const Text('确定',
-                style: TextStyle(color: AppColors.accentRed)),
+            child: Text(context.tr('confirm'),
+                style: const TextStyle(color: AppColors.accentRed)),
           ),
         ],
       ),
@@ -270,7 +271,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('退出登录失败: $e'),
+            content: Text('${context.tr('logout_failed')}: $e'),
             backgroundColor: AppColors.accentRed,
           ),
         );

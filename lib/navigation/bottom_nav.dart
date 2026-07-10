@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/colors.dart';
+import '../i18n/app_localizations.dart';
 import '../widgets/animated_starfield.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/home/create_post_screen.dart';
@@ -80,17 +81,17 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(0, Icons.home_outlined, Icons.home, '首页'),
-              _buildNavItem(1, Icons.explore_outlined, Icons.explore, '学习'),
+              _buildNavItem(0, Icons.home_outlined, Icons.home, context.tr('nav_home')),
+              _buildNavItem(1, Icons.explore_outlined, Icons.explore, context.tr('nav_learn')),
               _buildPublishButton(),
               _buildNavItem(
                 2,
                 Icons.notifications_outlined,
                 Icons.notifications,
-                '消息',
+                context.tr('nav_message'),
                 showBadge: true,
               ),
-              _buildNavItem(3, Icons.person_outline, Icons.person, '我的'),
+              _buildNavItem(3, Icons.person_outline, Icons.person, context.tr('nav_profile')),
             ],
           ),
         ),
@@ -252,8 +253,8 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             // 网页版: text-lg font-semibold mb-4 text-center text-white
-            const Text(
-              '发布',
+            Text(
+              context.tr('publish'),
               style: TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 18,
@@ -275,7 +276,7 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
                 height: 48,
                 child: Center(
                   child: Text(
-                    '取消',
+                    context.tr('cancel'),
                     style: TextStyle(
                       color: AppColors.textMuted,
                       fontSize: 15,
@@ -296,22 +297,22 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
     final options = <_PublishOption>[
       _PublishOption(
         icon: Icons.edit_outlined,
-        label: '笔记',
+        label: context.tr('publish_note'),
         onTap: () => _navigateToPublish('note'),
       ),
       _PublishOption(
         icon: Icons.brightness_2_outlined,
-        label: '房间',
+        label: context.tr('publish_room'),
         onTap: () => _navigateToPublish('room'),
       ),
       _PublishOption(
         icon: Icons.menu_book_outlined,
-        label: '计划',
+        label: context.tr('publish_plan'),
         onTap: () => _navigateToPublish('plan'),
       ),
       _PublishOption(
         icon: Icons.file_copy_outlined,
-        label: '草稿',
+        label: context.tr('publish_drafts'),
         onTap: () => _navigateToPublish('drafts'),
       ),
     ];
