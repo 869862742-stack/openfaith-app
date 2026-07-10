@@ -1,7 +1,7 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../../theme/colors.dart';
+import '../../theme/app_colors.dart';
 
-/// 信仰公约页 - 对齐网页版 Covenant.tsx
 class CovenantScreen extends StatelessWidget {
   const CovenantScreen({super.key});
 
@@ -17,143 +17,203 @@ class CovenantScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        leading: IconButton(icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20), onPressed: () => Navigator.pop(context)),
-        title: const Text('信仰公约', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 顶部介绍卡片
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.04),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.white.withOpacity(0.08)),
-              ),
+      body: CustomScrollView(
+        slivers: [
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _SliverAppBarDelegate(onBack: () => Navigator.pop(context)),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      // 盾牌图标 - 七彩渐变边框
-                      Container(
-                        padding: const EdgeInsets.all(1),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          gradient: const LinearGradient(
-                            colors: AppColors.rainbowColors,
-                            transform: GradientRotation(0.785398),
-                          ),
-                        ),
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(11),
-                            color: AppColors.background,
-                          ),
-                          child: const Icon(Icons.shield_outlined, color: Colors.white, size: 24),
-                        ),
+                  // Top intro card
+                  _buildIntroCard(),
+                  const SizedBox(height: 24),
+                  // Covenant items
+                  ...List.generate(_items.length, (i) {
+                    final item = _items[i];
+                    return _buildCovenantItem(i + 1, item['title']!, item['content']!);
+                  }),
+                  const SizedBox(height: 24),
+                  // Bottom tag
+                  Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: AppColors.hoverBgLight,
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                      const SizedBox(width: 12),
-                      const Expanded(child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('OpenFaith 信仰公约', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                          SizedBox(height: 2),
-                          Text('尊重 · 包容 · 和平', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(Icons.check, color: AppColors.textPrimary, size: 16),
+                          SizedBox(width: 8),
+                          Text('共同维护社区环境', style: TextStyle(color: AppColors.textPrimary, fontSize: 12)),
                         ],
-                      )),
-                    ],
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    '我们致力于创建一个尊重、包容、和平的全球信仰交流社区，让每一位探索者都能在这里找到心灵的归属。',
-                    style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.5),
-                  ),
+                  const SizedBox(height: 32),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
-            // 公约条目
-            ...List.generate(_items.length, (i) {
-              final item = _items[i];
-              return Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(16),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIntroCard() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppColors.inputBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.borderDefault),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              // Shield icon with rainbow gradient border
+              Container(
+                width: 48,
+                height: 48,
+                padding: const EdgeInsets.all(1.5),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.03),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white.withOpacity(0.08)),
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: AppColors.auroraColors,
+                  ),
                 ),
-                child: Row(
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10.5),
+                    color: AppColors.background,
+                  ),
+                  child: const Center(child: Icon(Icons.shield_outlined, color: AppColors.textPrimary, size: 24)),
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 序号 - 七彩渐变边框
-                    Container(
-                      width: 32, height: 32,
-                      padding: const EdgeInsets.all(1),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        gradient: const LinearGradient(
-                          transform: GradientRotation(0.785398),
-                          colors: AppColors.rainbowColors,
-                        ),
-                      ),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(7),
-                          color: AppColors.background,
-                        ),
-                        child: Center(child: Text('${i + 1}', style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold))),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(item['title']!, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
-                        const SizedBox(height: 6),
-                        Text(item['content']!, style: const TextStyle(color: Colors.white60, fontSize: 13, height: 1.5)),
-                      ],
-                    )),
+                    Text('OpenFaith 信仰公约', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
+                    SizedBox(height: 2),
+                    Text('尊重 · 包容 · 和平', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
                   ],
                 ),
-              );
-            }),
-            const SizedBox(height: 16),
-            // 底部签署区
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                gradient: const LinearGradient(colors: AppColors.rainbowColors, transform: GradientRotation(0.785398)),
               ),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(11),
-                  color: AppColors.background,
-                ),
-                child: const Column(
-                  children: [
-                    Icon(Icons.check_circle_outline, color: Color(0xFF70E000), size: 32),
-                    SizedBox(height: 8),
-                    Text('我已阅读并同意遵守以上公约', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
-                    SizedBox(height: 4),
-                    Text('使用 OpenFaith 即表示您同意遵守以上公约条款', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-                  ],
-                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            '我们致力于创建一个尊重、包容、和平的全球信仰交流社区，让每一位探索者都能在这里找到心灵的归属。',
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.5),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCovenantItem(int index, String title, String content) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.hoverBgLight,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.borderDefault),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Number with rainbow gradient border
+          Container(
+            width: 32,
+            height: 32,
+            padding: const EdgeInsets.all(1.5),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: AppColors.auroraColors,
               ),
             ),
-            const SizedBox(height: 32),
-          ],
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(6.5),
+                color: AppColors.background,
+              ),
+              child: Center(
+                child: Text('$index', style: const TextStyle(color: AppColors.textPrimary, fontSize: 13, fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 4),
+                Text(content, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.5)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
+  final VoidCallback onBack;
+
+  _SliverAppBarDelegate({required this.onBack});
+
+  @override
+  double get maxExtent => 56.0;
+
+  @override
+  double get minExtent => 56.0;
+
+  @override
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) => false;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(
+          height: 56,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: const BoxDecoration(
+            color: AppColors.headerBg,
+            border: Border(bottom: BorderSide(color: AppColors.borderDefault, width: 1)),
+          ),
+          child: Row(
+            children: [
+              GestureDetector(
+                onTap: onBack,
+                child: const Padding(
+                  padding: EdgeInsets.all(8),
+                  child: Icon(Icons.arrow_back_ios_new, color: AppColors.textPrimary, size: 20),
+                ),
+              ),
+              const SizedBox(width: 4),
+              const Text('信仰公约', style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
+            ],
+          ),
         ),
       ),
     );

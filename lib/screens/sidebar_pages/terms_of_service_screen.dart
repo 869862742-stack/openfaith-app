@@ -1,4 +1,6 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../../theme/app_colors.dart';
 
 class TermsOfServiceScreen extends StatefulWidget {
   const TermsOfServiceScreen({super.key});
@@ -13,37 +15,25 @@ class _TermsOfServiceScreenState extends State<TermsOfServiceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF050816),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF050816),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(_isEnglish ? 'Terms of Service' : '用户协议',
-            style: const TextStyle(color: Colors.white, fontSize: 16)),
-        actions: [
-          TextButton(
-            onPressed: () => setState(() => _isEnglish = !_isEnglish),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
-              ),
-              child: Text(
-                _isEnglish ? '中文' : 'EN',
-                style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
-              ),
+      backgroundColor: AppColors.background,
+      body: CustomScrollView(
+        slivers: [
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _SliverAppBarDelegate(
+              isEnglish: _isEnglish,
+              onToggleLang: () => setState(() => _isEnglish = !_isEnglish),
+              onBack: () => Navigator.pop(context),
             ),
           ),
-          const SizedBox(width: 8),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+              child: _isEnglish ? _buildEnglishContent() : _buildChineseContent(),
+            ),
+          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 32)),
         ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: _isEnglish ? _buildEnglishContent() : _buildChineseContent(),
       ),
     );
   }
@@ -52,54 +42,80 @@ class _TermsOfServiceScreenState extends State<TermsOfServiceScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSection('OpenFaith 用户协议', [
-          '最后更新日期：2026年4月24日',
-          '',
-          '欢迎使用 OpenFaith（"本应用"、"我们"或"我们的"）。本协议由您（"用户"）与 OpenFaith 运营方共同缔结。',
+        const Text('最后更新：2026年6月7日', style: TextStyle(color: AppColors.textPlaceholder, fontSize: 12)),
+        const SizedBox(height: 24),
+
+        _buildH2('1. 接受条款'),
+        const Text('欢迎使用 OpenFaith！使用本应用及网站（openfaithhub.com）即表示您同意遵守本服务条款。如果您不同意这些条款，请勿使用我们的服务。', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6)),
+
+        _buildH2('2. 服务描述'),
+        const Text('OpenFaith 是一个宗教经典阅读与信仰交流平台，提供以下核心服务：', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6)),
+        _buildList([
+          '多宗教经典书籍的在线阅读',
+          '信仰社区互动（笔记、评论、问答）',
+          '静默陪伴与共境功能',
+          'VIP会员增值服务',
         ]),
-        const SizedBox(height: 16),
-        _buildSection('1. 接受本协议', [
-          '通过注册、登录或使用 OpenFaith，您确认您已阅读、理解并同意受本协议所有条款的约束。如果您不同意，请勿使用本应用。',
+
+        _buildH2('3. 用户资格'),
+        _buildList([
+          '您必须年满13周岁方可使用本服务',
+          '您提供的注册信息必须真实、准确',
+          '每人仅限注册一个账号',
+          '不得使用他人身份注册或使用服务',
         ]),
-        const SizedBox(height: 16),
-        _buildSection('2. 账号注册与安全', [
-          '您须提供真实、准确的注册信息（如邮箱/手机、用户名）。您对账号下的所有活动负全责。如发现未经授权使用，请立即通知我们。',
+
+        _buildH2('4. 用户行为规范'),
+        const Text('您在使用本服务时，不得：', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6)),
+        _buildList([
+          '发布违法、淫秽、诽谤、仇恨、暴力或歧视性内容',
+          '冒充他人或虚构身份',
+          '骚扰、威胁或恐吓其他用户',
+          '传播垃圾信息或恶意软件',
+          '侵犯他人知识产权或其他权利',
+          '试图未经授权访问系统或其他用户账号',
+          '利用系统漏洞获取不当利益',
+          '破坏或干扰服务的正常运行',
         ]),
-        const SizedBox(height: 16),
-        _buildSection('3. 用户行为规范', [
-          '您承诺在使用本应用时遵守所有适用的国际、国家和地方法律法规，并不得：',
-          '发布任何非法、诽谤、淫秽、仇恨、暴力或煽动宗教对立的内容；',
-          '侵犯他人隐私、知识产权或其他合法权益；',
-          '传播病毒、恶意代码或进行任何可能破坏本应用安全的行为；',
-          '冒充他人或组织，或虚假陈述与某一实体的关联。',
-          '',
-          '我们有权对违规内容进行删除，并对违规账号采取警告、限制功能、暂停或永久封禁等措施。',
+
+        _buildH2('5. 用户生成内容'),
+        const Text('您对您发布的内容承担全部责任。发布内容即表示您授予 OpenFaith 非独占的、全球性的、免费的许可，以展示和分发您的内容。我们保留移除违反本条款内容的权利，但无义务监控所有内容。', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6)),
+
+        _buildH2('6. VIP会员服务'),
+        _buildList([
+          'VIP会员为付费增值服务，具体权益以应用内展示为准',
+          '支付完成后，VIP权益即时生效',
+          'VIP会员按购买周期计费，到期后自动失效',
+          '虚拟道具（卡片等）一经发放使用，不予退款',
         ]),
-        const SizedBox(height: 16),
-        _buildSection('4. 内容所有权与授权', [
-          '您保留您发布的内容（如笔记、评论）的所有权。但您授予 OpenFaith 一项全球范围内、免版税、非独占的许可，以便我们存储、展示、推广您的内容。',
+
+        _buildH2('7. 知识产权'),
+        const Text('OpenFaith 平台的设计、代码、商标等归 OpenFaith 所有。平台收录的宗教经典文本属于公有领域或已获授权。未经许可，不得复制、修改或分发平台内容。', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6)),
+
+        _buildH2('8. 免责声明'),
+        _buildList([
+          '服务按"现状"提供，不作任何明示或暗示的保证',
+          '我们不保证服务的不间断或无错误',
+          '用户生成内容不代表 OpenFaith 的观点',
+          '我们对第三方链接或服务不承担责任',
         ]),
-        const SizedBox(height: 16),
-        _buildSection('5. 隐私政策', [
-          '我们重视您的隐私。收集、使用和保护您个人信息的具体做法，请查阅我们的《隐私政策》，该政策是本协议不可分割的一部分。',
-        ]),
-        const SizedBox(height: 16),
-        _buildSection('6. 免责声明', [
-          '本应用按"现状"提供，我们不保证服务无中断、无错误。用户发布的内容不代表本应用立场。',
-        ]),
-        const SizedBox(height: 16),
-        _buildSection('7. 修改与终止', [
-          '我们有权修改本协议，修改后的协议将通过应用内公告通知您。如您继续使用，则视为接受修改。您可随时停止使用并注销账号。',
-        ]),
-        const SizedBox(height: 16),
-        _buildSection('8. 适用法律与争议解决', [
-          '本协议的解释及争议解决，适用香港法律（或您指定的法律区域）。争议应首先通过友好协商解决；协商不成的，提交香港国际仲裁中心（HKIAC）仲裁。',
-        ]),
-        const SizedBox(height: 16),
-        _buildSection('9. 联系我们', [
-          '如有疑问，请通过 hello@openfaithhub.com 与我们联系。',
-        ]),
-        const SizedBox(height: 32),
+
+        _buildH2('9. 责任限制'),
+        const Text('在法律允许的最大范围内，OpenFaith 对因使用或无法使用本服务而产生的任何间接、附带、特殊或后果性损害不承担责任。', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6)),
+
+        _buildH2('10. 账号终止'),
+        const Text('违反本条款可能导致账号被暂停或终止。您可随时申请注销账号，注销后您的数据将在冷静期后被永久删除。', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6)),
+
+        _buildH2('11. 争议解决'),
+        const Text('本条款受中华人民共和国法律管辖。因本条款产生的争议，双方应友好协商解决；协商不成的，提交有管辖权的人民法院诉讼解决。', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6)),
+
+        _buildH2('12. 条款修改'),
+        const Text('我们保留随时修改本条款的权利。重大变更将通过应用内通知告知。继续使用服务即视为接受修改后的条款。', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6)),
+
+        _buildH2('13. 联系我们'),
+        const Text('如有关于本服务条款的疑问，请联系：', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6)),
+        const SizedBox(height: 4),
+        const Text('邮箱：hello@openfaithhub.com', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6)),
       ],
     );
   }
@@ -108,83 +124,165 @@ class _TermsOfServiceScreenState extends State<TermsOfServiceScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSection('OpenFaith Terms of Service', [
-          'Last Updated: April 24, 2026',
-          '',
-          'Welcome to OpenFaith ("the App," "we," "our," or "us"). This Agreement is entered into between you ("User") and the OpenFaith operator.',
+        const Text('Last Updated: June 7, 2026', style: TextStyle(color: AppColors.textPlaceholder, fontSize: 12)),
+        const SizedBox(height: 24),
+
+        _buildH2('1. Acceptance of Terms'),
+        const Text('Welcome to OpenFaith! By using our application and website (openfaithhub.com), you agree to be bound by these Terms of Service. If you do not agree, please do not use our services.', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6)),
+
+        _buildH2('2. Service Description'),
+        const Text('OpenFaith is a religious scripture reading and faith community platform providing:', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6)),
+        _buildList([
+          'Online reading of multi-religion scripture books',
+          'Faith community interaction (notes, comments, Q&A)',
+          'Silent companionship and shared meditation features',
+          'VIP membership premium services',
         ]),
-        const SizedBox(height: 16),
-        _buildSection('1. Acceptance of Terms', [
-          'By registering, logging in, or using OpenFaith, you confirm that you have read, understood, and agree to be bound by all terms of this Agreement. If you do not agree, please do not use the App.',
+
+        _buildH2('3. User Eligibility'),
+        _buildList([
+          'You must be at least 13 years old to use this service',
+          'Registration information must be true and accurate',
+          'One account per person only',
+          "You may not use another person's identity",
         ]),
-        const SizedBox(height: 16),
-        _buildSection('2. Account Registration & Security', [
-          'You must provide true and accurate registration information (e.g., email/phone, username). You are fully responsible for all activities under your account. If you discover unauthorized use, please notify us immediately.',
+
+        _buildH2('4. User Conduct'),
+        const Text('You must not:', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6)),
+        _buildList([
+          'Post illegal, obscene, defamatory, hateful, violent, or discriminatory content',
+          'Impersonate others or create fake identities',
+          'Harass, threaten, or intimidate other users',
+          'Transmit spam or malicious software',
+          "Infringe others' intellectual property or other rights",
+          "Attempt unauthorized access to systems or other users' accounts",
+          'Exploit system vulnerabilities for improper gain',
+          'Disrupt or interfere with normal service operation',
         ]),
-        const SizedBox(height: 16),
-        _buildSection('3. User Conduct', [
-          'You agree to comply with all applicable international, national, and local laws when using this App, and you must not:',
-          'Post any illegal, defamatory, obscene, hateful, violent, or religiously divisive content;',
-          'Infringe upon others\' privacy, intellectual property, or other legal rights;',
-          'Spread viruses, malicious code, or engage in any activity that may compromise the App\'s security;',
-          'Impersonate another person or organization, or misrepresent your affiliation with any entity.',
-          '',
-          'We reserve the right to remove violating content and take measures against violating accounts, including warnings, feature restrictions, suspension, or permanent bans.',
+
+        _buildH2('5. User-Generated Content'),
+        const Text('You are solely responsible for content you post. By posting, you grant OpenFaith a non-exclusive, worldwide, royalty-free license to display and distribute your content. We reserve the right to remove content violating these Terms, but have no obligation to monitor all content.', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6)),
+
+        _buildH2('6. VIP Membership'),
+        _buildList([
+          'VIP membership is a paid premium service; benefits are as displayed in-app',
+          'VIP benefits take effect immediately upon payment',
+          'VIP membership is billed per purchase period and expires automatically',
+          'Virtual items (cards, etc.) are non-refundable once used',
         ]),
-        const SizedBox(height: 16),
-        _buildSection('4. Content Ownership & License', [
-          'You retain ownership of content you post (e.g., notes, comments). However, you grant OpenFaith a worldwide, royalty-free, non-exclusive license to store, display, and promote your content.',
+
+        _buildH2('7. Intellectual Property'),
+        const Text("OpenFaith's platform design, code, and trademarks belong to OpenFaith. Religious scripture texts are in the public domain or used with authorization. You may not copy, modify, or distribute platform content without permission.", style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6)),
+
+        _buildH2('8. Disclaimer'),
+        _buildList([
+          'Services are provided "as is" without warranties',
+          'We do not guarantee uninterrupted or error-free service',
+          "User-generated content does not represent OpenFaith's views",
+          'We are not responsible for third-party links or services',
         ]),
-        const SizedBox(height: 16),
-        _buildSection('5. Privacy Policy', [
-          'We value your privacy. For details on how we collect, use, and protect your personal information, please refer to our Privacy Policy, which is an integral part of this Agreement.',
-        ]),
-        const SizedBox(height: 16),
-        _buildSection('6. Disclaimer', [
-          'The App is provided "as is." We do not guarantee uninterrupted or error-free service. Content posted by users does not represent the App\'s position.',
-        ]),
-        const SizedBox(height: 16),
-        _buildSection('7. Modifications & Termination', [
-          'We reserve the right to modify this Agreement. Changes will be communicated via in-app announcements. Continued use constitutes acceptance of the modifications. You may stop using the App and delete your account at any time.',
-        ]),
-        const SizedBox(height: 16),
-        _buildSection('8. Governing Law & Dispute Resolution', [
-          'This Agreement shall be governed by and construed in accordance with the laws of Hong Kong (or your specified jurisdiction). Disputes shall first be resolved through amicable negotiation; if unresolved, submitted to the Hong Kong International Arbitration Centre (HKIAC) for arbitration.',
-        ]),
-        const SizedBox(height: 16),
-        _buildSection('9. Contact Us', [
-          'If you have any questions, please contact us at hello@openfaithhub.com.',
-        ]),
-        const SizedBox(height: 32),
+
+        _buildH2('9. Limitation of Liability'),
+        const Text('To the maximum extent permitted by law, OpenFaith shall not be liable for any indirect, incidental, special, or consequential damages arising from the use or inability to use our services.', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6)),
+
+        _buildH2('10. Account Termination'),
+        const Text('Violation of these Terms may result in account suspension or termination. You may request account deletion at any time; your data will be permanently deleted after a cooling-off period.', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6)),
+
+        _buildH2('11. Dispute Resolution'),
+        const Text("These Terms are governed by the laws of the People's Republic of China. Disputes shall be resolved through friendly negotiation; if unresolved, submitted to the competent People's Court.", style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6)),
+
+        _buildH2('12. Modifications'),
+        const Text('We reserve the right to modify these Terms at any time. Material changes will be communicated via in-app notification. Continued use constitutes acceptance of modified Terms.', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6)),
+
+        _buildH2('13. Contact Us'),
+        const Text('For questions about these Terms:', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6)),
+        const SizedBox(height: 4),
+        const Text('Email: hello@openfaithhub.com', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6)),
       ],
     );
   }
 
-  Widget _buildSection(String title, List<String> paragraphs) {
+  Widget _buildH2(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 24, bottom: 12),
+      child: Text(title, style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+    );
+  }
+
+  Widget _buildList(List<String> items) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
+      children: items
+          .map((item) => Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('• ', style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
+                    Expanded(child: Text(item, style: const TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6))),
+                  ],
+                ),
+              ))
+          .toList(),
+    );
+  }
+}
+
+class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
+  final bool isEnglish;
+  final VoidCallback onToggleLang;
+  final VoidCallback onBack;
+
+  _SliverAppBarDelegate({required this.isEnglish, required this.onToggleLang, required this.onBack});
+
+  @override
+  double get maxExtent => 56.0;
+
+  @override
+  double get minExtent => 56.0;
+
+  @override
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) => true;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(
+          height: 56,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: const BoxDecoration(
+            color: AppColors.headerBg,
+            border: Border(bottom: BorderSide(color: AppColors.borderDefault, width: 1)),
+          ),
+          child: Row(
+            children: [
+              GestureDetector(
+                onTap: onBack,
+                child: const Text('← 返回', style: TextStyle(color: AppColors.iconColorWeak, fontSize: 14)),
+              ),
+              const Spacer(),
+              Text(isEnglish ? 'Terms of Service' : '服务条款', style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+              const Spacer(),
+              GestureDetector(
+                onTap: onToggleLang,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.hoverBg,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    isEnglish ? '中文' : 'EN',
+                    style: const TextStyle(color: AppColors.iconColorWeak, fontSize: 12),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 8),
-        ...paragraphs.map((text) => Padding(
-          padding: const EdgeInsets.only(bottom: 4),
-          child: Text(
-            text,
-            style: TextStyle(
-              color: text.isEmpty ? Colors.transparent : Colors.white.withOpacity(0.65),
-              fontSize: 13,
-              height: 1.6,
-            ),
-          ),
-        )),
-      ],
+      ),
     );
   }
 }
