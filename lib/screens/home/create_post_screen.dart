@@ -17,7 +17,7 @@ class CreatePostScreen extends StatefulWidget {
   State<CreatePostScreen> createState() => _CreatePostScreenState();
 }
 
-class _CreatePostScreenState extends State<CreatePostScreen> {
+class _CreatePostScreenState extends State<CreatePostScreen> with TickerProviderStateMixin {
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
   final _customTagController = TextEditingController();
@@ -76,7 +76,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                   translation: _expSlideAnimation!.value,
                   child: Text(
                     '+$amount EXP',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Color(0xFFFFD700),
                       fontSize: 14,
                       fontWeight: FontWeight.bold,

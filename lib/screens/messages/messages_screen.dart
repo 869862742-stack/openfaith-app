@@ -609,7 +609,7 @@ class _MessagesScreenState extends State<MessagesScreen>
     return Center(child: Icon(ic, size: 22, color: cl));
   }
 
-  void _handleMessageTap(UnifiedMessage msg) {
+  Future<void> _handleMessageTap(UnifiedMessage msg) async {
     switch (msg.type) {
       case 'private':
         final fd = msg.rawData as Map<String, dynamic>;
@@ -1180,7 +1180,7 @@ class _MessagesScreenState extends State<MessagesScreen>
   Widget _buildRoomsTab() {
     return const RoomListScreen(standalone: false);
   }
-}
+
 
 
   // ========== 收藏 TAB ==========
@@ -1353,6 +1353,9 @@ class _MessagesScreenState extends State<MessagesScreen>
       ),
     );
   }
+
+}
+
 
 /// 统一消息模型
 class UnifiedMessage {

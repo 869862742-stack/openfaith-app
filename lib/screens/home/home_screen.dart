@@ -386,7 +386,7 @@ class _HomeScreenState extends State<HomeScreen> {
           .where((id) => id.isNotEmpty)
           .toList();
 
-      if (!mounted) return;
+      if (!mounted) return _followingIds;
       setState(() => _followingIds = ids);
       return ids;
     } catch (e) {
@@ -1456,7 +1456,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // ==========================================================================
   Widget _buildMainContent(List<Map<String, dynamic>> displayPosts, bool isEmpty) {
     if (_currentTab == 3) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -2029,7 +2029,7 @@ class _SearchPageState extends State<_SearchPage> {
                       )),
                     ],
                     if (_results.isEmpty && _userResults.isEmpty && _hasSearched)
-                      const Center(
+                      Center(
                         child: Padding(
                           padding: EdgeInsets.all(40),
                           child: Text(context.tr('search_no_result'), style: TextStyle(color: AppColors.textMuted, fontSize: 14)),
