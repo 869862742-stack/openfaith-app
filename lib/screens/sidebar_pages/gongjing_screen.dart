@@ -360,7 +360,7 @@ class _GongjingScreenState extends State<GongjingScreen> {
           // ── 毛玻璃 Header + Tab ──
           ClipRect(
             child: BackdropFilter(
-              blur: const ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+              filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
               child: Container(
                 decoration: BoxDecoration(
                   color: AppColors.headerBg,
@@ -1575,10 +1575,6 @@ class _GongjingScreenState extends State<GongjingScreen> {
                         border: Border.all(
                           color: AppColors.borderDefault,
                         ),
-                        opacity:
-                            _echoSubmitting || _echoCtrl.text.trim().isEmpty
-                                ? 0.5
-                                : 1.0,
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -1716,7 +1712,6 @@ class _GongjingScreenState extends State<GongjingScreen> {
           color: AppColors.borderActive,
           width: 1,
         ),
-        opacity: isNight ? 0.9 : 1.0,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2064,10 +2059,6 @@ class _GongjingScreenState extends State<GongjingScreen> {
                                     ? AppColors.hoverBg
                                     : AppColors.hoverBgLight,
                                 borderRadius: BorderRadius.circular(20),
-                                opacity: (_replyCtrls[shareId]?.text.trim() ?? '')
-                                        .isNotEmpty
-                                    ? 1.0
-                                    : 0.5,
                               ),
                               child: Text(
                                 '发送',

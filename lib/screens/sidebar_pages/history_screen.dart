@@ -120,7 +120,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           // ── 毛玻璃 Header ──
           ClipRect(
             child: BackdropFilter(
-              blur: const ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+              filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
               child: Container(
                 decoration: BoxDecoration(
                   color: AppColors.headerBg,

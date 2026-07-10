@@ -74,7 +74,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
                 unselectedLabelStyle: const TextStyle(fontSize: 14),
                 dividerColor: Colors.transparent,
                 tabs: const [
-                  Tab(child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.book_open, size: 16), SizedBox(width: 8), Text('离线书籍')])),
+                  Tab(child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.menu_book, size: 16), SizedBox(width: 8), Text('离线书籍')])),
                   Tab(child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.description, size: 16), SizedBox(width: 8), Text('笔记资源')])),
                 ],
               ),

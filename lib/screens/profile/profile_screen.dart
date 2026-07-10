@@ -350,16 +350,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         fit: BoxFit.cover,
                         placeholder: (_, __) => Container(
                           color: AppColors.bgColor,
-                          child: const _StarfieldPainter(),
+                          child: const CustomPaint(painter: _StarfieldPainter(), size: Size.infinite),
                         ),
                         errorWidget: (_, __, ___) => Container(
                           color: AppColors.bgColor,
-                          child: const _StarfieldPainter(),
+                          child: const CustomPaint(painter: _StarfieldPainter(), size: Size.infinite),
                         ),
                       )
                     : Container(
                         color: AppColors.bgColor,
-                        child: const _StarfieldPainter(),
+                        child: const CustomPaint(painter: _StarfieldPainter(), size: Size.infinite),
                       ),
               ),
               // 渐变遮罩 overlay（网页版: bg-gradient-to-t from-bg-color via-bg-color/60）

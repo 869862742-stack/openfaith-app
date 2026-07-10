@@ -50,7 +50,7 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
   bool _isFolded = false;
 
   // Realtime 订阅
-  StreamSubscription? _realtimeSubscription;
+  RealtimeChannel? _realtimeSubscription;
 
   @override
   void initState() {
@@ -116,7 +116,7 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
           .select(
               '*, sender:sender_id(nickname, username, avatar_url), receiver:receiver_id(nickname, username, avatar_url)')
           .or(
-              'and(sender_id.eq.$currentUserId,receiver_id.eq.${widget.otherUserId}),and(sender_id.eq.${widget.otherUserId},receiver_id.eq.$currentUserId)')
+              'and(sender_id.eq.${_currentUserId!},receiver_id.eq.${widget.otherUserId}),and(sender_id.eq.${widget.otherUserId},receiver_id.eq.${_currentUserId!})')
           .order('created_at', ascending: true)
           .limit(100);
 
@@ -1328,7 +1328,7 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
     _scrollController.dispose();
     _inputFocusNode.dispose();
     _recordingTimer?.cancel();
-    _realtimeSubscription?.cancel();
+    _realtimeSubscription?.unsubscribe();
     super.dispose();
   }
 }

@@ -102,7 +102,7 @@ class _PublishVideoScreenState extends State<PublishVideoScreen> {
               filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
               child: Container(
                 padding: EdgeInsets.only(
-                  top: MediaQuery.of(context).paddingTop + 12,
+                  top: MediaQuery.of(context).padding.top + 12,
                   left: 16,
                   right: 16,
                   bottom: 12,

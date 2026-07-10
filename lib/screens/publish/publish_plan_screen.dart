@@ -81,7 +81,7 @@ class _PublishPlanScreenState extends State<PublishPlanScreen> {
           // Header - 对齐网页版
           Container(
             padding: EdgeInsets.only(
-              top: MediaQuery.of(context).paddingTop + 12,
+              top: MediaQuery.of(context).padding.top + 12,
               left: 16,
               right: 16,
               bottom: 12,

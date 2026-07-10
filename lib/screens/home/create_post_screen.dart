@@ -229,9 +229,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                   margin: const EdgeInsets.only(bottom: 16),
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: const AppColors.auroraCyan.withOpacity(0.1),
+                    color: AppColors.auroraCyan.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const AppColors.auroraCyan.withOpacity(0.3)),
+                    border: Border.all(color: AppColors.auroraCyan.withOpacity(0.3)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
