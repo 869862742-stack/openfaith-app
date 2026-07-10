@@ -23,7 +23,7 @@ const Map<String, ReligionIconData> _religionIconMap = {
   // 亚伯拉罕系
   '巴哈伊教':     ReligionIconData(Icons.star_border,           Color(0xFFFFD60A)),
   '摩门教':       ReligionIconData(Icons.wb_sunny_outlined,     Color(0xFFFFD60A)),
-  '耶和华见证人': ReligionIconData(Icons.tower,                 Color(0xFF3A86FF)),
+  '耶和华见证人': ReligionIconData(Icons.account_balance,                 Color(0xFF3A86FF)),
 
   // 德鲁兹教 & 雅兹迪 & 曼达安
   '德鲁兹教':     ReligionIconData(Icons.star_half,             Color(0xFF00E5FF)),

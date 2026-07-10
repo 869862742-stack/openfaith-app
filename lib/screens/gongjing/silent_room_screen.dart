@@ -193,6 +193,53 @@ List<LrcLine> parseLrc(String lrcText) {
 
 bool isLrcFormat(String text) => RegExp(r'\[\d{2}:\d{2}').hasMatch(text);
 
+/// 从 Python dict 格式字符串中提取纯文本
+/// 处理类似 {"text": "hello", "translated": "你好"} 的格式
+String extractTextFromDictFormat(String text) {
+  if (!text.trimLeft().startsWith('{')) return text;
+  try {
+    final decoded = jsonDecode(text.replaceAll('\'', '\"'));
+    if (decoded is Map<String, dynamic>) {
+      final buffer = StringBuffer();
+      for (final value in decoded.values) {
+        if (value is String && value.isNotEmpty) {
+          buffer.writeln(value);
+        }
+      }
+      return buffer.toString().trim();
+    }
+  } catch (_) {}
+  return text;
+}
+
+/// 将 dict 格式歌词转换为 LRC 格式
+String convertDictToLrc(String text) {
+  if (!text.contains(':') || !text.contains('{')) return text;
+  // 如果不是 LRC 格式但包含时间戳的 dict，尝试转换
+  try {
+    final lines = text.split('\n');
+    final lrcLines = <String>[];
+    for (final line in lines) {
+      final trimmed = line.trim();
+      if (trimmed.startsWith('{') && trimmed.contains('time')) {
+        final decoded = jsonDecode(trimmed.replaceAll('\'', '\"')) as Map<String, dynamic>;
+        final time = decoded['time'];
+        final content = decoded['content'] ?? decoded['text'] ?? '';
+        if (time is num && content is String && content.isNotEmpty) {
+          final totalSec = time.toDouble();
+          final min = (totalSec ~/ 60).toString().padLeft(2, '0');
+          final sec = (totalSec % 60).toStringAsFixed(2).padLeft(5, '0');
+          lrcLines.add('[$min:$sec]$content');
+        }
+      } else if (trimmed.isNotEmpty) {
+        lrcLines.add(trimmed);
+      }
+    }
+    return lrcLines.join('\n');
+  } catch (_) {}
+  return text;
+}
+
 // ════════════════════════════════════════════════════════════════
 // 状态选项
 // ════════════════════════════════════════════════════════════════
@@ -506,6 +553,7 @@ class _SilentRoomScreenState extends State<SilentRoomScreen>
       }
     } catch (e) { debugPrint('加入房间失败: $e'); }
 
+  }
   Future<void> _leaveRoom() async {
     if (_currentUserId == null) return;
     try {
@@ -515,6 +563,7 @@ class _SilentRoomScreenState extends State<SilentRoomScreen>
           .eq('room_id', widget.roomId)
           .eq('user_id', _currentUserId!);
     } catch (e) { debugPrint('退出房间失败: $e'); }
+  }
 
   Future<void> _sendHeartbeat() async {
     if (_currentUserId == null) return;

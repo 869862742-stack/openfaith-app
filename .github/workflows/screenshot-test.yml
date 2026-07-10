@@ -1,0 +1,100 @@
+name: Screenshot Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  screenshots:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.5'
+          channel: 'stable'
+          cache: true
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Build debug APK
+        run: flutter build apk --debug
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: AVD cache
+        uses: actions/cache@v4
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-30-google_apis
+
+      - name: Create AVD and generate snapshot
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: google_apis
+          arch: x86_64
+          profile: pixel_5
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "Generated AVD snapshot for caching."
+
+      - name: Take screenshots
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: google_apis
+          arch: x86_64
+          profile: pixel_5
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: |
+            adb root
+            adb install build/app/outputs/flutter-apk/app-debug.apk
+            mkdir -p screenshots
+            adb shell am start -n com.openfaith.openfaith_app/.MainActivity
+            sleep 20
+            adb exec-out screencap -p > screenshots/01_home.png
+            # Navigate tabs
+            adb shell input tap 270 1770
+            sleep 3
+            adb exec-out screencap -p > screenshots/02_tab2.png
+            adb shell input tap 540 1770
+            sleep 3
+            adb exec-out screencap -p > screenshots/03_tab3.png
+            adb shell input tap 810 1770
+            sleep 3
+            adb exec-out screencap -p > screenshots/04_tab4.png
+            # Open sidebar
+            adb shell input swipe 0 960 800 960 300
+            sleep 2
+            adb exec-out screencap -p > screenshots/05_sidebar.png
+            echo "Screenshots captured:"
+            ls -la screenshots/
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: app-screenshots
+          path: screenshots/
+          retention-days: 30

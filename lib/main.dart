@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shorebird_code_push/shorebird_code_push.dart';
 import 'theme/app_theme.dart';
@@ -61,7 +62,7 @@ class OpenFaithApp extends StatelessWidget {
   Widget build(BuildContext context) {
     // 全局错误处理 - 捕获 Widget 构建错误并上报到 Sentry
     ErrorWidget.builder = (FlutterErrorDetails details) {
-      SentryFlutter.captureException(details.exception, stackTrace: details.stack);
+      Sentry.captureException(details.exception, stackTrace: details.stack);
       return const SizedBox.shrink();
     };
     
