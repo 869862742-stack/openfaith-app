@@ -52,6 +52,7 @@ class _MyPostsScreenState extends State<MyPostsScreen> {
       final response = await query.order('created_at', ascending: false).limit(50);
 
       if (response != null) {
+        if (!mounted) return;
         setState(() {
           _posts = List<Map<String, dynamic>>.from(response as List);
         });
@@ -60,6 +61,7 @@ class _MyPostsScreenState extends State<MyPostsScreen> {
       debugPrint('Load posts error: $e');
     }
 
+    if (!mounted) return;
     setState(() => _loading = false);
   }
 

@@ -279,6 +279,7 @@ class _PublishPlanScreenState extends State<PublishPlanScreen> {
                         firstDate: DateTime.now(),
                         lastDate: DateTime.now().add(const Duration(days: 365)),
                       );
+                      if (!mounted) return;
                       if (date != null) setState(() => _planDate = date);
                     },
                     child: Container(
@@ -317,6 +318,7 @@ class _PublishPlanScreenState extends State<PublishPlanScreen> {
                             GestureDetector(
                               onTap: () async {
                                 final time = await showTimePicker(context: context, initialTime: _startTime);
+                                if (!mounted) return;
                                 if (time != null) setState(() => _startTime = time);
                               },
                               child: Container(
@@ -350,6 +352,7 @@ class _PublishPlanScreenState extends State<PublishPlanScreen> {
                             GestureDetector(
                               onTap: () async {
                                 final time = await showTimePicker(context: context, initialTime: _endTime);
+                                if (!mounted) return;
                                 if (time != null) setState(() => _endTime = time);
                               },
                               child: Container(

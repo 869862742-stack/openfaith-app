@@ -168,6 +168,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
           .eq('post_id', postId)
           .maybeSingle();
       if (result != null) {
+        if (!mounted) return;
         setState(() => _isLiked = true);
       }
     } catch (e) {
@@ -187,6 +188,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
           .eq('post_id', postId)
           .maybeSingle();
       if (result != null) {
+        if (!mounted) return;
         setState(() => _isBookmarked = true);
       }
     } catch (e) {
@@ -208,6 +210,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
           .eq('status', 'active')
           .maybeSingle();
       if (result != null) {
+        if (!mounted) return;
         setState(() => _isFollowing = true);
       }
     } catch (e) {
@@ -225,6 +228,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
           .order('created_at', ascending: false)
           .limit(50);
 
+      if (!mounted) return;
       setState(() {
         _comments = response != null
             ? List<Map<String, dynamic>>.from(response)
@@ -233,6 +237,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
       });
     } catch (e) {
       debugPrint('加载评论失败: $e');
+      if (!mounted) return;
       setState(() => _loadingComments = false);
     }
   }
@@ -260,6 +265,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
           .eq('id', postId);
 
       _commentController.clear();
+      if (!mounted) return;
       setState(() {
         _commentCount += 1;
         _sendingComment = false;
@@ -279,6 +285,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
       }
     } catch (e) {
       debugPrint('发送评论失败: $e');
+      if (!mounted) return;
       setState(() => _sendingComment = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('发送失败: $e'), backgroundColor: AppColors.error),
@@ -297,6 +304,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
           'user_id': user.id,
           'post_id': postId,
         });
+        if (!mounted) return;
         setState(() {
           _isLiked = false;
           _likeCount = (_likeCount - 1).clamp(0, 9999999);
@@ -306,6 +314,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
           'user_id': user.id,
           'post_id': postId,
         });
+        if (!mounted) return;
         setState(() {
           _isLiked = true;
           _likeCount += 1;
@@ -358,6 +367,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
           .eq('id', postId);
 
       // 5. 更新本地状态并提示
+      if (!mounted) return;
       setState(() => _heatCount += 1);
 
       if (mounted) {
@@ -444,6 +454,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
         });
       }
 
+      if (!mounted) return;
       setState(() => _isBookmarked = !_isBookmarked);
     } catch (e) {
       debugPrint('收藏操作失败: $e');
@@ -469,6 +480,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
         });
       }
 
+      if (!mounted) return;
       setState(() => _isFollowing = !_isFollowing);
     } catch (e) {
       debugPrint('关注操作失败: $e');

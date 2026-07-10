@@ -46,6 +46,7 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
     } catch (e) {
       _showSnackBar('修改密码失败: ${e.toString()}', isError: true);
     } finally {
+      if (!mounted) return;
       setState(() => _isLoading = false);
     }
   }

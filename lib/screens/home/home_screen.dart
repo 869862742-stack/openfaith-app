@@ -141,6 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       }
 
+      if (!mounted) return;
       setState(() {
         _allPosts = normal;
         _pinnedPosts = pinned;
@@ -153,6 +154,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _applyFilters();
     } catch (e) {
       debugPrint('加载帖子失败: $e');
+      if (!mounted) return;
       setState(() => _loading = false);
     }
   }
@@ -175,6 +177,7 @@ class _HomeScreenState extends State<HomeScreen> {
           : <Map<String, dynamic>>[];
 
       if (newPosts.isEmpty) {
+        if (!mounted) return;
         setState(() {
           _hasMore = false;
           _loadingMore = false;
@@ -191,6 +194,7 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       }
 
+      if (!mounted) return;
       setState(() {
         _allPosts = [..._allPosts, ...normal];
         _currentPage += 1;
@@ -201,6 +205,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _applyFilters();
     } catch (e) {
       debugPrint('加载更多帖子失败: $e');
+      if (!mounted) return;
       setState(() => _loadingMore = false);
     }
   }
@@ -255,6 +260,7 @@ class _HomeScreenState extends State<HomeScreen> {
           .where((id) => id.isNotEmpty)
           .toList();
 
+      if (!mounted) return;
       setState(() => _followingIds = ids);
       return ids;
     } catch (e) {
@@ -273,6 +279,7 @@ class _HomeScreenState extends State<HomeScreen> {
           .eq('user_id', userId)
           .maybeSingle();
       if (res != null && res['is_muted'] == true) {
+        if (!mounted) return;
         setState(() => _isMuted = true);
       }
     } catch (e) {
@@ -292,6 +299,7 @@ class _HomeScreenState extends State<HomeScreen> {
           .select('id,name')
           .eq('is_active', true)
           .limit(5);
+      if (!mounted) return;
       setState(() {
         _onlineCount = (res as List?)?.length ?? 0;
         _rooms = List<Map<String, dynamic>>.from(rooms as List? ?? []);
@@ -323,6 +331,7 @@ class _HomeScreenState extends State<HomeScreen> {
           }
         }
       }
+      if (!mounted) return;
       setState(() => _availableTags = tagSet.toList()..sort());
     } catch (e) {
       debugPrint('获取标签列表失败: $e');
@@ -480,6 +489,7 @@ class _HomeScreenState extends State<HomeScreen> {
           .limit(30);
       final posts = List<Map<String, dynamic>>.from(res as List? ?? []);
       await _enrichWithProfiles(posts);
+      if (!mounted) return;
       setState(() => _posts = posts);
     } catch (e) {
       debugPrint('获取关注帖子失败: $e');
@@ -665,6 +675,7 @@ class _HomeScreenState extends State<HomeScreen> {
           .update({'hot_points': currentPoints + points})
           .eq('user_id', user.id);
 
+      if (!mounted) return;
       setState(() {
         _checkedInToday = true;
         _checkinLoading = false;
@@ -681,6 +692,7 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     } catch (e) {
       debugPrint('Checkin error: $e');
+      if (!mounted) return;
       // Fallback: direct update if RPC doesn't exist
       try {
         final user = _supabase.auth.currentUser;
@@ -701,6 +713,7 @@ class _HomeScreenState extends State<HomeScreen> {
               .from('profiles')
               .update({'hot_points': currentPoints + points})
               .eq('user_id', user.id);
+          if (!mounted) return;
           setState(() {
             _checkedInToday = true;
             _checkinLoading = false;
@@ -717,6 +730,7 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       } catch (e2) {
         debugPrint('Checkin fallback error: $e2');
+        if (!mounted) return;
         setState(() => _checkinLoading = false);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -1696,6 +1710,7 @@ class _SearchPageState extends State<_SearchPage> {
           .limit(10);
       final users = List<Map<String, dynamic>>.from(usersRes as List? ?? []);
 
+      if (!mounted) return;
       setState(() {
         _results = posts;
         _userResults = users;
@@ -1704,6 +1719,7 @@ class _SearchPageState extends State<_SearchPage> {
       });
     } catch (e) {
       debugPrint('搜索失败: $e');
+      if (!mounted) return;
       setState(() => _searching = false);
     }
   }

@@ -284,6 +284,16 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     );
   }
 
+  void _showComingSoon(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.cardBg,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _searchController.dispose();

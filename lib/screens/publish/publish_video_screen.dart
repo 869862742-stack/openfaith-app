@@ -290,6 +290,7 @@ class _PublishVideoScreenState extends State<PublishVideoScreen> {
                         if (result != null && result.files.single.path != null) {
                           final file = result.files.single;
                           final sizeMB = (file.size / 1024 / 1024).toStringAsFixed(1);
+                          if (!mounted) return;
                           setState(() {
                             _selectedVideoPath = file.path;
                             _selectedVideoName = file.name;
@@ -388,6 +389,7 @@ class _PublishVideoScreenState extends State<PublishVideoScreen> {
                       try {
                         final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
                         if (picked != null) {
+                          if (!mounted) return;
                           setState(() {
                             _coverImagePath = picked.path;
                           });

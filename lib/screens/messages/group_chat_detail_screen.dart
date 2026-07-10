@@ -89,6 +89,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
           .eq('user_id', _currentUserId!)
           .limit(1);
       if (res.isNotEmpty) {
+        if (!mounted) return;
         setState(() {
           _currentUserProfile = Map<String, dynamic>.from(res[0]);
           _currentUserProfileId = res[0]['id'] as String?;
@@ -118,11 +119,13 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
           .from('profiles')
           .select('id,user_id,username,nickname,avatar_url')
           .inFilter('user_id', memberTags);
+      if (!mounted) return;
       setState(() {
         _members = List<Map<String, dynamic>>.from(profiles);
         _loadingMembers = false;
       });
     } catch (_) {
+      if (!mounted) return;
       setState(() => _loadingMembers = false);
     }
   }
@@ -136,6 +139,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
           .eq('group_id', _groupId!)
           .order('created_at', ascending: true)
           .limit(200);
+      if (!mounted) return;
       setState(() {
         _messages = List<Map<String, dynamic>>.from(res);
       });
@@ -162,6 +166,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
         for (final p in res) {
           newProfiles[p['id'] as String] = Map<String, dynamic>.from(p);
         }
+        if (!mounted) return;
         setState(() => _senderProfiles.addAll(newProfiles));
       }
     } catch (_) {}
@@ -193,6 +198,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
       });
       _loadMessages();
     } catch (_) {}
+    if (!mounted) return;
     setState(() => _isSending = false);
   }
 
@@ -208,6 +214,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
           tags.remove(memberTag);
           await _supabase.from('posts').update({'tags': tags}).eq('id', _groupId!);
         }
+        if (!mounted) return;
         setState(() => _isMember = false);
         _loadMembers();
       } catch (_) {}
@@ -219,6 +226,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen> {
           if (!tags.contains(memberTag)) tags.add(memberTag);
           await _supabase.from('posts').update({'tags': tags}).eq('id', _groupId!);
         }
+        if (!mounted) return;
         setState(() => _isMember = true);
         _loadMembers();
       } catch (_) {}

@@ -122,6 +122,7 @@ class _FollowersListDialogState extends State<FollowersListDialog> {
   Future<void> _handleUnfollow(String targetUserId) async {
     try {
       await _supabase.from('follows').delete().eq('follower_id', widget.userId).eq('following_id', targetUserId);
+      if (!mounted) return;
       setState(() {
         _list.removeWhere((item) => item['user_id'] == targetUserId);
         _filterList();

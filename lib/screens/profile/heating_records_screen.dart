@@ -101,6 +101,7 @@ class _HeatingRecordsScreenState extends State<HeatingRecordsScreen> {
           .update({'hot_points': currentPoints + points})
           .eq('user_id', user.id);
 
+      if (!mounted) return;
       setState(() {
         _checkedInToday = true;
         _checkinLoading = false;
@@ -117,6 +118,7 @@ class _HeatingRecordsScreenState extends State<HeatingRecordsScreen> {
         _loadRecords(); // Reload records
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() => _checkinLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

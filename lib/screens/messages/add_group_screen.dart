@@ -339,6 +339,46 @@ class _AddGroupScreenState extends State<AddGroupScreen> {
     );
   }
 
+
+  List<Map<String, dynamic>> _searchResultsList = [];
+  bool _searching = false;
+
+  Future<void> _searchGroups() async {
+    final keyword = _searchController.text.trim();
+    if (keyword.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('请输入搜索关键词'),
+          backgroundColor: AppColors.cardBg,
+        ),
+      );
+      return;
+    }
+    setState(() => _searching = true);
+    try {
+      final client = Supabase.instance.client;
+      final results = await client
+          .from('group_chats')
+          .select()
+          .ilike('name', '%$keyword%')
+          .limit(20);
+      setState(() {
+        _searchResultsList = List<Map<String, dynamic>>.from(results);
+        _searching = false;
+      });
+    } catch (e) {
+      setState(() => _searching = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('搜索失败: $e'),
+            backgroundColor: AppColors.cardBg,
+          ),
+        );
+      }
+    }
+  }
+
   // ===== Search Tab =====
 
   Widget _searchTab() {
@@ -389,7 +429,7 @@ class _AddGroupScreenState extends State<AddGroupScreen> {
             ),
             const SizedBox(width: 8),
             _gradientButton(
-              onPressed: () {},
+              onPressed: _searchGroups,
               child: const Text(
                 '搜索',
                 style: TextStyle(

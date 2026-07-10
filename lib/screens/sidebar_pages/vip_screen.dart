@@ -127,6 +127,7 @@ class _VipScreenState extends State<VipScreen> {
           .eq('user_id', userId)
           .maybeSingle();
       if (res != null) {
+        if (!mounted) return;
         setState(() {
           _isVip = res['is_vip'] == true;
           _level = (res['level'] as num?)?.toInt() ?? 0;

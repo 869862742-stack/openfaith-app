@@ -74,6 +74,7 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
           .eq('user_id', _currentUserId!)
           .limit(1);
       if (res.isNotEmpty) {
+        if (!mounted) return;
         setState(() {
           _currentUserProfile = Map<String, dynamic>.from(res[0]);
           _currentUserProfileId = res[0]['id'] as String?;
@@ -101,6 +102,7 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
       }
 
       if (res.isNotEmpty) {
+        if (!mounted) return;
         setState(() {
           _friendProfile = Map<String, dynamic>.from(res[0]);
         });
@@ -142,6 +144,7 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
         }
       }
 
+      if (!mounted) return;
       setState(() {
         _messages = msgs;
         _callStatusMap = statusMap;
@@ -150,6 +153,7 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
 
       _scrollToBottom();
     } catch (e) {
+      if (!mounted) return;
       setState(() => _loading = false);
     }
   }
@@ -204,6 +208,7 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
         );
       }
     }
+    if (!mounted) return;
     setState(() => _isSending = false);
   }
 

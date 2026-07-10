@@ -40,6 +40,7 @@ class _NotificationSettingsScreenState
 
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
     setState(() {
       _callNotification = prefs.getBool('call_notification') ?? true;
       _messageNotification = prefs.getBool('message_notification') ?? true;
@@ -57,6 +58,7 @@ class _NotificationSettingsScreenState
   Future<void> _setTone(String key, String value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(key, value);
+    if (!mounted) return;
     setState(() {});
   }
 
@@ -203,7 +205,15 @@ class _NotificationSettingsScreenState
                       ),
                     ),
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('通知权限设置请在系统设置中开启'),
+                            backgroundColor: AppColors.cardBg,
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      },
                       child: const Text('去开启',
                           style: TextStyle(
                               color: AppColors.auroraBlue,

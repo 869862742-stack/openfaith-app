@@ -365,8 +365,10 @@ class _SilentRoomScreenState extends State<SilentRoomScreen>
         (_) => _cleanExpiredSentences(),
       );
     } catch (e) {
+      if (!mounted) return;
       setState(() => _error = e.toString());
     } finally {
+      if (!mounted) return;
       setState(() => _isLoading = false);
     }
   }
@@ -388,11 +390,13 @@ class _SilentRoomScreenState extends State<SilentRoomScreen>
         .eq('id', widget.roomId)
         .maybeSingle();
     if (data == null) throw Exception('房间不存在');
+    if (!mounted) return;
     setState(() => _room = Map<String, dynamic>.from(data));
 
     // 解析音频轨道
     final tracksData = data['audio_tracks'];
     if (tracksData is List && tracksData.isNotEmpty) {
+      if (!mounted) return;
       setState(() {
         _audioTracks = tracksData
             .whereType<Map>()
@@ -400,6 +404,7 @@ class _SilentRoomScreenState extends State<SilentRoomScreen>
             .toList();
       });
     } else if (data['custom_audio_url'] != null) {
+      if (!mounted) return;
       setState(() {
         _audioTracks = [
           AudioTrack(
@@ -421,6 +426,7 @@ class _SilentRoomScreenState extends State<SilentRoomScreen>
           .eq('room_id', widget.roomId)
           .order('joined_at', ascending: true);
       if (data != null && mounted) {
+        if (!mounted) return;
         setState(() {
           _participants = data
               .whereType<Map>()
@@ -447,6 +453,7 @@ class _SilentRoomScreenState extends State<SilentRoomScreen>
             .whereType<Map>()
             .map((d) => FloatingSentence.fromJson(Map<String, dynamic>.from(d)))
             .toList();
+        if (!mounted) return;
         setState(() {
           _sentences = sentences.take(5).toList();
           while (_sentenceOffsets.length < _sentences.length) {
@@ -581,6 +588,7 @@ class _SilentRoomScreenState extends State<SilentRoomScreen>
         'content': text.substring(0, text.length.clamp(0, 200)),
       });
       _sentenceCtrl.clear();
+      if (!mounted) return;
       setState(() => _showSentenceInput = false);
       await _fetchSentences();
     } catch (e) {
@@ -752,6 +760,7 @@ class _SilentRoomScreenState extends State<SilentRoomScreen>
       );
       if (result == null || result.files.isEmpty) return;
 
+      if (!mounted) return;
       setState(() {
         _uploadingAudio = true;
         _uploadProgress = '上传中 0/${result.files.length}...';
@@ -797,6 +806,7 @@ class _SilentRoomScreenState extends State<SilentRoomScreen>
 
       if (newTracks.isNotEmpty) {
         final updatedTracks = [..._audioTracks, ...newTracks];
+        if (!mounted) return;
         setState(() => _audioTracks = updatedTracks);
         await _updateAudioTracksInDb(updatedTracks);
 
@@ -812,6 +822,7 @@ class _SilentRoomScreenState extends State<SilentRoomScreen>
         );
       }
     } finally {
+      if (!mounted) return;
       setState(() {
         _uploadingAudio = false;
         _uploadProgress = '';

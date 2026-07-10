@@ -89,6 +89,7 @@ class _HotRankingState extends State<HotRanking> {
         final withHot = res.map((p) => {...p, 'hotValue': _calcHotValue(p)}).toList();
         withHot.sort((a, b) => (b['hotValue'] as double).compareTo(a['hotValue'] as double));
         final top10 = withHot.where((p) => (p['hotValue'] as double) > 0).take(10).toList();
+        if (!mounted) return;
         setState(() => _topPosts = top10.cast<Map<String, dynamic>>());
       }
     } catch (_) {}
@@ -132,13 +133,17 @@ class _HotRankingState extends State<HotRanking> {
       if (res.isNotEmpty) {
         final withHot = res.map((p) => {...p, 'hotValue': _calcHotValue(p)}).toList();
         withHot.sort((a, b) => (b['hotValue'] as double).compareTo(a['hotValue'] as double));
+        if (!mounted) return;
         setState(() => _hotPosts = withHot.cast<Map<String, dynamic>>());
       } else {
+        if (!mounted) return;
         setState(() => _hotPosts = []);
       }
     } catch (_) {
+      if (!mounted) return;
       setState(() => _hotPosts = []);
     } finally {
+      if (!mounted) return;
       setState(() => _loading = false);
     }
   }

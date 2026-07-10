@@ -107,6 +107,7 @@ class _GongjingScreenState extends State<GongjingScreen> {
           .from('profiles')
           .select('id')
           .gte('last_online_at', fiveMinAgo);
+      if (!mounted) return;
       if (res != null) setState(() => _onlineCount = res.length);
     } catch (_) {}
   }
@@ -121,6 +122,7 @@ class _GongjingScreenState extends State<GongjingScreen> {
           .order('created_at', ascending: false)
           .limit(30);
       if (data != null) {
+        if (!mounted) return;
         setState(() {
           _echoList = List<Map<String, dynamic>>.from(data);
         });
@@ -141,12 +143,14 @@ class _GongjingScreenState extends State<GongjingScreen> {
               reactions[shareId] = userTypes;
             }
           }
+          if (!mounted) return;
           setState(() => _userReactions = reactions);
         }
       }
     } catch (e) {
       debugPrint('Load echo list error: $e');
     } finally {
+      if (!mounted) return;
       setState(() => _echoLoading = false);
     }
   }
@@ -160,6 +164,7 @@ class _GongjingScreenState extends State<GongjingScreen> {
           .select()
           .order('created_at', ascending: false);
       if (data != null) {
+        if (!mounted) return;
         setState(() {
           _roundtables = List<Map<String, dynamic>>.from(data);
         });
@@ -167,6 +172,7 @@ class _GongjingScreenState extends State<GongjingScreen> {
     } catch (e) {
       debugPrint('Load roundtables error: $e');
     } finally {
+      if (!mounted) return;
       setState(() => _roundtablesLoading = false);
     }
   }
@@ -180,6 +186,7 @@ class _GongjingScreenState extends State<GongjingScreen> {
           .order('created_at', ascending: false)
           .limit(1);
       if (themes != null && themes.isNotEmpty && themes[0]['theme'] != null) {
+        if (!mounted) return;
         setState(() => _breathingTheme = themes[0]['theme']);
       }
       final participants = await _supabase
@@ -189,6 +196,7 @@ class _GongjingScreenState extends State<GongjingScreen> {
       if (participants != null) {
         // Count unique users in world_breathing rooms
         // Simplified: just count all quiet participants
+        if (!mounted) return;
         setState(() => _participantCount = participants.length);
       }
     } catch (e) {
@@ -271,8 +279,10 @@ class _GongjingScreenState extends State<GongjingScreen> {
       _echoCtrl.clear();
       await _loadEchoList();
     } catch (e) {
+      if (!mounted) return;
       setState(() => _echoError = '发布失败: $e');
     } finally {
+      if (!mounted) return;
       setState(() => _echoSubmitting = false);
     }
   }
@@ -288,6 +298,7 @@ class _GongjingScreenState extends State<GongjingScreen> {
         'content': ctrl.text.trim(),
       });
       ctrl.clear();
+      if (!mounted) return;
       setState(() => _expandedEchoIds.remove(shareId));
       await _loadEchoList();
     } catch (e) {
@@ -308,6 +319,7 @@ class _GongjingScreenState extends State<GongjingScreen> {
             .eq('share_id', shareId)
             .eq('user_id', userId)
             .eq('reaction_type', reactionType);
+        if (!mounted) return;
         setState(() {
           _userReactions[shareId]?.remove(reactionType);
         });
@@ -317,6 +329,7 @@ class _GongjingScreenState extends State<GongjingScreen> {
           'user_id': userId,
           'reaction_type': reactionType,
         });
+        if (!mounted) return;
         setState(() {
           _userReactions.putIfAbsent(shareId, () => {}).add(reactionType);
         });
@@ -725,6 +738,7 @@ class _GongjingScreenState extends State<GongjingScreen> {
               final sizeStr = sizeMB >= 1
                   ? '${sizeMB.toStringAsFixed(1)} MB'
                   : '${(file.size / 1024).toStringAsFixed(0)} KB';
+              if (!mounted) return;
               setState(() {
                 _musicName = file.name;
                 _musicPath = file.path;

@@ -64,6 +64,7 @@ class _SidebarState extends State<Sidebar>
           .eq('user_id', userId)
           .maybeSingle();
       if (res != null && res['role'] == 'admin') {
+        if (!mounted) return;
         setState(() => _isAdmin = true);
       }
     } catch (e) {
@@ -82,6 +83,7 @@ class _SidebarState extends State<Sidebar>
           .eq('user_id', userId)
           .maybeSingle();
       if (res != null) {
+        if (!mounted) return;
         setState(() => _currentUser = Map<String, dynamic>.from(res as Map));
       }
     } catch (e) {

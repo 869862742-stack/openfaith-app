@@ -119,6 +119,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           .eq('category', 'identity')
           .order('name');
       if (response != null && (response as List).isNotEmpty) {
+        if (!mounted) return;
         setState(() {
           _faithTags = (response as List)
               .map((t) => t['name'] as String)
@@ -146,6 +147,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           .maybeSingle();
 
       if (response != null) {
+        if (!mounted) return;
         setState(() {
           _profile = Map<String, dynamic>.from(response as Map);
           _followersCount = (response['followers_count'] as num?)?.toInt() ?? 0;
@@ -174,6 +176,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           .eq('status', 'published');
 
       if (postsResp != null) {
+        if (!mounted) return;
         setState(() {
           _postCount = (postsResp as List).length;
         });
@@ -182,6 +185,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       debugPrint('Profile load error: $e');
     }
 
+    if (!mounted) return;
     setState(() => _loading = false);
   }
 
@@ -195,6 +199,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           .eq('user_id', userId)
           .maybeSingle();
       if (response != null) {
+        if (!mounted) return;
         setState(() {
           _profile = Map<String, dynamic>.from(response as Map);
           _followersCount = (response['followers_count'] as num?)?.toInt() ?? 0;
@@ -1362,6 +1367,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                     await _supabase.from('profiles').update({'background_url': url}).eq('user_id', user.id);
 
+                    if (!mounted) return;
                     setState(() {
                       _backgroundUrl = url;
                     });

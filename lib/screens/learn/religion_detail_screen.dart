@@ -1123,6 +1123,7 @@ class _ReligionDetailScreenState extends State<ReligionDetailScreen> {
         const SnackBar(content: Text('提交失败，请稍后重试')),
       );
     }
+    if (!mounted) return;
     setState(() => _contributionSubmitting = false);
   }
 
@@ -1411,6 +1412,8 @@ class _ReligionDetailScreenState extends State<ReligionDetailScreen> {
                   color: Colors.black.withOpacity(0.6),
                   child: Align(
                     alignment: Alignment.bottomCenter,
+                    // 手势拦截：阻止点击事件穿透到外层 GestureDetector（外层负责关闭弹窗）
+                    // 保留空回调以确保弹窗内容区域的点击不会关闭弹窗
                     child: GestureDetector(
                       onTap: () {},
                       child: Container(

@@ -207,6 +207,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       }
 
       if (picked != null && picked.isNotEmpty) {
+        if (!mounted) return;
         setState(() {
           _selectedImages.addAll(picked!);
         });

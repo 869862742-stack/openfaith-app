@@ -369,6 +369,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
                           final sizeStr = sizeMB >= 1
                               ? '${sizeMB.toStringAsFixed(1)} MB'
                               : '${(file.size / 1024).toStringAsFixed(0)} KB';
+                          if (!mounted) return;
                           setState(() {
                             _musicFilePath = file.path;
                             _musicTitle = file.name;

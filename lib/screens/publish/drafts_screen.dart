@@ -105,6 +105,7 @@ class _DraftsScreenState extends State<DraftsScreen> {
   Future<void> _loadDrafts() async {
     setState(() => _loading = true);
     final drafts = await DraftService.loadDrafts();
+    if (!mounted) return;
     setState(() {
       _drafts = drafts;
       _loading = false;

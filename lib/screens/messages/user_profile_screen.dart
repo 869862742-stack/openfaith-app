@@ -67,6 +67,7 @@ class _UserProfileScreenState extends State<UserProfileScreen>
           .limit(1);
       if (res.isNotEmpty) {
         final profile = Map<String, dynamic>.from(res[0]);
+        if (!mounted) return;
         setState(() {
           _profile = profile;
           _profileId = profile['id'] as String?;
@@ -76,6 +77,7 @@ class _UserProfileScreenState extends State<UserProfileScreen>
         // 检查访问权限
         final hasAccess = await _checkAccessPermission(profile);
         if (!hasAccess) {
+          if (!mounted) return;
           setState(() {
             _accessDenied = true;
             _loading = false;
@@ -88,10 +90,12 @@ class _UserProfileScreenState extends State<UserProfileScreen>
         _loadUserPosts();
         _loadFavoritePosts();
       } else {
+        if (!mounted) return;
         setState(() => _loading = false);
       }
     } catch (e) {
       debugPrint('loadProfile error: $e');
+      if (!mounted) return;
       setState(() => _loading = false);
     }
   }
@@ -136,6 +140,7 @@ class _UserProfileScreenState extends State<UserProfileScreen>
           .select('id')
           .eq('follower_id', widget.userId)
           .eq('status', 'active');
+      if (!mounted) return;
       setState(() {
         _followersCount = followersRes.length;
         _followingCount = followingRes.length;
@@ -154,6 +159,7 @@ class _UserProfileScreenState extends State<UserProfileScreen>
           .limit(1);
       if (res.isNotEmpty) {
         final status = res[0]['status'] as String?;
+        if (!mounted) return;
         setState(() {
           _isFollowing = status == 'active';
           _isPending = status == 'pending';
@@ -168,6 +174,7 @@ class _UserProfileScreenState extends State<UserProfileScreen>
             .eq('following_id', _currentUserId!)
             .eq('status', 'active')
             .limit(1);
+        if (!mounted) return;
         setState(() => _isFriend = reverse.isNotEmpty);
       }
     } catch (_) {}
@@ -190,12 +197,14 @@ class _UserProfileScreenState extends State<UserProfileScreen>
       for (final p in posts) {
         heat += _calcHotValue(p);
       }
+      if (!mounted) return;
       setState(() {
         _posts = posts;
         _heatCount = heat;
         _loadingPosts = false;
       });
     } catch (_) {
+      if (!mounted) return;
       setState(() => _loadingPosts = false);
     }
   }
@@ -219,6 +228,7 @@ class _UserProfileScreenState extends State<UserProfileScreen>
           .eq('user_id', widget.userId)
           .limit(50);
       if (favRes.isEmpty) {
+        if (!mounted) return;
         setState(() {
           _favoritePosts = [];
           _loadingFavorites = false;
@@ -233,6 +243,7 @@ class _UserProfileScreenState extends State<UserProfileScreen>
           .inFilter('id', postIds)
           .eq('status', 'published')
           .order('created_at', ascending: false);
+      if (!mounted) return;
       setState(() {
         _favoritePosts = List<Map<String, dynamic>>.from(posts);
         _loadingFavorites = false;
@@ -245,6 +256,7 @@ class _UserProfileScreenState extends State<UserProfileScreen>
             .eq('user_id', widget.userId)
             .limit(50);
         if (favRes.isEmpty) {
+          if (!mounted) return;
           setState(() {
             _favoritePosts = [];
             _loadingFavorites = false;
@@ -259,11 +271,13 @@ class _UserProfileScreenState extends State<UserProfileScreen>
             .inFilter('id', postIds)
             .eq('status', 'published')
             .order('created_at', ascending: false);
+        if (!mounted) return;
         setState(() {
           _favoritePosts = List<Map<String, dynamic>>.from(posts);
           _loadingFavorites = false;
         });
       } catch (_) {
+        if (!mounted) return;
         setState(() {
           _favoritePosts = [];
           _loadingFavorites = false;
@@ -285,6 +299,7 @@ class _UserProfileScreenState extends State<UserProfileScreen>
             .eq('follower_id', _currentUserId!)
             .eq('following_id', widget.userId)
             .eq('status', 'active');
+        if (!mounted) return;
         setState(() {
           _isFollowing = false;
           _followersCount = max(0, _followersCount - 1);
@@ -295,10 +310,12 @@ class _UserProfileScreenState extends State<UserProfileScreen>
           'following_id': widget.userId,
           'status': 'active',
         });
+        if (!mounted) return;
         setState(() => _isFollowing = true);
         await _loadFollowCounts();
       }
     } catch (_) {}
+    if (!mounted) return;
     setState(() => _followLoading = false);
   }
 
@@ -385,6 +402,7 @@ class _UserProfileScreenState extends State<UserProfileScreen>
           'status': 'pending',
           if (mc.text.trim().isNotEmpty) 'message': mc.text.trim(),
         });
+        if (!mounted) return;
         setState(() {
           _isPending = true;
           _isFollowing = false;

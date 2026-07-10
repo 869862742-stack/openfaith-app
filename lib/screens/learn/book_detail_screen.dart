@@ -62,6 +62,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
           .eq('book_id', widget.bookId)
           .order('number');
       if (data.isNotEmpty) {
+        if (!mounted) return;
         setState(() {
           _chapters = (data as List)
               .map((e) => Chapter.fromMap(e as Map<String, dynamic>))
@@ -69,10 +70,12 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
           _loading = false;
         });
       } else {
+        if (!mounted) return;
         setState(() { _loading = false; });
       }
     } catch (e) {
       debugPrint('loadChapters error: $e');
+      if (!mounted) return;
       setState(() { _loading = false; });
     }
   }
@@ -80,6 +83,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   Future<void> _checkBookmark() async {
     final prefs = await SharedPreferences.getInstance();
     final bookmarks = prefs.getStringList('bookmarks') ?? [];
+    if (!mounted) return;
     setState(() => _isBookmarked = bookmarks.contains(widget.bookId));
   }
 
@@ -92,6 +96,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       bookmarks.add(widget.bookId);
     }
     await prefs.setStringList('bookmarks', bookmarks);
+    if (!mounted) return;
     setState(() => _isBookmarked = !_isBookmarked);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -601,6 +606,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
 
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
     setState(() {
       _fontSize = prefs.getDouble('reader_font_size') ?? 18;
       _lineHeight = prefs.getDouble('reader_line_height') ?? 1.8;

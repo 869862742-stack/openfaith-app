@@ -8,6 +8,7 @@ import 'private_chat_screen.dart';
 import 'user_profile_screen.dart';
 import 'group_chat_detail_screen.dart';
 import '../gongjing/room_list_screen.dart';
+import 'add_group_screen.dart';
 
 /// 消息页面 - 4Tab结构，完全对齐网页版 Messages.tsx
 class MessagesScreen extends StatefulWidget {
@@ -105,12 +106,15 @@ class _MessagesScreenState extends State<MessagesScreen>
       ]);
       _buildUnifiedMessages();
     } catch (e) {
+      if (!mounted) return;
       setState(() => _loadError = '加载失败: $e');
+    if (!mounted) return;
     } finally { setState(() => _loadingMessages = false); }
   }
 
   Future<void> _loadFriendsTab() async {
     await Future.wait([_loadFriendsList(), _loadFriendRequests(), _loadRecommendedUsers()]);
+    if (!mounted) return;
     setState(() {});
   }
 
@@ -126,10 +130,13 @@ class _MessagesScreenState extends State<MessagesScreen>
       final s = <String>{};
       for (final r in (res1 as List)) s.add(r['following_id'] as String);
       for (final r in (res2 as List)) s.add(r['follower_id'] as String);
+      if (!mounted) return;
       if (s.isEmpty) { setState(() { _friendsList = []; _isLoadingFriends = false; }); return; }
       final p = await _supabase.from('profiles')
         .select('id,user_id,username,nickname,avatar_url,created_at').inFilter('user_id', s.toList());
+      if (!mounted) return;
       setState(() { _friendsList = List<Map<String, dynamic>>.from(p); _isLoadingFriends = false; });
+    if (!mounted) return;
     } catch (e) { setState(() => _isLoadingFriends = false); }
   }
 
@@ -157,6 +164,7 @@ class _MessagesScreenState extends State<MessagesScreen>
           lm[oid] = {'content': dc, 'time': m['created_at'], 'message_type': mt, 'unreadCount': uc};
         }
       }
+      if (!mounted) return;
       setState(() => _latestChatMessages = lm);
     } catch (_) {}
   }
@@ -219,6 +227,7 @@ class _MessagesScreenState extends State<MessagesScreen>
         .select('id,title,content,tags,user_id,heat_count,status,created_at')
         .order('heat_count', ascending: false).order('created_at', ascending: false).limit(100);
       final all = List<Map<String, dynamic>>.from(d);
+      if (!mounted) return;
       setState(() {
         _groupChats = all.where((p) {
           final t = (p['tags'] as List?)?.cast<String>() ?? [];
@@ -232,6 +241,7 @@ class _MessagesScreenState extends State<MessagesScreen>
         }).toList();
         _isLoadingGroups = false;
       });
+    if (!mounted) return;
     } catch (_) { setState(() => _isLoadingGroups = false); }
   }
 
@@ -245,9 +255,11 @@ class _MessagesScreenState extends State<MessagesScreen>
         .eq('following_id', uid).eq('status', 'pending')
         .order('created_at', ascending: false).limit(20);
       final fids = (d as List).map((r) => r['follower_id'] as String).toList();
+      if (!mounted) return;
       if (fids.isEmpty) { setState(() { _friendRequests = []; _isLoadingRequests = false; }); return; }
       final pros = await _supabase.from('profiles')
         .select('id,user_id,username,nickname,avatar_url').inFilter('user_id', fids);
+      if (!mounted) return;
       setState(() {
         _friendRequests = d.map((rq) {
           final pf = (pros as List).firstWhere((p) => p['user_id'] == rq['follower_id'], orElse: () => {});
@@ -255,6 +267,7 @@ class _MessagesScreenState extends State<MessagesScreen>
         }).toList();
         _isLoadingRequests = false;
       });
+    if (!mounted) return;
     } catch (_) { setState(() => _isLoadingRequests = false); }
   }
 
@@ -268,8 +281,10 @@ class _MessagesScreenState extends State<MessagesScreen>
       var f = (d as List).map((e) => Map<String, dynamic>.from(e as Map))
         .where((u) => (u['user_id'] ?? u['id']) != uid).toList();
       f.shuffle(); f = f.take(10).toList();
+      if (!mounted) return;
       setState(() { _recommendedUsers = f; _isLoadingRecommended = false; });
       if (f.isNotEmpty) await _loadFollowingStatus(f.map<String>((u) => (u['user_id'] ?? u['id']) as String).toList());
+    if (!mounted) return;
     } catch (_) { setState(() => _isLoadingRecommended = false); }
   }
 
@@ -284,6 +299,7 @@ class _MessagesScreenState extends State<MessagesScreen>
         if (r['status'] == 'active') fo.add(r['following_id'] as String);
         else if (r['status'] == 'pending') pe.add(r['following_id'] as String);
       }
+      if (!mounted) return;
       setState(() { _followingIds = fo; _pendingRequests = pe; });
     } catch (_) {}
   }
@@ -303,8 +319,10 @@ class _MessagesScreenState extends State<MessagesScreen>
       final um = <String, Map<String, dynamic>>{};
       for (final u in [...r1, ...r2]) um[u['id'] as String] = Map<String, dynamic>.from(u);
       final res = um.values.where((u) => (u['user_id'] ?? u['id']) != uid).toList();
+      if (!mounted) return;
       setState(() { _searchResults = res; _isSearching = false; });
       if (res.isNotEmpty) await _loadFollowingStatus(res.map<String>((u) => (u['user_id'] ?? u['id']) as String).toList());
+    if (!mounted) return;
     } catch (_) { setState(() => _isSearching = false); }
   }
 
@@ -317,7 +335,9 @@ class _MessagesScreenState extends State<MessagesScreen>
         'follower_id': uid, 'following_id': tid, 'status': 'pending',
         if (msg.trim().isNotEmpty) 'message': msg.trim(),
       });
+      if (!mounted) return;
       setState(() { _pendingRequests.add(tid); _sendingRequestId = null; });
+    if (!mounted) return;
     } catch (_) { setState(() => _sendingRequestId = null); }
   }
 
@@ -328,10 +348,12 @@ class _MessagesScreenState extends State<MessagesScreen>
     try {
       await _supabase.from('follows').update({'status': 'active'})
         .eq('follower_id', rid).eq('following_id', uid).eq('status', 'pending');
+      if (!mounted) return;
       setState(() {
         _friendRequests.removeWhere((r) => r['requestId'] == rid);
         _followingIds.add(rid); _processingRequestId = null;
       });
+    if (!mounted) return;
     } catch (_) { setState(() => _processingRequestId = null); }
   }
 
@@ -342,7 +364,9 @@ class _MessagesScreenState extends State<MessagesScreen>
     try {
       await _supabase.from('follows').delete()
         .eq('follower_id', rid).eq('following_id', uid).eq('status', 'pending');
+      if (!mounted) return;
       setState(() { _friendRequests.removeWhere((r) => r['requestId'] == rid); _processingRequestId = null; });
+    if (!mounted) return;
     } catch (_) { setState(() => _processingRequestId = null); }
   }
 
@@ -597,8 +621,12 @@ class _MessagesScreenState extends State<MessagesScreen>
         break;
       case 'notification':
         if (!msg.isRead) {
-          final n = msg.rawData as Map<String, dynamic>;
-          _supabase.from('notifications').update({'is_read': true}).eq('id', n['id']);
+          try {
+            final n = msg.rawData as Map<String, dynamic>;
+            await _supabase.from('notifications').update({'is_read': true}).eq('id', n['id']);
+          } catch (e) {
+            debugPrint('标记通知已读失败: $e');
+          }
         }
         break;
       default: break;
@@ -940,7 +968,10 @@ class _MessagesScreenState extends State<MessagesScreen>
         Text('暂无群聊', style: TextStyle(color: AppColors.textSecondary, fontSize: 16)),
         const SizedBox(height: 16),
         _rainbowBordered(child: TextButton.icon(
-          onPressed: () {}, icon: const Icon(Icons.add, color: AppColors.textPrimary, size: 18),
+          onPressed: () async {
+            final result = await Navigator.push(context, MaterialPageRoute(builder: (_) => const AddGroupScreen()));
+            if (result == true && mounted) _loadGroupChats();
+          }, icon: const Icon(Icons.add, color: AppColors.textPrimary, size: 18),
           label: const Text('创建群聊', style: TextStyle(color: AppColors.textPrimary, fontSize: 14)))),
       ]));
     }
@@ -958,7 +989,10 @@ class _MessagesScreenState extends State<MessagesScreen>
         ],
         ..._groupChats.map((g) => _buildGroupItem(g)),
         const SizedBox(height: 12),
-        _rainbowBordered(child: InkWell(borderRadius: BorderRadius.circular(12), onTap: () {},
+        _rainbowBordered(child: InkWell(borderRadius: BorderRadius.circular(12), onTap: () async {
+          final result = await Navigator.push(context, MaterialPageRoute(builder: (_) => const AddGroupScreen()));
+          if (result == true && mounted) _loadGroupChats();
+        },
           child: Container(padding: const EdgeInsets.all(16), alignment: Alignment.center,
             child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
               Icon(Icons.add, size: 20, color: AppColors.textSecondary),

@@ -50,6 +50,7 @@ class _SupportScreenState extends State<SupportScreen>
           .eq('user_id', userId)
           .maybeSingle();
       if (res != null) {
+        if (!mounted) return;
         setState(() => _isVip = res['is_vip'] == true);
       }
     } catch (_) {}
@@ -66,6 +67,7 @@ class _SupportScreenState extends State<SupportScreen>
           .order('created_at', ascending: false)
           .limit(20);
       if (res != null) {
+        if (!mounted) return;
         setState(() {
           _tickets = List<Map<String, dynamic>>.from(res.map((t) {
             return {
@@ -122,10 +124,12 @@ class _SupportScreenState extends State<SupportScreen>
       _contentCtrl.clear();
       _showSnackBar('提交成功，我们会尽快回复');
       await _loadTickets();
+      if (!mounted) return;
       setState(() => _activeTab = 'my');
     } catch (e) {
       _showSnackBar('提交失败: $e');
     } finally {
+      if (!mounted) return;
       setState(() => _submitting = false);
     }
   }
@@ -150,12 +154,14 @@ class _SupportScreenState extends State<SupportScreen>
         orElse: () => {},
       );
       if (updated.isNotEmpty) {
+        if (!mounted) return;
         setState(() => _selectedTicket = updated);
       }
       _showSnackBar('回复成功，我们会尽快处理');
     } catch (e) {
       _showSnackBar('回复失败: $e');
     } finally {
+      if (!mounted) return;
       setState(() => _replying = false);
     }
   }

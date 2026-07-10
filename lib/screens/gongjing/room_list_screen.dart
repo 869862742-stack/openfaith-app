@@ -55,11 +55,13 @@ class _RoomListScreenState extends State<RoomListScreen> {
           .order('last_activity_at', ascending: false)
           .limit(50);
       if (data != null) {
+        if (!mounted) return;
         setState(() {
           _rooms = List<Map<String, dynamic>>.from(data);
           _isLoading = false;
         });
       } else {
+        if (!mounted) return;
         setState(() {
           _rooms = [];
           _isLoading = false;
@@ -67,6 +69,7 @@ class _RoomListScreenState extends State<RoomListScreen> {
       }
     } catch (e) {
       debugPrint('Failed to fetch rooms: $e');
+      if (!mounted) return;
       setState(() {
         _error = '加载房间列表失败';
         _isLoading = false;

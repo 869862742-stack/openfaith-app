@@ -37,6 +37,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       }
     }).where((m) => m.isNotEmpty).toList();
     final rec = prefs.getBool('history_recording') ?? true;
+    if (!mounted) return;
     setState(() {
       _history = items;
       _recording = rec;
@@ -46,7 +47,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Future<void> _clearHistory() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('browse_history');
+    if (!mounted) return;
     setState(() => _history = []);
+    if (!mounted) return;
     setState(() => _longPressItemId = null);
   }
 
@@ -54,6 +57,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final newVal = !_recording;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('history_recording', newVal);
+    if (!mounted) return;
     setState(() => _recording = newVal);
   }
 
@@ -427,7 +431,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           if (_longPressItemId == itemId)
             Positioned.fill(
               child: GestureDetector(
-                onTap: () {},
+                onTap: () => setState(() => _longPressItemId = null),
                 child: Container(
                   decoration: BoxDecoration(
                     color: AppColors.overlay.withOpacity(0.5),

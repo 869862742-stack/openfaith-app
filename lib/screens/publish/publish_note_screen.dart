@@ -99,6 +99,7 @@ class _PublishNoteScreenState extends State<PublishNoteScreen> {
           .eq('user_id', user.id)
           .single();
       if (response != null) {
+        if (!mounted) return;
         setState(() {
           _isVip = response['is_vip'] ?? false;
           _heatingCards = response['exposure_cards'] ?? 0;
@@ -179,6 +180,7 @@ class _PublishNoteScreenState extends State<PublishNoteScreen> {
       }
 
       if (picked != null && picked.isNotEmpty) {
+        if (!mounted) return;
         setState(() {
           _selectedImages.addAll(picked!);
         });
@@ -558,6 +560,7 @@ class _PublishNoteScreenState extends State<PublishNoteScreen> {
         'reason': reason,
         'status': 'pending',
       });
+      if (!mounted) return;
       setState(() {
         _requestSubmitted = true;
         _isSubmittingRequest = false;
@@ -567,6 +570,7 @@ class _PublishNoteScreenState extends State<PublishNoteScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('提交失败: $e'), backgroundColor: AppColors.error),
       );
+      if (!mounted) return;
       setState(() => _isSubmittingRequest = false);
     }
   }
@@ -644,10 +648,12 @@ class _PublishNoteScreenState extends State<PublishNoteScreen> {
     // 每日限制
     final allowed = await _checkDailyNoteLimit();
     if (!allowed) {
+      if (!mounted) return;
       setState(() => _showLimitModal = true);
       return;
     }
 
+    if (!mounted) return;
     setState(() => _isPublishing = true);
     try {
       final user = _supabase.auth.currentUser;

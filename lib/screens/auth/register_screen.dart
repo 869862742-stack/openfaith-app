@@ -142,12 +142,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
         faithTag: _selectedFaithTag,
         username: email.split('@').first,
       );
+      if (!mounted) return;
       setState(() {
         _codeSent = true;
         _pendingEmail = email;
         _loading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _error = e.toString().replaceAll('Exception: ', '');
         _loading = false;
@@ -170,6 +172,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         );
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _error = e.toString().replaceAll('Exception: ', '');
         _loading = false;
