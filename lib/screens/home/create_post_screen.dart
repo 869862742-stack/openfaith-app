@@ -81,7 +81,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     await DraftService.saveDraft(draft);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('草稿已保存'), backgroundColor: Color(0xFF00E5FF), duration: Duration(seconds: 1)),
+        const SnackBar(content: Text('草稿已保存'), backgroundColor: AppColors.auroraCyan, duration: Duration(seconds: 1)),
       );
     }
   }
@@ -180,16 +180,16 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.06),
+                    color: AppColors.textPrimary.withOpacity(0.06),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: AppColors.borderColor),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.save_outlined, size: 14, color: Colors.white.withOpacity(0.7)),
+                      Icon(Icons.save_outlined, size: 14, color: AppColors.textPrimary.withOpacity(0.7)),
                       const SizedBox(width: 4),
-                      const Text('存草稿', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                      const Text('存草稿', style: TextStyle(color: AppColors.textWeak, fontSize: 13)),
                     ],
                   ),
                 ),
@@ -229,16 +229,16 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                   margin: const EdgeInsets.only(bottom: 16),
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF00E5FF).withOpacity(0.1),
+                    color: const AppColors.auroraCyan.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFF00E5FF).withOpacity(0.3)),
+                    border: Border.all(color: const AppColors.auroraCyan.withOpacity(0.3)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.edit_note, size: 16, color: Color(0xFF00E5FF)),
+                      const Icon(Icons.edit_note, size: 16, color: AppColors.auroraCyan),
                       const SizedBox(width: 8),
-                      const Text('正在编辑草稿', style: TextStyle(color: Color(0xFF00E5FF), fontSize: 13)),
+                      const Text('正在编辑草稿', style: TextStyle(color: AppColors.auroraCyan, fontSize: 13)),
                     ],
                   ),
                 ),

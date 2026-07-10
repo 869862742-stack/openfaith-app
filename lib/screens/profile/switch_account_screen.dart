@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../theme/colors.dart';
+import '../../theme/app_colors.dart';
 
 class SwitchAccountScreen extends StatelessWidget {
   const SwitchAccountScreen({super.key});
@@ -13,11 +13,11 @@ class SwitchAccountScreen extends StatelessWidget {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios,
-              color: Colors.white, size: 20),
+              color: AppColors.textPrimary, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text('切换账号',
-            style: TextStyle(color: Colors.white, fontSize: 18)),
+            style: TextStyle(color: AppColors.textPrimary, fontSize: 18)),
       ),
       body: const Center(
         child: Column(
@@ -28,7 +28,7 @@ class SwitchAccountScreen extends StatelessWidget {
             SizedBox(height: 16),
             Text('切换账号',
                 style: TextStyle(
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                     fontSize: 20,
                     fontWeight: FontWeight.w600)),
             SizedBox(height: 8),

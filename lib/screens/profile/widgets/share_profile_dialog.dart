@@ -1,3 +1,4 @@
+import '../../theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../theme/colors.dart';
@@ -20,7 +21,7 @@ class ShareProfileDialog extends StatelessWidget {
       const SnackBar(
         content: Text('链接已复制到剪贴板'),
         duration: Duration(seconds: 2),
-        backgroundColor: Color(0xFF4CAF50),
+        backgroundColor: AppColors.success,
       ),
     );
   }
@@ -52,7 +53,7 @@ class ShareProfileDialog extends StatelessWidget {
               const SizedBox(height: 16),
               // 标题
               const Text('分享主页',
-                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                  style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 24),
               // 分享选项
               Padding(
@@ -135,7 +136,7 @@ class ShareProfileDialog extends StatelessWidget {
           child: Container(
             width: 52, height: 52,
             alignment: Alignment.center,
-            child: Icon(icon, size: 24, color: Colors.white),
+            child: Icon(icon, size: 24, color: AppColors.textPrimary),
           ),
         ),
         const SizedBox(height: 8),
