@@ -17,6 +17,7 @@ import '../../theme/app_spacing.dart';
 import '../../widgets/animated_starfield.dart';
 import '../../widgets/aurora_button.dart';
 import '../../widgets/rainbow_border.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 // ════════════════════════════════════════════════════════════════
 // 数据模型
@@ -371,9 +372,10 @@ class _SilentRoomScreenState extends State<SilentRoomScreen>
         const Duration(seconds: 5),
         (_) => _cleanExpiredSentences(),
       );
-    } catch (e) {
+    } catch (e, s) {
       if (!mounted) return;
       setState(() => _error = e.toString());
+      Sentry.captureException(e, stackTrace: s);
     } finally {
       if (!mounted) return;
       setState(() => _isLoading = false);
@@ -622,8 +624,9 @@ class _SilentRoomScreenState extends State<SilentRoomScreen>
       await _audioPlayer.setSource(UrlSource(trackUrl));
       await _audioPlayer.setVolume(_isMuted ? 0.0 : 0.5);
       await _audioPlayer.resume();
-    } catch (e) {
+    } catch (e, s) {
       debugPrint('Audio play error: $e');
+      Sentry.captureException(e, stackTrace: s);
     }
   }
 
@@ -839,8 +842,9 @@ class _SilentRoomScreenState extends State<SilentRoomScreen>
             lyrics: extractedLyrics,
             uploadedAt: DateTime.now().toIso8601String(),
           ));
-        } catch (e) {
+        } catch (e, s) {
           debugPrint('Upload error for ${file.name}: $e');
+          Sentry.captureException(e, stackTrace: s);
         }
       }
 
@@ -855,7 +859,8 @@ class _SilentRoomScreenState extends State<SilentRoomScreen>
           _playTrack(newTracks.first.url);
         }
       }
-    } catch (e) {
+    } catch (e, s) {
+      Sentry.captureException(e, stackTrace: s);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('上传失败: $e')),

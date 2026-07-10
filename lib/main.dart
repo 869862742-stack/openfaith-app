@@ -10,6 +10,9 @@ import 'screens/gongjing/room_list_screen.dart';
 import 'screens/gongjing/create_room_screen.dart';
 import 'screens/gongjing/silent_room_screen.dart';
 import 'screens/publish/publish_note_screen.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'i18n/app_localizations.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 const supabaseUrl = 'https://rdhwmeittgdosmkxtpak.supabase.co';
 const supabaseAnonKey = 'sb_publishable_Sch6yDRuc1N0w7M61-U29A_ZP0J-9xe';
@@ -37,7 +40,18 @@ void main() async {
     publishableKey: supabaseAnonKey,
   );
   debugPrint('[Auth] Supabase initialized');
-  runApp(const OpenFaithApp());
+
+  // Sentry 错误监控初始化
+  await SentryFlutter.init(
+    (options) {
+      options.dsn = 'YOUR_SENTRY_DSN_HERE';
+      options.environment = kReleaseMode ? 'production' : 'development';
+      options.tracesSampleRate = kReleaseMode ? 1.0 : 0.5;
+      options.enableAutoSessionTracking = true;
+      options.attachStacktrace = true;
+    },
+    appRunner: () => runApp(const OpenFaithApp()),
+  );
 }
 
 class OpenFaithApp extends StatelessWidget {
@@ -45,10 +59,24 @@ class OpenFaithApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 全局错误处理 - 捕获 Widget 构建错误并上报到 Sentry
+    ErrorWidget.builder = (FlutterErrorDetails details) {
+      SentryFlutter.captureException(details.exception, stackTrace: details.stack);
+      return const SizedBox.shrink();
+    };
+    
     return MaterialApp(
       title: 'OpenFaith',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: const Locale('zh'),
       initialRoute: '/splash',
       routes: {
         '/splash': (context) => const SplashScreen(),

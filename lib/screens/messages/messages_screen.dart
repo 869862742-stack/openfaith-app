@@ -10,6 +10,7 @@ import 'group_chat_detail_screen.dart';
 import '../gongjing/room_list_screen.dart';
 import 'add_group_screen.dart';
 import '../home/post_detail_screen.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 /// 消息页面 - 4Tab结构，完全对齐网页版 Messages.tsx
 class MessagesScreen extends StatefulWidget {
@@ -111,9 +112,10 @@ class _MessagesScreenState extends State<MessagesScreen>
         _loadAnnouncements(), _loadNotifications(), _loadCommentRecords(),
       ]);
       _buildUnifiedMessages();
-    } catch (e) {
+    } catch (e, s) {
       if (!mounted) return;
       setState(() => _loadError = '加载失败: $e');
+      Sentry.captureException(e, stackTrace: s);
     if (!mounted) return;
     } finally { setState(() => _loadingMessages = false); }
   }
@@ -143,7 +145,7 @@ class _MessagesScreenState extends State<MessagesScreen>
       if (!mounted) return;
       setState(() { _friendsList = List<Map<String, dynamic>>.from(p); _isLoadingFriends = false; });
     if (!mounted) return;
-    } catch (e) { setState(() => _isLoadingFriends = false); }
+    } catch (e, s) { setState(() => _isLoadingFriends = false); Sentry.captureException(e, stackTrace: s); }
   }
 
   Future<void> _loadLatestChatMessages() async {
@@ -172,7 +174,7 @@ class _MessagesScreenState extends State<MessagesScreen>
       }
       if (!mounted) return;
       setState(() => _latestChatMessages = lm);
-    } catch (e) { debugPrint('加载聊天消息列表失败: $e'); }
+    } catch (e, s) { debugPrint('加载聊天消息列表失败: $e'); Sentry.captureException(e, stackTrace: s); }
   }
 
   Future<void> _loadAnnouncements() async {

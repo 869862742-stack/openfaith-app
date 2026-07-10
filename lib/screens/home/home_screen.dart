@@ -19,6 +19,7 @@ import '../sidebar_pages/gongjing_screen.dart';
 import '../../widgets/hot_ranking.dart';
 import '../profile/heating_records_screen.dart';
 import '../../services/learn_data_cache.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -101,8 +102,9 @@ class _HomeScreenState extends State<HomeScreen> {
       getInitialUri().then((uri) {
         if (uri != null) _handleDeepLink(uri);
       });
-    } catch (e) {
+    } catch (e, s) {
       debugPrint('[DeepLink] getInitialUri error: $e');
+      Sentry.captureException(e, stackTrace: s);
     }
 
     // 监听热启动 deep link
@@ -164,8 +166,9 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         );
       }
-    } catch (e) {
+    } catch (e, s) {
       debugPrint('[DeepLink] loadPostById error: $e');
+      Sentry.captureException(e, stackTrace: s);
     }
   }
 
@@ -254,8 +257,9 @@ class _HomeScreenState extends State<HomeScreen> {
       });
 
       _applyFilters();
-    } catch (e) {
+    } catch (e, s) {
       debugPrint('加载帖子失败: $e');
+      Sentry.captureException(e, stackTrace: s);
       if (!mounted) return;
       setState(() => _loading = false);
     }
