@@ -4,7 +4,7 @@ import 'package:shorebird_code_push/shorebird_code_push.dart';
 import 'theme/app_theme.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/splash/splash_screen.dart';
-import 'screens/design_preview.dart';
+import 'screens/discover/discover_screen.dart';
 import 'navigation/bottom_nav.dart';
 
 const supabaseUrl = 'https://rdhwmeittgdosmkxtpak.supabase.co';
@@ -50,7 +50,7 @@ class OpenFaithApp extends StatelessWidget {
         '/splash': (context) => const SplashScreen(),
         '/login': (context) => const LoginScreen(),
         '/home': (context) => const BottomNavScreen(),
-        '/design-preview': (context) => const DesignPreviewScreen(),
+        '/discover': (context) => const DiscoverScreen(),
       },
     );
   }

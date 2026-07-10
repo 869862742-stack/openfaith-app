@@ -7,6 +7,7 @@ import '../../theme/rainbow_widgets.dart';
 import 'private_chat_screen.dart';
 import 'user_profile_screen.dart';
 import 'group_chat_detail_screen.dart';
+import '../gongjing/room_list_screen.dart';
 
 /// 消息页面 - 4Tab结构，完全对齐网页版 Messages.tsx
 class MessagesScreen extends StatefulWidget {
