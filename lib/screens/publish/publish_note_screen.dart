@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/rainbow_border.dart';
 import 'drafts_screen.dart';
+import '../../utils/religion_icon_map.dart';
 
 class PublishNoteScreen extends StatefulWidget {
   final DraftItem? editDraft;
@@ -465,12 +466,22 @@ class _PublishNoteScreenState extends State<PublishNoteScreen> {
                     width: 1,
                   ),
                 ),
-                child: Text(
-                  tag,
-                  style: TextStyle(
-                    color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
-                    fontSize: 13,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Builder(builder: (_) {
+                      final iconData = getReligionIcon(tag);
+                      return Icon(iconData.icon, size: 14, color: isSelected ? iconData.color : iconData.color.withOpacity(0.6));
+                    }),
+                    const SizedBox(width: 4),
+                    Text(
+                      tag,
+                      style: TextStyle(
+                        color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             );
@@ -1000,6 +1011,11 @@ class _PublishNoteScreenState extends State<PublishNoteScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    Builder(builder: (_) {
+                      final iconData = getReligionIcon(tag);
+                      return Icon(iconData.icon, size: 12, color: iconData.color);
+                    }),
+                    const SizedBox(width: 3),
                     Text('#$tag', style: const TextStyle(color: Colors.white, fontSize: 12)),
                     const SizedBox(width: 4),
                     GestureDetector(

@@ -19,7 +19,9 @@ import '../sidebar_pages/gongjing_screen.dart';
 import '../../widgets/hot_ranking.dart';
 import '../profile/heating_records_screen.dart';
 import '../../services/learn_data_cache.dart';
+import '../../utils/api_cache.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import '../../utils/post_utils.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -208,13 +210,26 @@ class _HomeScreenState extends State<HomeScreen> {
       _hasMore = true;
     });
     try {
+      // ── SWR cache layer for posts list ──
+      final rawPosts = (await ApiCache.instance.staleWhileRevalidate<List<dynamic>>(
+        'home:posts:0',
+        () async {
+          final r = await _supabase
+              .from('posts')
+              .select('*')
+              .eq('status', 'published')
+              .order('created_at', ascending: false)
+              .limit(_pageSize);
+          return r as List<dynamic>;
+        },
+        staleTime: const Duration(minutes: 2),
+        ttl: const Duration(minutes: 2),
+        onRefresh: (_) {
+          if (mounted) _loadPosts();
+        },
+      )) ?? <dynamic>[];
+
       final results = await Future.wait<dynamic>([
-        _supabase
-            .from('posts')
-            .select('*')
-            .eq('status', 'published')
-            .order('created_at', ascending: false)
-            .limit(_pageSize),
         _supabase
             .from('posts')
             .select('*')
@@ -224,21 +239,22 @@ class _HomeScreenState extends State<HomeScreen> {
         _loadFollowingIds(),
       ]);
 
-      final rawPosts = results[0] as List<dynamic>?;
-      final rawHotPosts = results[1] as List<dynamic>?;
-      final allPosts = rawPosts != null
-          ? List<Map<String, dynamic>>.from(rawPosts)
-          : <Map<String, dynamic>>[];
+      final rawHotPosts = results[0] as List<dynamic>?;
+      final allPosts = List<Map<String, dynamic>>.from(rawPosts);
       final hotPosts = rawHotPosts != null
           ? List<Map<String, dynamic>>.from(rawHotPosts)
           : <Map<String, dynamic>>[];
 
-      await _enrichWithProfiles(allPosts);
-      await _enrichWithProfiles(hotPosts);
+      // 过滤群聊帖子（对齐网页版 filterOutGroupChats）
+      final filteredAllPosts = filterOutGroupChats(allPosts);
+      final filteredHotPosts = filterOutGroupChats(hotPosts);
+
+      await _enrichWithProfiles(filteredAllPosts);
+      await _enrichWithProfiles(filteredHotPosts);
 
       final pinned = <Map<String, dynamic>>[];
       final normal = <Map<String, dynamic>>[];
-      for (final post in allPosts) {
+      for (final post in filteredAllPosts) {
         if (post['pinned_status'] == 'active') {
           pinned.add(post);
         } else {
@@ -250,10 +266,10 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         _allPosts = normal;
         _pinnedPosts = pinned;
-        _hotPosts = hotPosts;
+        _hotPosts = filteredHotPosts;
         _loading = false;
         _currentPage = 1;
-        _hasMore = allPosts.length >= _pageSize;
+        _hasMore = filteredAllPosts.length >= _pageSize;
       });
 
       _applyFilters();
@@ -291,10 +307,13 @@ class _HomeScreenState extends State<HomeScreen> {
         return;
       }
 
-      await _enrichWithProfiles(newPosts);
+      // 过滤群聊
+      final filteredNewPosts = filterOutGroupChats(newPosts);
+
+      await _enrichWithProfiles(filteredNewPosts);
 
       final normal = <Map<String, dynamic>>[];
-      for (final post in newPosts) {
+      for (final post in filteredNewPosts) {
         if (post['pinned_status'] != 'active') {
           normal.add(post);
         }
@@ -635,10 +654,11 @@ class _HomeScreenState extends State<HomeScreen> {
         });
         return;
       }
-      await _enrichWithProfiles(newPosts);
+      final filteredFollowingPosts = filterOutGroupChats(newPosts);
+      await _enrichWithProfiles(filteredFollowingPosts);
       if (!mounted) return;
       setState(() {
-        _posts = [..._posts, ...newPosts];
+        _posts = [..._posts, ...filteredFollowingPosts];
         _followingPage += 1;
         _followingHasMore = newPosts.length >= _followingPageSize;
         _loadingFollowingMore = false;

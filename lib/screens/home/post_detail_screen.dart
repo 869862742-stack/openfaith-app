@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../theme/app_colors.dart';
 import '../../utils/format_utils.dart';
+import '../../utils/emoji_icons.dart';
 
 class PostDetailScreen extends StatefulWidget {
   final Map<String, dynamic> post;
@@ -1356,6 +1357,33 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
 
                 const SizedBox(height: 6),
 
+                // 表情快捷栏
+                SizedBox(
+                  height: 32,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: emojiIcons.length > 12 ? 12 : emojiIcons.length,
+                    itemBuilder: (ctx, i) {
+                      final emoji = emojiIcons[i];
+                      return GestureDetector(
+                        onTap: () => _sendEmojiReaction(emoji),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(emoji.icon, size: 16, color: emoji.color),
+                              const SizedBox(width: 2),
+                              Text(emoji.label, style: TextStyle(color: emoji.color, fontSize: 10)),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 6),
+
                 // 互动按钮行
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -1425,6 +1453,24 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
         ),
       ),
     );
+  }
+
+  /// 发送表情快捷反应
+  void _sendEmojiReaction(EmojiIconItem emoji) async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) return;
+    try {
+      await _supabase.from('comments').insert({
+        'post_id': widget.post['id'],
+        'user_id': user.id,
+        'content': emoji.icon.codePoint.toRadixString(16),
+      });
+      if (!mounted) return;
+      setState(() => _commentCount++);
+      await _loadComments();
+    } catch (e) {
+      debugPrint('发送表情反应失败: $e');
+    }
   }
 
   /// 评论项
