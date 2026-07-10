@@ -5,6 +5,7 @@ import '../../theme/app_colors.dart';
 import '../../widgets/rainbow_border.dart';
 import '../../widgets/glass_card.dart';
 import 'create_room_screen.dart';
+import 'silent_room_screen.dart';
 
 /// 房间列表页面 - 对齐网页版 RoomList.tsx
 /// 显示当前所有活跃的静默房间，支持搜索、筛选、下拉刷新、自动清理
@@ -129,18 +130,12 @@ class _RoomListScreenState extends State<RoomListScreen> {
     final roomId = room['id']?.toString() ?? '';
     if (roomId.isEmpty) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('正在进入「${room['name'] ?? '房间'}」...'),
-        backgroundColor: AppColors.overlayBg,
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 2),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => SilentRoomScreen(roomId: roomId),
       ),
     );
-    Navigator.of(context).pushNamed(
-      '/silent-room',
-      arguments: {'room_id': roomId, 'room_name': room['name']},
-    ).catchError((_) {});
   }
 
   /// 创建房间

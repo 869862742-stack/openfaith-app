@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../theme/app_colors.dart';
+import 'silent_room_screen.dart';
 
 class CreateRoomScreen extends StatefulWidget {
   const CreateRoomScreen({super.key});
@@ -83,7 +84,26 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
       });
 
       if (!mounted) return;
-      Navigator.pop(context, true);
+      
+      // Get the created room ID for navigation
+      final roomResult = await Supabase.instance.client
+          .from('rooms')
+          .select('id')
+          .eq('owner_id', user.id)
+          .order('created_at', ascending: false)
+          .limit(1)
+          .maybeSingle();
+      
+      if (roomResult != null && roomResult['id'] != null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => SilentRoomScreen(roomId: roomResult['id'].toString()),
+          ),
+        );
+      } else {
+        Navigator.pop(context, true);
+      }
     } catch (e) {
       if (mounted) {
         setState(() {

@@ -8,6 +8,7 @@ import '../screens/messages/messages_screen.dart';
 import '../screens/profile/profile_screen.dart';
 import '../screens/publish/publish_plan_screen.dart';
 import '../screens/publish/publish_video_screen.dart';
+import '../screens/publish/publish_note_screen.dart';
 import '../screens/publish/drafts_screen.dart';
 import '../screens/gongjing/create_room_screen.dart';
 
@@ -399,7 +400,7 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
       case 'note':
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => const CreatePostScreen()),
+          MaterialPageRoute(builder: (_) => const PublishNoteScreen()),
         );
         break;
       case 'video':

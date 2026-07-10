@@ -1043,20 +1043,9 @@ class _MessagesScreenState extends State<MessagesScreen>
             ])))));
   }
 
-  // TAB4: 房间
+  // TAB4: 房间 - 显示房间列表
   Widget _buildRoomsTab() {
-    return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-      Container(width: 80, height: 80,
-        decoration: BoxDecoration(shape: BoxShape.circle, gradient: LinearGradient(colors: [
-          AppColors.auroraBlue.withOpacity(0.15), AppColors.auroraPurple.withOpacity(0.15)])),
-        child: const Icon(Icons.meeting_room, size: 36, color: AppColors.auroraBlue)),
-      const SizedBox(height: 20),
-      Text('房间功能即将开放',
-        style: TextStyle(color: AppColors.textSecondary, fontSize: 16, fontWeight: FontWeight.w500)),
-      const SizedBox(height: 8),
-      Text('敬请期待，即将上线多人语音房间功能',
-        style: TextStyle(color: AppColors.textWeak, fontSize: 13)),
-    ]));
+    return const RoomListScreen(standalone: false);
   }
 }
 

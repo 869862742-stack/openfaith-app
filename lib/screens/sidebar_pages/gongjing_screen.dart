@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/rainbow_border.dart';
+import '../gongjing/silent_room_screen.dart';
 
 /// 共境页面 - 对齐网页版 Gongjing.tsx
 /// 包含四大功能入口：静默同行、世界呼吸时刻、树洞回声、无界圆桌
@@ -195,21 +196,57 @@ class _GongjingScreenState extends State<GongjingScreen> {
     }
   }
 
-  void _handleEnterSilent() {
-    setState(() => _creating = true);
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        setState(() => _creating = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('正在以「$_selectedStatus」状态寻找同行者...'),
-            backgroundColor: AppColors.overlayBg,
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
+  Future<void> _handleEnterSilent() async {
+    setState(() {
+      _creating = true;
+      _error = null;
     });
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) throw Exception('请先登录');
+
+      // 创建新房间
+      final insertData = <String, dynamic>{
+        'creator_id': user.id,
+        'name': '静默空间',
+        'description': '',
+        'tags': <String>[],
+        'user_count': 1,
+        'room_code': DateTime.now().millisecondsSinceEpoch % 1000000,
+        'created_at': DateTime.now().toUtc().toIso8601String(),
+      };
+
+      if (_musicPath != null && _musicPath!.isNotEmpty) {
+        insertData['custom_audio_url'] = _musicPath;
+      }
+
+      final result = await _supabase
+          .from('rooms')
+          .insert(insertData)
+          .select('id')
+          .maybeSingle();
+
+      if (result == null || result['id'] == null) {
+        throw Exception('创建房间失败');
+      }
+
+      final roomId = result['id'].toString();
+
+      if (!mounted) return;
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => SilentRoomScreen(roomId: roomId),
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = e.toString().replaceAll('Exception: ', '');
+          _creating = false;
+        });
+      }
+    }
   }
 
   void _handleEnterBreathing() {

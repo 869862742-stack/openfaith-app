@@ -6,6 +6,10 @@ import 'screens/auth/login_screen.dart';
 import 'screens/splash/splash_screen.dart';
 import 'screens/discover/discover_screen.dart';
 import 'navigation/bottom_nav.dart';
+import 'screens/gongjing/room_list_screen.dart';
+import 'screens/gongjing/create_room_screen.dart';
+import 'screens/gongjing/silent_room_screen.dart';
+import 'screens/publish/publish_note_screen.dart';
 
 const supabaseUrl = 'https://rdhwmeittgdosmkxtpak.supabase.co';
 const supabaseAnonKey = 'sb_publishable_Sch6yDRuc1N0w7M61-U29A_ZP0J-9xe';
@@ -51,6 +55,29 @@ class OpenFaithApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/home': (context) => const BottomNavScreen(),
         '/discover': (context) => const DiscoverScreen(),
+        '/room-list': (context) => const RoomListScreen(),
+        '/create-room': (context) => const CreateRoomScreen(),
+        '/publish-note': (context) => const PublishNoteScreen(),
+      },
+      onGenerateRoute: (settings) {
+        if (settings.name == '/silent-room') {
+          final args = settings.arguments as Map<String, dynamic>?;
+          final roomId = args?['room_id']?.toString() ?? '';
+          if (roomId.isNotEmpty) {
+            return MaterialPageRoute(
+              builder: (context) => SilentRoomScreen(roomId: roomId),
+            );
+          }
+        }
+        // Handle /room/:roomId path format
+        final uri = Uri.tryParse(settings.name ?? '');
+        if (uri != null && uri.pathSegments.length == 2 && uri.pathSegments[0] == 'room') {
+          final roomId = uri.pathSegments[1];
+          return MaterialPageRoute(
+            builder: (_) => SilentRoomScreen(roomId: roomId),
+          );
+        }
+        return null;
       },
     );
   }
