@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:convert';
 import 'dart:math';
 import 'dart:ui';
 
@@ -926,10 +927,14 @@ class _SilentRoomScreenState extends State<SilentRoomScreen>
     }
 
     // 优先使用缓存的在线LRC
-    final lrcText = track.cachedLrc ?? track.lyrics;
+    var lrcText = track.cachedLrc ?? track.lyrics;
     if (lrcText == null || lrcText.isEmpty) {
       return (isLrc: false, lines: <LrcLine>[], rawText: '');
     }
+
+    // 预处理：处理 Python dict 格式歌词（对齐网页版 extractTextFromDictFormat）
+    lrcText = extractTextFromDictFormat(lrcText);
+    lrcText = convertDictToLrc(lrcText);
 
     if (isLrcFormat(lrcText)) {
       return (isLrc: true, lines: parseLrc(lrcText), rawText: lrcText);
