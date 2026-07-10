@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../theme/colors.dart';
+import '../../theme/app_colors.dart';
 import '../../widgets/rainbow_border.dart';
 
 class DraftItem {
@@ -115,13 +115,14 @@ class _DraftsScreenState extends State<DraftsScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF0A0E1A),
-        title: const Text('删除草稿', style: TextStyle(color: Colors.white)),
-        content: const Text('确定要删除这篇草稿吗？', style: TextStyle(color: Colors.white70)),
+        backgroundColor: AppColors.cardBg,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('删除草稿', style: TextStyle(color: AppColors.textPrimary)),
+        content: const Text('确定要删除这篇草稿吗？', style: TextStyle(color: AppColors.textSecondary)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('取消', style: TextStyle(color: Colors.white54)),
+            child: Text('取消', style: TextStyle(color: AppColors.textWeak)),
           ),
           TextButton(
             onPressed: () async {
@@ -129,7 +130,7 @@ class _DraftsScreenState extends State<DraftsScreen> {
               await DraftService.deleteDraft(draft.id);
               _loadDrafts();
             },
-            child: const Text('删除', style: TextStyle(color: Color(0xFFFF4D6D))),
+            child: const Text('删除', style: TextStyle(color: AppColors.error)),
           ),
         ],
       ),
@@ -140,21 +141,57 @@ class _DraftsScreenState extends State<DraftsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.bgColor,
-      appBar: AppBar(
-        backgroundColor: AppColors.bgColor,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text('草稿箱', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600)),
-        centerTitle: true,
+      body: Column(
+        children: [
+          // Header - 对齐网页版
+          Container(
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).paddingTop + 12,
+              left: 16,
+              right: 16,
+              bottom: 12,
+            ),
+            decoration: BoxDecoration(
+              color: AppColors.bgColor,
+              border: Border(
+                bottom: BorderSide(color: AppColors.borderDefault, width: 0.5),
+              ),
+            ),
+            child: Row(
+              children: [
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: const Padding(
+                    padding: EdgeInsets.all(8),
+                    child: Icon(Icons.arrow_back_ios_new, color: AppColors.textPrimary, size: 20),
+                  ),
+                ),
+                const Expanded(
+                  child: Text(
+                    '草稿箱',
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                // Spacer to center title
+                const SizedBox(width: 36),
+              ],
+            ),
+          ),
+          // Content
+          Expanded(
+            child: _loading
+                ? const Center(child: CircularProgressIndicator(color: AppColors.auroraCyan))
+                : _drafts.isEmpty
+                    ? _buildEmptyState()
+                    : _buildDraftList(),
+          ),
+        ],
       ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF00E5FF)))
-          : _drafts.isEmpty
-              ? _buildEmptyState()
-              : _buildDraftList(),
     );
   }
 
@@ -163,12 +200,12 @@ class _DraftsScreenState extends State<DraftsScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.article_outlined, size: 64, color: Colors.white.withOpacity(0.1)),
+          Icon(Icons.article_outlined, size: 64, color: AppColors.textPlaceholder.withOpacity(0.3)),
           const SizedBox(height: 16),
-          Text('暂无草稿', style: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 14)),
-          const SizedBox(height: 8),
+          Text('暂无草稿', style: TextStyle(color: AppColors.textPlaceholder, fontSize: 14)),
+          const SizedBox(height: 4),
           Text('发布笔记时保存的草稿会出现在这里',
-              style: TextStyle(color: Colors.white.withOpacity(0.15), fontSize: 12)),
+              style: TextStyle(color: AppColors.textPlaceholder.withOpacity(0.4), fontSize: 12)),
         ],
       ),
     );
@@ -186,7 +223,7 @@ class _DraftsScreenState extends State<DraftsScreen> {
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFF050816),
+              color: AppColors.bgColor,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
@@ -197,14 +234,13 @@ class _DraftsScreenState extends State<DraftsScreen> {
                     Expanded(
                       child: Text(
                         draft.title.isNotEmpty ? draft.title : '无标题',
-                        style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+                        style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.delete_outline, size: 20),
-                      color: Colors.white.withOpacity(0.4),
+                      icon: Icon(Icons.delete_outline, size: 20, color: AppColors.iconColorWeak),
                       onPressed: () => _deleteDraft(draft),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
@@ -214,7 +250,7 @@ class _DraftsScreenState extends State<DraftsScreen> {
                 const SizedBox(height: 8),
                 Text(
                   draft.content,
-                  style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 13, height: 1.5),
+                  style: TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.5),
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -225,17 +261,17 @@ class _DraftsScreenState extends State<DraftsScreen> {
                     children: draft.tags.take(5).map((tag) => Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.06),
+                        color: AppColors.hoverBgLight,
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: Text(tag, style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 11)),
+                      child: Text(tag, style: TextStyle(color: AppColors.iconColorWeak, fontSize: 11)),
                     )).toList(),
                   ),
                 ],
                 const SizedBox(height: 10),
                 Text(
                   '更新于 ${_formatDate(draft.updatedAt)}',
-                  style: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 11),
+                  style: TextStyle(color: AppColors.textPlaceholder, fontSize: 11),
                 ),
               ],
             ),

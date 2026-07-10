@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../theme/colors.dart';
+import '../../../theme/app_colors.dart';
 
 /// 粉丝/关注列表弹窗
 class FollowersListDialog extends StatefulWidget {
@@ -160,7 +160,7 @@ class _FollowersListDialogState extends State<FollowersListDialog> {
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
                 child: Row(children: [
                   Text('$title (${_formatCount(_list.length)})',
-                      style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold)),
+                      style: const TextStyle(color: AppColors.textPrimary, fontSize: 17, fontWeight: FontWeight.bold)),
                   const Spacer(),
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
@@ -173,7 +173,7 @@ class _FollowersListDialogState extends State<FollowersListDialog> {
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 child: TextField(
                   controller: _searchCtrl,
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
                   decoration: InputDecoration(
                     hintText: '搜索...',
                     hintStyle: const TextStyle(color: AppColors.textMuted),
@@ -191,7 +191,7 @@ class _FollowersListDialogState extends State<FollowersListDialog> {
               // 列表
               Expanded(
                 child: _loading
-                    ? const Center(child: CircularProgressIndicator(color: Color(0xFF9D4EDD)))
+                    ? const Center(child: CircularProgressIndicator(color: AppColors.auroraPurple))
                     : _filteredList.isEmpty
                         ? Center(child: Text(_searchQuery.isNotEmpty ? '无匹配结果' : '暂无$title',
                             style: const TextStyle(color: AppColors.textSecondary)))
@@ -234,9 +234,10 @@ class _FollowersListDialogState extends State<FollowersListDialog> {
                   shaderCallback: (bounds) =>
                       const LinearGradient(
                         begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,colors: AppColors.rainbowColors).createShader(bounds),
+                        end: Alignment.bottomRight,
+                        colors: AppColors.auroraColors).createShader(bounds),
                   child: const Text('OF',
-                      style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900)),
+                      style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w900)),
                 )
               : null,
         ),
@@ -245,7 +246,7 @@ class _FollowersListDialogState extends State<FollowersListDialog> {
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(nickname,
-                style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500),
+                style: const TextStyle(color: AppColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w500),
                 maxLines: 1, overflow: TextOverflow.ellipsis),
             if (faithTag.isNotEmpty)
               Text(faithTag,

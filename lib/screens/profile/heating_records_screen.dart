@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'dart:math';
-import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../theme/colors.dart';
+import '../../theme/app_colors.dart';
 
 class HeatingRecordsScreen extends StatefulWidget {
   const HeatingRecordsScreen({super.key});
@@ -67,144 +65,179 @@ class _HeatingRecordsScreenState extends State<HeatingRecordsScreen> {
       }
     }
     return streak;
-  }  static const _rainbowColors = [
-
-
-    Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A),
-
-
-    Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD),
-  ];
-
-  LinearGradient _diagonalGradient(Size size) {
-    return LinearGradient(colors: _rainbowColors, transform: GradientRotation(0.785398));
   }
 
   @override
   Widget build(BuildContext context) {
     final streak = _getStreak();
     return Scaffold(
-      backgroundColor: const Color(0xFF050816),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF050816),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text('\u6253\u5361\u8bb0\u5f55', style: TextStyle(color: Colors.white, fontSize: 16)),
-      ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator(color: Colors.white24))
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  // Streak card
-                  LayoutBuilder(builder: (context, constraints) {
-                      final size = Size(constraints.maxWidth, constraints.maxHeight);
-                      return Container(
-                    padding: const EdgeInsets.all(1),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      gradient: _diagonalGradient(size),
-                    ),
-                    child: Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(11),
-                        color: const Color(0xFF050816),
-                      ),
-                      child: Column(
-                        children: [
-                          Icon(Icons.local_fire_department, color: const Color(0xFFFF9F1C), size: 40),
-                          const SizedBox(height: 8),
-                          Text('\u8fde\u7eed\u6253\u5361', style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 13)),
-                          const SizedBox(height: 4),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text('$streak', style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold)),
-                              const SizedBox(width: 4),
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 6),
-                                child: Text('\u5929', style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 14)),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Text('\u7d2f\u8ba1\u6253\u5361 ${_records.length} \u6b21',
-                              style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 12)),
-                        ],
-                      ),
-                    ),
-                  );
-                  }),
-                  const SizedBox(height: 24),
-                  // Records list
-                  if (_records.isEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 40),
-                      child: Column(
-                        children: [
-                          Icon(Icons.event_note, size: 48, color: Colors.white.withOpacity(0.2)),
-                          const SizedBox(height: 12),
-                          Text('\u6682\u65e0\u6253\u5361\u8bb0\u5f55', style: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 13)),
-                        ],
-                      ),
-                    )
-                  else
-                    ..._records.map((record) {
-                      final content = record['content'] ?? '';
-                      final tags = record['tags'] as List? ?? [];
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          color: AppColors.inputBg,
-                          border: Border.all(color: Colors.white.withOpacity(0.06)),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                const Icon(Icons.check_circle, color: Color(0xFF70E000), size: 16),
-                                const SizedBox(width: 8),
-                                Text(
-                                  _formatDate(record['created_at']),
-                                  style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 12),
-                                ),
-                              ],
-                            ),
-                            if (content.toString().isNotEmpty) ...[
-                              const SizedBox(height: 8),
-                              Text(content, style: const TextStyle(color: Colors.white, fontSize: 13)),
-                            ],
-                            if (tags.isNotEmpty) ...[
-                              const SizedBox(height: 8),
-                              Wrap(
-                                spacing: 6,
-                                runSpacing: 4,
-                                children: tags.cast<String>().map((tag) => Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(10),
-                                    color: Colors.white.withOpacity(0.06),
-                                  ),
-                                  child: Text('#$tag', style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 11)),
-                                )).toList(),
-                              ),
-                            ],
-                          ],
-                        ),
-                      );
-                    }),
-                ],
+      backgroundColor: AppColors.bgColor,
+      body: Column(
+        children: [
+          // Header - 对齐网页版
+          Container(
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).paddingTop + 16,
+              left: 16,
+              right: 16,
+              bottom: 12,
+            ),
+            decoration: BoxDecoration(
+              color: AppColors.bgColor,
+              border: Border(
+                bottom: BorderSide(color: AppColors.borderSubtle, width: 0.5),
               ),
             ),
+            child: Row(
+              children: [
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: const Padding(
+                    padding: EdgeInsets.all(4),
+                    child: Icon(Icons.chevron_left, color: AppColors.textPrimary, size: 24),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  '🔥 加热记录',
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Content
+          Expanded(
+            child: _loading
+                ? const Center(
+                    child: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.auroraOrange,
+                      ),
+                    ),
+                  )
+                : SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        // Streak card - 七彩边框
+                        Container(
+                          padding: const EdgeInsets.all(1),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            gradient: AppColors.auroraGradient,
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(11),
+                              color: AppColors.bgColor,
+                            ),
+                            child: Column(
+                              children: [
+                                const Icon(Icons.local_fire_department, color: AppColors.auroraOrange, size: 40),
+                                const SizedBox(height: 8),
+                                Text('连续打卡', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+                                const SizedBox(height: 4),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Text('$streak',
+                                        style: const TextStyle(
+                                            color: AppColors.textPrimary,
+                                            fontSize: 36,
+                                            fontWeight: FontWeight.bold)),
+                                    const SizedBox(width: 4),
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 6),
+                                      child: Text('天', style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Text('累计打卡 ${_records.length} 次',
+                                    style: TextStyle(color: AppColors.iconColorWeak, fontSize: 12)),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        // Records list
+                        if (_records.isEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 40),
+                            child: Column(
+                              children: [
+                                Icon(Icons.event_note, size: 48, color: AppColors.textPlaceholder.withOpacity(0.3)),
+                                const SizedBox(height: 12),
+                                Text('暂无打卡记录',
+                                    style: TextStyle(color: AppColors.textPlaceholder, fontSize: 13)),
+                              ],
+                            ),
+                          )
+                        else
+                          ..._records.map((record) {
+                            final content = record['content'] ?? '';
+                            final tags = record['tags'] as List? ?? [];
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 8),
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                                color: AppColors.hoverBgLight,
+                                border: Border.all(color: AppColors.borderSubtle),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.check_circle, color: AppColors.auroraGreen, size: 16),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        _formatDate(record['created_at']),
+                                        style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                                      ),
+                                    ],
+                                  ),
+                                  if (content.toString().isNotEmpty) ...[
+                                    const SizedBox(height: 8),
+                                    Text(content,
+                                        style: const TextStyle(color: AppColors.textPrimary, fontSize: 13)),
+                                  ],
+                                  if (tags.isNotEmpty) ...[
+                                    const SizedBox(height: 8),
+                                    Wrap(
+                                      spacing: 6,
+                                      runSpacing: 4,
+                                      children: tags.cast<String>().map((tag) => Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(10),
+                                          color: AppColors.hoverBgLight,
+                                        ),
+                                        child: Text('#$tag',
+                                            style: TextStyle(color: AppColors.iconColorWeak, fontSize: 11)),
+                                      )).toList(),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            );
+                          }),
+                      ],
+                    ),
+                  ),
+          ),
+        ],
+      ),
     );
   }
 }

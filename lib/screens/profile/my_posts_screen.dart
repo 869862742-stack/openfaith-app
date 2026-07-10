@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:postgrest/postgrest.dart';
-import '../../theme/colors.dart';
+import '../../theme/app_colors.dart';
 
 class MyPostsScreen extends StatefulWidget {
   const MyPostsScreen({super.key});
@@ -68,14 +68,14 @@ class _MyPostsScreenState extends State<MyPostsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.cardBg,
-        title: const Text('删除帖子', style: TextStyle(color: Colors.white)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('删除帖子', style: TextStyle(color: AppColors.textPrimary)),
         content: const Text('确定要删除这篇帖子吗？此操作不可撤销。',
             style: TextStyle(color: AppColors.textSecondary)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('取消',
-                style: TextStyle(color: AppColors.textSecondary)),
+            child: const Text('取消', style: TextStyle(color: AppColors.textSecondary)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
@@ -111,37 +111,68 @@ class _MyPostsScreenState extends State<MyPostsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios,
-              color: Colors.white, size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text('我的帖子',
-            style: TextStyle(color: Colors.white, fontSize: 18)),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(50),
-          child: _buildFilterTabs(),
-        ),
-      ),
-      body: _loading
-          ? const Center(
-              child:
-                  CircularProgressIndicator(color: AppColors.rainbowEnd))
-          : _posts.isEmpty
-              ? _buildEmptyView()
-              : RefreshIndicator(
-                  color: AppColors.rainbowEnd,
-                  onRefresh: _loadPosts,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: _posts.length,
-                    itemBuilder: (context, index) =>
-                        _buildPostCard(_posts[index]),
+      body: Column(
+        children: [
+          // Header
+          Container(
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).paddingTop + 12,
+              left: 16,
+              right: 16,
+              bottom: 0,
+            ),
+            decoration: BoxDecoration(
+              color: AppColors.background,
+              border: Border(
+                bottom: BorderSide(color: AppColors.borderDefault, width: 0.5),
+              ),
+            ),
+            child: Row(
+              children: [
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: const Padding(
+                    padding: EdgeInsets.all(8),
+                    child: Icon(Icons.arrow_back_ios, color: AppColors.textPrimary, size: 20),
                   ),
                 ),
+                const Expanded(
+                  child: Text(
+                    '我的帖子',
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(width: 36),
+              ],
+            ),
+          ),
+          // Filter tabs
+          _buildFilterTabs(),
+          // Content
+          Expanded(
+            child: _loading
+                ? const Center(
+                    child: CircularProgressIndicator(color: AppColors.auroraPurple))
+                : _posts.isEmpty
+                    ? _buildEmptyView()
+                    : RefreshIndicator(
+                        color: AppColors.auroraPurple,
+                        onRefresh: _loadPosts,
+                        child: ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: _posts.length,
+                          itemBuilder: (context, index) =>
+                              _buildPostCard(_posts[index]),
+                        ),
+                      ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -168,15 +199,11 @@ class _MyPostsScreenState extends State<MyPostsScreen> {
         _loadPosts();
       },
       child: Container(
-        padding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           gradient: isSelected
-              ? const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                  colors: [AppColors.rainbowStart, AppColors.rainbowEnd])
+              ? AppColors.auroraGradient
               : null,
           color: isSelected ? null : AppColors.cardBg,
           border:
@@ -184,7 +211,7 @@ class _MyPostsScreenState extends State<MyPostsScreen> {
         ),
         child: Text(label,
             style: TextStyle(
-                color: isSelected ? Colors.white : AppColors.textSecondary,
+                color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
                 fontSize: 13,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal)),
       ),
@@ -226,7 +253,7 @@ class _MyPostsScreenState extends State<MyPostsScreen> {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                              color: Colors.white,
+                              color: AppColors.textPrimary,
                               fontSize: 16,
                               fontWeight: FontWeight.w600)),
                     ),
@@ -260,13 +287,13 @@ class _MyPostsScreenState extends State<MyPostsScreen> {
                         horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
-                      color: AppColors.rainbowEnd.withOpacity(0.1),
+                      color: AppColors.auroraPurple.withOpacity(0.1),
                       border: Border.all(
-                          color: AppColors.rainbowEnd.withOpacity(0.3)),
+                          color: AppColors.auroraPurple.withOpacity(0.3)),
                     ),
                     child: Text(religionName,
                         style: const TextStyle(
-                            color: AppColors.rainbowEnd, fontSize: 11)),
+                            color: AppColors.auroraPurple, fontSize: 11)),
                   ),
                 ],
               ],
@@ -298,7 +325,7 @@ class _MyPostsScreenState extends State<MyPostsScreen> {
                 _buildActionChip(
                   Icons.favorite_outline,
                   _formatCount(likeCount),
-                  AppColors.rainbowStart,
+                  AppColors.auroraRed,
                 ),
                 const SizedBox(width: 12),
                 _buildActionChip(
@@ -317,16 +344,16 @@ class _MyPostsScreenState extends State<MyPostsScreen> {
                     }
                   },
                   itemBuilder: (context) => [
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'edit',
                       child: Row(
                         children: [
-                          Icon(Icons.edit_outlined,
+                          const Icon(Icons.edit_outlined,
                               color: AppColors.textSecondary, size: 18),
-                          SizedBox(width: 8),
+                          const SizedBox(width: 8),
                           Text('编辑',
                               style: TextStyle(
-                                  color: Colors.white, fontSize: 14)),
+                                  color: AppColors.textPrimary, fontSize: 14)),
                         ],
                       ),
                     ),
@@ -392,8 +419,8 @@ class _MyPostsScreenState extends State<MyPostsScreen> {
             icon: const Icon(Icons.add, size: 18),
             label: const Text('发布帖子'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.rainbowEnd,
-              foregroundColor: Colors.white,
+              backgroundColor: AppColors.auroraPurple,
+              foregroundColor: AppColors.textPrimary,
               padding: const EdgeInsets.symmetric(
                   horizontal: 24, vertical: 12),
               shape: RoundedRectangleBorder(

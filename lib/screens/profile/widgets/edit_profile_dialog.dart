@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../theme/colors.dart';
+import '../../../theme/app_colors.dart';
 
 /// 信仰标签候选列表
 const List<String> kFaithTags = [
@@ -16,13 +16,13 @@ const List<String> kFaithTags = [
 
 /// 头像颜色映射（默认头像）
 const Map<String, Color> kAvatarColorMap = {
-  'red': Color(0xFFFF4D6D),
-  'orange': Color(0xFFFF9F1C),
-  'yellow': Color(0xFFFFD60A),
-  'green': Color(0xFF70E000),
-  'cyan': Color(0xFF00E5FF),
-  'blue': Color(0xFF3A86FF),
-  'purple': Color(0xFF9D4EDD),
+  'red': AppColors.auroraRed,
+  'orange': AppColors.auroraOrange,
+  'yellow': AppColors.auroraYellow,
+  'green': AppColors.auroraGreen,
+  'cyan': AppColors.auroraCyan,
+  'blue': AppColors.auroraBlue,
+  'purple': AppColors.auroraPurple,
 };
 
 /// 编辑资料弹窗
@@ -83,7 +83,9 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
 
   void _showSnack(String msg) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg), backgroundColor: AppColors.cardBg),
+    );
   }
 
   Future<void> _pickAndUploadAvatar() async {
@@ -213,7 +215,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                   ),
                   child: Row(children: [
                     const Text('编辑资料',
-                        style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                        style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
                     const Spacer(),
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
@@ -234,9 +236,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                           width: 80, height: 80,
                           decoration: const BoxDecoration(
                             shape: BoxShape.circle,
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,colors: AppColors.rainbowColors),
+                            gradient: AppColors.auroraGradient,
                           ),
                           child: Container(
                             margin: const EdgeInsets.all(3),
@@ -289,7 +289,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                       TextField(
                         controller: _bioCtrl,
                         maxLength: 100, maxLines: 3,
-                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                        style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
                         decoration: InputDecoration(
                           hintText: '介绍一下自己...',
                           hintStyle: const TextStyle(color: AppColors.textMuted),
@@ -300,7 +300,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                           enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide(color: AppColors.borderColor)),
                           focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Color(0xFF9D4EDD))),
+                              borderSide: const BorderSide(color: AppColors.auroraPurple)),
                           counterText: '',
                         ),
                       ),
@@ -316,7 +316,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
 
                       // ---- 信仰标签 ----
                       Row(children: [
-                        const Text('信仰标签', style: TextStyle(color: Colors.white, fontSize: 14)),
+                        const Text('信仰标签', style: TextStyle(color: AppColors.textPrimary, fontSize: 14)),
                         if (!_canEditFaithTag() &&
                             _editFaithTag == (widget.profile['faith_tag'] as String? ?? ''))
                           const Padding(
@@ -341,7 +341,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                             border: Border.all(color: AppColors.borderColor),
                           ),
                           child: Row(children: [
-                            Expanded(child: Text(_editFaithTag, style: const TextStyle(color: Colors.white, fontSize: 14))),
+                            Expanded(child: Text(_editFaithTag, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14))),
                             Icon(_showTagDropdown ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
                                 color: AppColors.textSecondary, size: 20),
                           ]),
@@ -365,8 +365,8 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                               return ListTile(
                                 dense: true,
                                 title: Text(tag, style: TextStyle(
-                                    color: isSelected ? const Color(0xFF9D4EDD) : Colors.white, fontSize: 14)),
-                                trailing: isSelected ? const Icon(Icons.check, color: Color(0xFF9D4EDD), size: 18) : null,
+                                    color: isSelected ? AppColors.auroraPurple : AppColors.textPrimary, fontSize: 14)),
+                                trailing: isSelected ? const Icon(Icons.check, color: AppColors.auroraPurple, size: 18) : null,
                                 onTap: () => setState(() {
                                   _editFaithTag = tag;
                                   _showTagDropdown = false;
@@ -382,7 +382,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                       const SizedBox(height: 16),
                       const Align(
                         alignment: Alignment.centerLeft,
-                        child: Text('隐私设置', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
+                        child: Text('隐私设置', style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500)),
                       ),
                       const SizedBox(height: 12),
                       _buildPrivacyRow('允许陌生人访问主页', '关闭后，只有好友才能访问', _allowStrangerVisit,
@@ -401,12 +401,13 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                             borderRadius: BorderRadius.circular(12),
                             gradient: _isSaving ? null : const LinearGradient(
                               begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,colors: [Color(0xFFFF4D6D), Color(0xFF9D4EDD)]),
+                              end: Alignment.bottomRight,
+                              colors: [AppColors.auroraRed, AppColors.auroraPurple]),
                             color: _isSaving ? AppColors.textMuted : null,
                           ),
                           child: _isSaving
-                              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                              : const Text('保存修改', style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600)),
+                              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.textPrimary))
+                              : const Text('保存修改', style: TextStyle(color: AppColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w600)),
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -423,28 +424,29 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
 
   Widget _buildDefaultAvatar() {
     return Container(
-      color: const Color(0xFF111827),
+      color: AppColors.bgSecondary,
       child: Center(
         child: ShaderMask(
           shaderCallback: (bounds) =>
               const LinearGradient(
                 begin: Alignment.topLeft,
-                end: Alignment.bottomRight,colors: AppColors.rainbowColors).createShader(bounds),
+                end: Alignment.bottomRight,
+                colors: AppColors.auroraColors).createShader(bounds),
           child: const Text('OF',
-              style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: 1)),
+              style: TextStyle(color: AppColors.textPrimary, fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: 1)),
         ),
       ),
     );
   }
 
   Widget _label(String text) {
-    return Align(alignment: Alignment.centerLeft, child: Text(text, style: const TextStyle(color: Colors.white, fontSize: 14)));
+    return Align(alignment: Alignment.centerLeft, child: Text(text, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14)));
   }
 
   Widget _inputField({required TextEditingController controller, required String hint}) {
     return TextField(
       controller: controller,
-      style: const TextStyle(color: Colors.white, fontSize: 14),
+      style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: const TextStyle(color: AppColors.textMuted),
@@ -452,7 +454,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.borderColor)),
         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.borderColor)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF9D4EDD))),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.auroraPurple)),
       ),
     );
   }
@@ -461,7 +463,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
     return Row(children: [
       Expanded(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(title, style: const TextStyle(color: Colors.white, fontSize: 14)),
+          Text(title, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14)),
           const SizedBox(height: 2),
           Text(subtitle, style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
         ]),
@@ -472,9 +474,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
           width: 48, height: 26,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(13),
-            gradient: value ? const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,colors: AppColors.rainbowColors) : null,
+            gradient: value ? AppColors.auroraGradient : null,
             color: value ? null : AppColors.textMuted.withOpacity(0.2),
             border: value ? null : Border.all(color: AppColors.borderColor),
           ),
@@ -486,8 +486,8 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                 width: 22, height: 22,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white,
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 4)],
+                  color: AppColors.textPrimary,
+                  boxShadow: [BoxShadow(color: AppColors.overlay, blurRadius: 4)],
                 ),
               ),
             ),

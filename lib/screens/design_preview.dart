@@ -298,7 +298,7 @@ class DesignPreviewScreen extends StatelessWidget {
       child: Center(
         child: Text(
           label,
-          style: const TextStyle(fontSize: 8, color: Colors.white),
+          style: const TextStyle(fontSize: 8, color: AppColors.textPrimary),
           overflow: TextOverflow.ellipsis,
         ),
       ),

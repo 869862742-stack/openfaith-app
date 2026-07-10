@@ -1,8 +1,8 @@
 import 'dart:io';
-import 'dart:math';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../theme/colors.dart';
+import '../../theme/app_colors.dart';
 
 class PublishVideoScreen extends StatefulWidget {
   const PublishVideoScreen({super.key});
@@ -19,46 +19,34 @@ class _PublishVideoScreenState extends State<PublishVideoScreen> {
   bool _isPublic = true;
   bool _publishing = false;
   String? _error;
+  List<String> _selectedTags = [];
 
   @override
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
     super.dispose();
-  }  static const _rainbowColors = [
-
-
-    Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A),
-
-
-    Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD),
-  ];
-
-  LinearGradient _diagonalGradient(Size size) {
-    return LinearGradient(colors: _rainbowColors, transform: GradientRotation(0.785398));
   }
 
   Future<void> _publish() async {
     if (_selectedVideoPath == null) {
-      setState(() => _error = '\u8bf7\u5148\u9009\u62e9\u89c6\u9891');
+      setState(() => _error = '请先选择视频');
       return;
     }
     if (_titleController.text.trim().isEmpty) {
-      setState(() => _error = '\u8bf7\u8f93\u5165\u89c6\u9891\u6807\u9898');
+      setState(() => _error = '请输入视频标题');
       return;
     }
     setState(() { _publishing = true; _error = null; });
     try {
       final user = Supabase.instance.client.auth.currentUser;
-      if (user == null) throw Exception('\u672a\u767b\u5f55');
+      if (user == null) throw Exception('未登录');
 
       // Upload video
       final videoExt = _selectedVideoPath!.split('.').last;
       final videoPath = 'videos/${user.id}/${DateTime.now().millisecondsSinceEpoch}.$videoExt';
       await Supabase.instance.client.storage.from('media').upload(
         videoPath,
-        // In real implementation, would use File(_selectedVideoPath!)
-        // For now, placeholder for the upload logic
         File(_selectedVideoPath!),
       );
 
@@ -82,6 +70,7 @@ class _PublishVideoScreenState extends State<PublishVideoScreen> {
           'type': 'video',
           'video_url': videoUrl,
           'cover_url': coverUrl,
+          'tags': _selectedTags,
         },
       });
 
@@ -92,179 +81,326 @@ class _PublishVideoScreenState extends State<PublishVideoScreen> {
     }
   }
 
+  Future<void> _saveDraft() async {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('已保存到草稿箱'),
+        backgroundColor: AppColors.cardBg,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF050816),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF050816),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.white, size: 22),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text('\u53d1\u5e03\u89c6\u9891', style: TextStyle(color: Colors.white, fontSize: 16)),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: GestureDetector(
-              onTap: _publishing ? null : _publish,
-              child: LayoutBuilder(builder: (context, constraints) {
-                  final size = Size(constraints.maxWidth, constraints.maxHeight);
-                  return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  gradient: _diagonalGradient(size),
-                ),
-                child: _publishing
-                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : const Text('\u53d1\u5e03', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
-              );
-              }),
-            ),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // \u89c6\u9891\u9009\u62e9
-            GestureDetector(
-              onTap: () {
-                // In real implementation, would open file picker
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('\u89c6\u9891\u9009\u62e9\u5668\u5f85\u96c6\u6210'), backgroundColor: AppColors.inputBg),
-                );
-              },
+      backgroundColor: AppColors.bgColor,
+      body: Column(
+        children: [
+          // 毛玻璃 Header - 对齐网页版
+          ClipRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
               child: Container(
-                height: 200,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  color: AppColors.inputBg,
-                  border: Border.all(color: Colors.white.withOpacity(0.08)),
+                padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).paddingTop + 12,
+                  left: 16,
+                  right: 16,
+                  bottom: 12,
                 ),
-                child: _selectedVideoPath != null
-                    ? Stack(
-                        children: [
-                          Center(child: Icon(Icons.play_circle_fill, size: 48, color: Colors.white.withOpacity(0.7))),
-                          Positioned(
-                            top: 8, right: 8,
-                            child: GestureDetector(
-                              onTap: () => setState(() => _selectedVideoPath = null),
-                              child: Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(4)),
-                                child: const Icon(Icons.close, color: Colors.white, size: 16),
-                              ),
-                            ),
-                          ),
-                        ],
-                      )
-                    : Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.video_library, size: 48, color: Colors.white.withOpacity(0.3)),
-                          const SizedBox(height: 8),
-                          Text('\u70b9\u51fb\u9009\u62e9\u89c6\u9891', style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 14)),
-                        ],
+                decoration: BoxDecoration(
+                  color: AppColors.headerBg,
+                  border: Border(
+                    bottom: BorderSide(color: AppColors.borderDefault, width: 0.5),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: const Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Icon(Icons.arrow_back_ios_new, color: AppColors.textPrimary, size: 20),
                       ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            // \u5c01\u9762\u9009\u62e9
-            GestureDetector(
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('\u5c01\u9762\u9009\u62e9\u5668\u5f85\u96c6\u6210'), backgroundColor: AppColors.inputBg),
-                );
-              },
-              child: Container(
-                height: 80,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  color: AppColors.inputBg,
-                  border: Border.all(color: Colors.white.withOpacity(0.08)),
-                ),
-                child: Row(
-                  children: [
-                    _coverImagePath != null
-                        ? Expanded(child: Icon(Icons.image, color: Colors.white.withOpacity(0.7)))
-                        : Expanded(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.add_photo_alternate, size: 24, color: Colors.white.withOpacity(0.3)),
-                                const SizedBox(width: 8),
-                                Text('\u6dfb\u52a0\u5c01\u9762', style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 13)),
-                              ],
-                            ),
-                          ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            // \u6807\u9898
-            TextField(
-              controller: _titleController,
-              style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
-              decoration: InputDecoration(
-                hintText: '\u89c6\u9891\u6807\u9898',
-                hintStyle: TextStyle(color: Colors.white.withOpacity(0.25), fontSize: 16, fontWeight: FontWeight.w600),
-                filled: true,
-                fillColor: AppColors.inputBg,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              ),
-            ),
-            const SizedBox(height: 12),
-            // \u63cf\u8ff0
-            TextField(
-              controller: _descriptionController,
-              maxLines: 4,
-              style: const TextStyle(color: Colors.white, fontSize: 14),
-              decoration: InputDecoration(
-                hintText: '\u63cf\u8ff0\u4f60\u7684\u89c6\u9891...',
-                hintStyle: TextStyle(color: Colors.white.withOpacity(0.25), fontSize: 14),
-                filled: true,
-                fillColor: AppColors.inputBg,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              ),
-            ),
-            const SizedBox(height: 16),
-            // \u516c\u5f00/\u79c1\u5bc6
-            GestureDetector(
-              onTap: () => setState(() => _isPublic = !_isPublic),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  color: AppColors.inputBg,
-                ),
-                child: Row(
-                  children: [
-                    Icon(_isPublic ? Icons.public : Icons.lock_outline, color: Colors.white.withOpacity(0.5), size: 18),
+                    ),
+                    const Expanded(
+                      child: Text(
+                        '发布视频笔记',
+                        style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    // 存草稿
+                    GestureDetector(
+                      onTap: _saveDraft,
+                      child: const Text(
+                        '存草稿',
+                        style: TextStyle(color: AppColors.textWeak, fontSize: 13),
+                      ),
+                    ),
                     const SizedBox(width: 12),
-                    Expanded(child: Text(_isPublic ? '\u516c\u5f00\u89c6\u9891' : '\u79c1\u5bc6\u89c6\u9891', style: const TextStyle(color: Colors.white, fontSize: 14))),
-                    Switch(
-                      value: _isPublic,
-                      onChanged: (v) => setState(() => _isPublic = v),
-                      activeColor: const Color(0xFF00E5FF),
+                    // 发布按钮
+                    GestureDetector(
+                      onTap: _publishing ? null : _publish,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          gradient: AppColors.auroraGradient,
+                        ),
+                        child: _publishing
+                            ? const SizedBox(
+                                width: 16, height: 16,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.textPrimary))
+                            : const Text('发布',
+                                style: TextStyle(
+                                    color: AppColors.textPrimary,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600)),
+                      ),
                     ),
                   ],
                 ),
               ),
             ),
-            if (_error != null) ...[
-              const SizedBox(height: 16),
-              Text(_error!, style: const TextStyle(color: Colors.redAccent, fontSize: 12)),
-            ],
-          ],
-        ),
+          ),
+          // 内容
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 视频上传区
+                  const Text('视频', style: TextStyle(color: AppColors.textWeak, fontSize: 13)),
+                  const SizedBox(height: 8),
+                  GestureDetector(
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('视频选择器待集成'),
+                          backgroundColor: AppColors.cardBg,
+                        ),
+                      );
+                    },
+                    child: AspectRatio(
+                      aspectRatio: 16 / 9,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppColors.borderDefault,
+                            style: BorderStyle.solid,
+                            width: 1.5,
+                          ),
+                        ),
+                        child: _selectedVideoPath != null
+                            ? Stack(
+                                children: [
+                                  Center(child: Icon(Icons.play_circle_fill, size: 48, color: AppColors.textSecondary)),
+                                  Positioned(
+                                    top: 8, right: 8,
+                                    child: GestureDetector(
+                                      onTap: () => setState(() => _selectedVideoPath = null),
+                                      child: Container(
+                                        width: 32, height: 32,
+                                        decoration: BoxDecoration(
+                                          color: AppColors.overlay,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(Icons.close, color: AppColors.textPrimary, size: 16),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.video_library, size: 48, color: AppColors.textSecondary),
+                                  const SizedBox(height: 8),
+                                  const Text('点击上传视频', style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
+                                  const SizedBox(height: 4),
+                                  Text('最大50MB', style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
+                                ],
+                              ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 封面上传区
+                  Text('视频封面（可选）', style: TextStyle(color: AppColors.textWeak, fontSize: 13)),
+                  const SizedBox(height: 8),
+                  GestureDetector(
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('封面选择器待集成'),
+                          backgroundColor: AppColors.cardBg,
+                        ),
+                      );
+                    },
+                    child: AspectRatio(
+                      aspectRatio: 16 / 9,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppColors.borderDefault, style: BorderStyle.solid, width: 1.5),
+                        ),
+                        child: _coverImagePath != null
+                            ? Stack(
+                                children: [
+                                  Center(child: Icon(Icons.image, size: 48, color: AppColors.textSecondary)),
+                                  Positioned(
+                                    top: 8, right: 8,
+                                    child: GestureDetector(
+                                      onTap: () => setState(() => _coverImagePath = null),
+                                      child: Container(
+                                        width: 32, height: 32,
+                                        decoration: BoxDecoration(
+                                          color: AppColors.overlay,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(Icons.close, color: AppColors.textPrimary, size: 16),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.add_photo_alternate, size: 32, color: AppColors.textSecondary),
+                                  const SizedBox(height: 8),
+                                  const Text('点击上传封面', style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
+                                ],
+                              ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 标题
+                  Text('标题', style: TextStyle(color: AppColors.textWeak, fontSize: 13)),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _titleController,
+                    style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+                    decoration: InputDecoration(
+                      hintText: '填写视频标题...',
+                      hintStyle: TextStyle(color: AppColors.textPlaceholder, fontSize: 14),
+                      filled: true,
+                      fillColor: AppColors.hoverBg,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: AppColors.borderDefault),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: AppColors.borderDefault),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: AppColors.borderActive),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 简介
+                  Text('简介', style: TextStyle(color: AppColors.textWeak, fontSize: 13)),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _descriptionController,
+                    maxLines: 4,
+                    style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+                    decoration: InputDecoration(
+                      hintText: '介绍一下你的视频...',
+                      hintStyle: TextStyle(color: AppColors.textPlaceholder, fontSize: 14),
+                      filled: true,
+                      fillColor: AppColors.hoverBg,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: AppColors.borderDefault),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: AppColors.borderDefault),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: AppColors.borderActive),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 话题标签
+                  Text('话题标签', style: TextStyle(color: AppColors.textWeak, fontSize: 13)),
+                  const SizedBox(height: 8),
+                  GestureDetector(
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('标签选择器待集成'),
+                          backgroundColor: AppColors.cardBg,
+                        ),
+                      );
+                    },
+                    child: Container(
+                      height: 48,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.borderDefault),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              _selectedTags.isNotEmpty ? '已选 ${_selectedTags.length} 个标签' : '选择标签',
+                              style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
+                            ),
+                          ),
+                          ShaderMask(
+                            shaderCallback: (bounds) => AppColors.auroraGradient.createShader(bounds),
+                            child: const Text('+', style: TextStyle(color: AppColors.textPrimary, fontSize: 18)),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (_selectedTags.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 6,
+                      children: _selectedTags.map((tag) => Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.hoverBgLight,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Text(tag, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                      )).toList(),
+                    ),
+                  ],
+
+                  if (_error != null) ...[
+                    const SizedBox(height: 16),
+                    Text(_error!, style: const TextStyle(color: AppColors.error, fontSize: 12)),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

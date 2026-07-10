@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../theme/colors.dart';
+import '../../../theme/app_colors.dart';
 
 /// 等级名称映射（10级）
 const Map<int, String> kLevelNames = {
@@ -101,14 +101,15 @@ class LevelBenefitsDialog extends StatelessWidget {
                           borderRadius: BorderRadius.all(Radius.circular(8)),
                           gradient: LinearGradient(
                             begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,colors: [Color(0xFFFF4D6D), Color(0xFF9D4EDD)]),
+                            end: Alignment.bottomRight,
+                            colors: [AppColors.auroraRed, AppColors.auroraPurple]),
                         ),
                         child: Text('LV.$currentLevel',
-                            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                            style: const TextStyle(color: AppColors.textPrimary, fontSize: 12, fontWeight: FontWeight.bold)),
                       ),
                       const SizedBox(width: 10),
                       Text(kLevelNames[currentLevel] ?? '探索者',
-                          style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                          style: const TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
                       const Spacer(),
                       GestureDetector(
                         onTap: () => Navigator.pop(context),
@@ -156,7 +157,7 @@ class LevelBenefitsDialog extends StatelessWidget {
                                   child: LinearProgressIndicator(
                                     value: progress / 100,
                                     backgroundColor: AppColors.borderColor,
-                                    valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF3A86FF)),
+                                    valueColor: const AlwaysStoppedAnimation<Color>(AppColors.auroraBlue),
                                     minHeight: 6,
                                   ),
                                 ),
@@ -196,22 +197,22 @@ class LevelBenefitsDialog extends StatelessWidget {
                             margin: const EdgeInsets.only(bottom: 6),
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                             decoration: BoxDecoration(
-                              color: isCurrent ? AppColors.accentRed.withOpacity(0.1) : AppColors.background,
+                              color: isCurrent ? AppColors.auroraRed.withOpacity(0.1) : AppColors.background,
                               borderRadius: BorderRadius.circular(8),
-                              border: isCurrent ? Border.all(color: AppColors.accentRed.withOpacity(0.3)) : null,
+                              border: isCurrent ? Border.all(color: AppColors.auroraRed.withOpacity(0.3)) : null,
                             ),
                             child: Row(children: [
                               Container(
                                 width: 20, height: 20, alignment: Alignment.center,
                                 child: isPassed
-                                    ? const Icon(Icons.check_circle, color: Color(0xFF4CAF50), size: 16)
+                                    ? const Icon(Icons.check_circle, color: AppColors.success, size: 16)
                                     : Text('$lvl', style: TextStyle(
-                                        color: isCurrent ? Colors.white : AppColors.textMuted,
+                                        color: isCurrent ? AppColors.textPrimary : AppColors.textMuted,
                                         fontSize: 12, fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal)),
                               ),
                               const SizedBox(width: 10),
                               Text(kLevelNames[lvl] ?? '', style: TextStyle(
-                                  color: isCurrent ? Colors.white : AppColors.textSecondary,
+                                  color: isCurrent ? AppColors.textPrimary : AppColors.textSecondary,
                                   fontSize: 13, fontWeight: isCurrent ? FontWeight.w600 : FontWeight.normal)),
                               const Spacer(),
                               Text('${kLevelThresholds[i]}', style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
@@ -249,7 +250,7 @@ class LevelBenefitsDialog extends StatelessWidget {
     final features = (benefit['features'] as List?)?.cast<String>() ?? [];
     return Wrap(spacing: 8, runSpacing: 6, children: features.map((f) => Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(color: AppColors.accentRed.withOpacity(0.08), borderRadius: BorderRadius.circular(6)),
+      decoration: BoxDecoration(color: AppColors.auroraRed.withOpacity(0.08), borderRadius: BorderRadius.circular(6)),
       child: Text('+ $f', style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
     )).toList());
   }
