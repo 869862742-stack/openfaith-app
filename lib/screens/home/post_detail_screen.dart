@@ -673,7 +673,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
                 // 分享按钮
                 GestureDetector(
                   onTap: () {
-                    // TODO: 调用系统分享
+                    _sharePost();
                   },
                   child: Container(
                     width: 36,

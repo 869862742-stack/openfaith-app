@@ -1,5 +1,8 @@
 import 'dart:math';
+import 'dart:io';
 import 'dart:ui';
+import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -62,6 +65,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   int _level = 1;
   int _experience = 0;
   bool _loading = true;
+  String? _backgroundUrl;
   int _selectedTab = 0; // 0=笔记, 1=计划, 2=珍藏
 
   final _supabase = Supabase.instance.client;
@@ -570,7 +574,58 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   // 二维码按钮
                   GestureDetector(
                     onTap: () {
-                      // TODO: 显示二维码
+                      final username = _profile?['username'] as String? ?? _profile?['id'] as String? ?? '';
+                      final profileUrl = 'https://openfaithhub.com/u/$username';
+                      showDialog(
+                        context: context,
+                        builder: (ctx) => Dialog(
+                          backgroundColor: Colors.transparent,
+                          child: Container(
+                            width: 300,
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: AppColors.bgColor,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: AppColors.borderDefault),
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.qr_code_2, size: 64, color: AppColors.textPrimary),
+                                const SizedBox(height: 16),
+                                Text(
+                                  '我的个人名片',
+                                  style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  profileUrl,
+                                  style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 20),
+                                GestureDetector(
+                                  onTap: () {
+                                    Clipboard.setData(ClipboardData(text: profileUrl));
+                                    Navigator.pop(ctx);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('链接已复制'), backgroundColor: AppColors.success),
+                                    );
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(12),
+                                      gradient: LinearGradient(colors: AppColors.auroraGradient),
+                                    ),
+                                    child: const Text('复制链接', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
                     },
                     child: Container(
                       padding: const EdgeInsets.all(4),
@@ -1284,8 +1339,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 8),
               GestureDetector(
-                onTap: () {
-                  // TODO: 选择背景图
+                onTap: () async {
+                  try {
+                    final picker = ImagePicker();
+                    final image = await picker.pickImage(source: ImageSource.gallery, maxWidth: 1920, maxHeight: 1080);
+                    if (image == null) return;
+
+                    final user = _supabase.auth.currentUser;
+                    if (user == null) return;
+
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).clearSnackBars();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('上传中...'), backgroundColor: AppColors.cardBg, duration: Duration(seconds: 30)),
+                      );
+                    }
+
+                    final ext = image.path.split('.').last;
+                    final path = 'backgrounds/${user.id}/${DateTime.now().millisecondsSinceEpoch}.$ext';
+                    await _supabase.storage.from('media').upload(path, File(image.path));
+                    final url = _supabase.storage.from('media').getPublicUrl(path);
+
+                    await _supabase.from('profiles').update({'background_url': url}).eq('user_id', user.id);
+
+                    setState(() {
+                      _backgroundUrl = url;
+                    });
+
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).clearSnackBars();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('背景图已更新'), backgroundColor: AppColors.success),
+                      );
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).clearSnackBars();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('上传失败: $e'), backgroundColor: AppColors.error),
+                      );
+                    }
+                  }
                 },
                 child: Container(
                   height: 96, // h-24
