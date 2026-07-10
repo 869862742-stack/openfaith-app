@@ -697,12 +697,313 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
                     child: const Icon(Icons.share_outlined, color: AppColors.textPrimary, size: 18),
                   ),
                 ),
+                const SizedBox(width: 8),
+                // 更多按钮 (含举报)
+                GestureDetector(
+                  onTap: _showMoreMenu,
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.inputBg,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.more_horiz, color: AppColors.textPrimary, size: 18),
+                  ),
+                ),
               ],
             ),
           ),
         ),
       ),
     );
+  }
+
+
+  /// 显示更多菜单 (分享/举报)
+  void _showMoreMenu() {
+    final isOwnPost = _supabase.auth.currentUser?.id == widget.post['user_id'];
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: const BoxDecoration(
+          color: AppColors.cardBg,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 8),
+              // Drag handle
+              Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.borderActive,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Share action
+              ListTile(
+                leading: const Icon(Icons.share_outlined, color: AppColors.textPrimary, size: 22),
+                title: const Text('分享', style: TextStyle(color: AppColors.textPrimary, fontSize: 15)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _sharePost();
+                },
+              ),
+              // Copy link
+              ListTile(
+                leading: const Icon(Icons.link, color: AppColors.textPrimary, size: 22),
+                title: const Text('复制链接', style: TextStyle(color: AppColors.textPrimary, fontSize: 15)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  final postId = widget.post['id'] as String;
+                  final link = 'https://openfaithhub.com/post/$postId';
+                  Clipboard.setData(ClipboardData(text: link));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('链接已复制'),
+                      backgroundColor: AppColors.success,
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                },
+              ),
+              // Report (only for non-own posts)
+              if (!isOwnPost)
+                ListTile(
+                  leading: const Icon(Icons.flag_outlined, color: AppColors.auroraRed, size: 22),
+                  title: const Text('举报', style: TextStyle(color: AppColors.auroraRed, fontSize: 15)),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _showReportDialog();
+                  },
+                ),
+              const SizedBox(height: 8),
+              // Cancel
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                decoration: BoxDecoration(
+                  color: AppColors.inputBg,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: GestureDetector(
+                  onTap: () => Navigator.pop(ctx),
+                  child: const Center(
+                    child: Text('取消', style: TextStyle(color: AppColors.textSecondary, fontSize: 15)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 显示举报弹窗
+  void _showReportDialog() {
+    String selectedReason = '垃圾广告';
+    final reasons = ['垃圾广告', '违规内容', '不实信息', '骚扰或欺凌', '其他'];
+    final reasonController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => Dialog(
+          backgroundColor: AppColors.cardBg,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(color: AppColors.borderDefault, width: 0.5),
+          ),
+          child: Container(
+            width: 340,
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: AppColors.auroraRed.withOpacity(0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.flag_outlined, color: AppColors.auroraRed, size: 20),
+                    ),
+                    const SizedBox(width: 12),
+                    const Text(
+                      '举报帖子',
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  '请选择举报原因',
+                  style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                ),
+                const SizedBox(height: 12),
+                ...reasons.map((reason) => GestureDetector(
+                  onTap: () => setDialogState(() => selectedReason = reason),
+                  child: Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: selectedReason == reason
+                          ? AppColors.auroraRed.withOpacity(0.12)
+                          : AppColors.inputBg,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: selectedReason == reason
+                            ? AppColors.auroraRed.withOpacity(0.4)
+                            : AppColors.borderDefault,
+                        width: selectedReason == reason ? 1.5 : 0.5,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          selectedReason == reason ? Icons.radio_button_checked : Icons.radio_button_off,
+                          color: selectedReason == reason ? AppColors.auroraRed : AppColors.textWeak,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          reason,
+                          style: TextStyle(
+                            color: selectedReason == reason ? AppColors.textPrimary : AppColors.textSecondary,
+                            fontSize: 14,
+                            fontWeight: selectedReason == reason ? FontWeight.w500 : FontWeight.normal,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )),
+                const SizedBox(height: 8),
+                // Additional description
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.inputBg,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: AppColors.borderDefault, width: 0.5),
+                  ),
+                  child: TextField(
+                    controller: reasonController,
+                    style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
+                    decoration: const InputDecoration(
+                      hintText: '补充说明（可选）',
+                      hintStyle: TextStyle(color: AppColors.textPlaceholder, fontSize: 13),
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: EdgeInsets.all(12),
+                    ),
+                    maxLines: 3,
+                    minLines: 1,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                // Buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => Navigator.pop(ctx),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(
+                            color: AppColors.inputBg,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: AppColors.borderDefault, width: 0.5),
+                          ),
+                          child: const Center(
+                            child: Text('取消', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, fontWeight: FontWeight.w500)),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.pop(ctx);
+                          _submitReport(selectedReason, reasonController.text.trim());
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(
+                            color: AppColors.auroraRed,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Center(
+                            child: Text('提交举报', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 提交举报
+  Future<void> _submitReport(String reason, String description) async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) return;
+    
+    try {
+      final postId = widget.post['id'] as String;
+      await _supabase.from('reports').insert({
+        'reporter_id': user.id,
+        'post_id': postId,
+        'reason': reason,
+        'description': description,
+        'status': 'pending',
+      });
+      
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('举报已提交，感谢您的反馈'),
+          backgroundColor: AppColors.success,
+          duration: Duration(seconds: 3),
+        ),
+      );
+    } catch (e) {
+      debugPrint('提交举报失败: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('举报提交失败: $e'),
+          backgroundColor: AppColors.error,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
   }
 
   /// 图片轮播（支持滑动切换 + 圆点指示器）

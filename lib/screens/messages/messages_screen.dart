@@ -9,6 +9,7 @@ import 'user_profile_screen.dart';
 import 'group_chat_detail_screen.dart';
 import '../gongjing/room_list_screen.dart';
 import 'add_group_screen.dart';
+import '../home/post_detail_screen.dart';
 
 /// 消息页面 - 4Tab结构，完全对齐网页版 Messages.tsx
 class MessagesScreen extends StatefulWidget {
@@ -50,7 +51,11 @@ class _MessagesScreenState extends State<MessagesScreen>
   bool _isLoadingGroups = false;
 
   final _searchController = TextEditingController();
-  String _searchQuery = '';  static const List<Color> _rainbowColors = [
+  String _searchQuery = '';
+
+  // 收藏数据
+  List<Map<String, dynamic>> _favoritesPosts = [];
+  bool _isLoadingFavorites = false;  static const List<Color> _rainbowColors = [
 
 
     AppColors.auroraRed, AppColors.auroraOrange, AppColors.auroraYellow,
@@ -66,7 +71,7 @@ class _MessagesScreenState extends State<MessagesScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
     _tabController.addListener(_onTabChanged);
     _loadAllData();
     _subscribeToMessages();
@@ -78,6 +83,7 @@ class _MessagesScreenState extends State<MessagesScreen>
     if (_currentTabIndex == 0) _loadAllData();
     else if (_currentTabIndex == 1) _loadFriendsTab();
     else if (_currentTabIndex == 2) _loadGroupChats();
+    else if (_currentTabIndex == 4) _loadFavorites();
   }
 
   @override
@@ -469,7 +475,7 @@ class _MessagesScreenState extends State<MessagesScreen>
       body: SafeArea(child: Column(children: [
         _buildSearchBar(), _buildTabBar(),
         Expanded(child: TabBarView(controller: _tabController, children: [
-          _buildMessagesTab(), _buildFriendsTab(), _buildGroupsTab(), _buildRoomsTab(),
+          _buildMessagesTab(), _buildFriendsTab(), _buildGroupsTab(), _buildRoomsTab(), _buildFavoritesTab(),
         ])),
       ])),
     );
@@ -496,10 +502,10 @@ class _MessagesScreenState extends State<MessagesScreen>
   }
 
   Widget _buildTabBar() {
-    const tabs = ['消息', '好友', '群聊', '房间'];
+    const tabs = ['消息', '好友', '群聊', '房间', '收藏'];
     return Padding(padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
       child: Row(mainAxisAlignment: MainAxisAlignment.center,
-        children: List.generate(4, (i) {
+        children: List.generate(5, (i) {
           final isActive = _currentTabIndex == i;
           return Padding(padding: const EdgeInsets.symmetric(horizontal: 4),
             child: isActive
@@ -1082,6 +1088,178 @@ class _MessagesScreenState extends State<MessagesScreen>
     return const RoomListScreen(standalone: false);
   }
 }
+
+
+  // ========== 收藏 TAB ==========
+  Future<void> _loadFavorites() async {
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId == null) return;
+    setState(() => _isLoadingFavorites = true);
+    try {
+      // Get user's profile id
+      final pr = await _supabase.from('profiles').select('id').eq('user_id', userId).limit(1);
+      if (pr.isEmpty) { setState(() => _isLoadingFavorites = false); return; }
+      final myId = pr[0]['id'] as String;
+      
+      // Get favorite post IDs
+      final favs = await _supabase.from('favorites')
+        .select('post_id, created_at')
+        .eq('user_id', myId)
+        .order('created_at', ascending: false);
+      
+      if (favs.isEmpty) {
+        if (!mounted) return;
+        setState(() { _favoritesPosts = []; _isLoadingFavorites = false; });
+        return;
+      }
+      
+      final postIds = favs.map((f) => f['post_id'] as String).toList();
+      
+      // Get the actual posts
+      final posts = await _supabase.from('posts')
+        .select('*, profiles:user_id(nickname, username, avatar_url)')
+        .inFilter('id', postIds);
+      
+      // Sort by favorite time
+      final favMap = {for (final f in favs) f['post_id'] as String: f['created_at']};
+      final sorted = List<Map<String, dynamic>>.from(posts);
+      sorted.sort((a, b) {
+        final ta = favMap[a['id']]?.toString() ?? '';
+        final tb = favMap[b['id']]?.toString() ?? '';
+        return tb.compareTo(ta);
+      });
+      
+      if (!mounted) return;
+      setState(() { _favoritesPosts = sorted; _isLoadingFavorites = false; });
+    } catch (e) {
+      debugPrint('加载收藏失败: $e');
+      if (!mounted) return;
+      setState(() => _isLoadingFavorites = false);
+    }
+  }
+
+  Widget _buildFavoritesTab() {
+    if (_isLoadingFavorites) {
+      return const Center(child: CircularProgressIndicator(color: AppColors.rainbowEnd));
+    }
+    if (_favoritesPosts.isEmpty) {
+      return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(Icons.bookmark_border, size: 56, color: AppColors.borderActive),
+        const SizedBox(height: 12),
+        const Text('暂无收藏', style: TextStyle(color: AppColors.textSecondary, fontSize: 16)),
+        const SizedBox(height: 4),
+        const Text('浏览帖子时点击收藏按钮即可添加', style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
+      ]));
+    }
+    return RefreshIndicator(
+      color: AppColors.rainbowEnd,
+      onRefresh: _loadFavorites,
+      child: ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: _favoritesPosts.length,
+        itemBuilder: (context, index) {
+          final post = _favoritesPosts[index];
+          final profile = post['profiles'] as Map<String, dynamic>?;
+          final nickname = profile?['nickname'] ?? profile?['username'] ?? '匿名';
+          final avatarUrl = profile?['avatar_url'] as String?;
+          final title = post['title'] as String? ?? '';
+          final contentStr = post['content'] as String? ?? '';
+          final createdAt = post['created_at'] as String?;
+          final coverImage = post['cover_image'] as String?;
+          final likesCount = (post['likes_count'] as num?)?.toInt() ?? 0;
+          final commentsCount = (post['comments_count'] as num?)?.toInt() ?? 0;
+
+          return Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            decoration: BoxDecoration(
+              color: AppColors.cardBg,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) =>
+                    PostDetailScreen(post: post)));
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Avatar
+                      CircleAvatar(
+                        radius: 20,
+                        backgroundColor: AppColors.hoverBg,
+                        backgroundImage: (avatarUrl != null && avatarUrl.isNotEmpty)
+                            ? NetworkImage(avatarUrl)
+                            : null,
+                        child: (avatarUrl == null || avatarUrl.isEmpty)
+                            ? const Icon(Icons.person, color: AppColors.textPlaceholder, size: 20)
+                            : null,
+                      ),
+                      const SizedBox(width: 12),
+                      // Content
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Nickname + time
+                            Row(children: [
+                              Expanded(child: Text(nickname.toString(),
+                                style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500),
+                                maxLines: 1, overflow: TextOverflow.ellipsis)),
+                              if (createdAt != null) Text(_formatTime(createdAt),
+                                style: TextStyle(color: AppColors.textWeak, fontSize: 11)),
+                            ]),
+                            const SizedBox(height: 4),
+                            // Title
+                            if (title.isNotEmpty)
+                              Text(title,
+                                style: const TextStyle(color: AppColors.textPrimary, fontSize: 13, fontWeight: FontWeight.w500),
+                                maxLines: 1, overflow: TextOverflow.ellipsis),
+                            // Content preview
+                            if (contentStr.isNotEmpty) ...[
+                              const SizedBox(height: 2),
+                              Text(contentStr,
+                                style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                                maxLines: 2, overflow: TextOverflow.ellipsis),
+                            ],
+                            const SizedBox(height: 6),
+                            // Stats
+                            Row(children: [
+                              Icon(Icons.favorite_border, size: 12, color: AppColors.textWeak),
+                              const SizedBox(width: 4),
+                              Text('$likesCount', style: TextStyle(color: AppColors.textWeak, fontSize: 11)),
+                              const SizedBox(width: 12),
+                              Icon(Icons.chat_bubble_outline, size: 12, color: AppColors.textWeak),
+                              const SizedBox(width: 4),
+                              Text('$commentsCount', style: TextStyle(color: AppColors.textWeak, fontSize: 11)),
+                            ]),
+                          ],
+                        ),
+                      ),
+                      // Cover image thumbnail
+                      if (coverImage != null && coverImage.isNotEmpty && coverImage.startsWith('http')) ...[
+                        const SizedBox(width: 8),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.network(coverImage, width: 48, height: 48, fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => const SizedBox(width: 48, height: 48,
+                              child: Icon(Icons.image, color: AppColors.textPlaceholder, size: 20))),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
 
 /// 统一消息模型
 class UnifiedMessage {
