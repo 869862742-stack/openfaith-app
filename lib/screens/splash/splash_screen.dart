@@ -113,7 +113,7 @@ class _SplashScreenState extends State<SplashScreen>
       if (response.session != null) {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('user_token', response.session!.accessToken);
-        await prefs.setString('user_id', response.session.user.id);
+        await prefs.setString('user_id', response.session!.user.id);
         await Future.delayed(const Duration(milliseconds: 1500));
         if (mounted) Navigator.of(context).pushReplacementNamed('/home');
       } else {
