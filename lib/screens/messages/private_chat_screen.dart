@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../theme/app_colors.dart';
 
 /// 私聊页面 - 100% 对齐网页版 PrivateChat.tsx
@@ -1153,17 +1156,29 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
                       MainAxisAlignment.spaceEvenly,
                   children: [
                     _buildMoreMenuItem(
-                        Icons.photo, '图片', () {}),
+                        Icons.photo, '图片', _pickAndSendImage),
                     _buildMoreMenuItem(
-                        Icons.camera_alt, '拍照', () {}),
+                        Icons.camera_alt, '拍照', _takePhoto),
                     _buildMoreMenuItem(
-                        Icons.description, '文件', () {}),
+                        Icons.description, '文件', _pickAndSendFile),
                     _buildMoreMenuItem(
-                        Icons.book, '笔记', () {}),
+                        Icons.book, '笔记', () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('笔记功能即将开放')),
+                      );
+                    }),
                     _buildMoreMenuItem(
-                        Icons.menu_book, '经文', () {}),
+                        Icons.menu_book, '经文', () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('经文分享功能即将开放')),
+                      );
+                    }),
                     _buildMoreMenuItem(
-                        Icons.phone, '通话', () {}),
+                        Icons.phone, '通话', () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('语音通话功能即将开放')),
+                      );
+                    }),
                   ],
                 ),
               ),
@@ -1199,6 +1214,83 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _pickAndSendImage() async {
+    try {
+      final picker = ImagePicker();
+      final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+      if (picked == null) return;
+      if (!mounted) return;
+      setState(() => _isSending = true);
+      final file = File(picked.path);
+      final fileName = '${DateTime.now().millisecondsSinceEpoch}_${picked.name}';
+      final storagePath = 'chat-images/$fileName';
+      await _supabase.storage.from('post-images').upload(storagePath, file);
+      final publicUrl = _supabase.storage.from('post-images').getPublicUrl(storagePath);
+      await _sendMessage(publicUrl, 'image');
+    } catch (e) {
+      debugPrint('发送图片失败: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('发送图片失败，请重试')),
+        );
+      }
+    } finally {
+      if (!mounted) return;
+      setState(() => _isSending = false);
+    }
+  }
+
+  Future<void> _takePhoto() async {
+    try {
+      final picker = ImagePicker();
+      final picked = await picker.pickImage(source: ImageSource.camera, imageQuality: 80);
+      if (picked == null) return;
+      if (!mounted) return;
+      setState(() => _isSending = true);
+      final file = File(picked.path);
+      final fileName = '${DateTime.now().millisecondsSinceEpoch}_${picked.name}';
+      final storagePath = 'chat-images/$fileName';
+      await _supabase.storage.from('post-images').upload(storagePath, file);
+      final publicUrl = _supabase.storage.from('post-images').getPublicUrl(storagePath);
+      await _sendMessage(publicUrl, 'image');
+    } catch (e) {
+      debugPrint('拍照发送失败: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('拍照发送失败，请重试')),
+        );
+      }
+    } finally {
+      if (!mounted) return;
+      setState(() => _isSending = false);
+    }
+  }
+
+  Future<void> _pickAndSendFile() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(type: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']);
+      if (result == null || result.files.isEmpty) return;
+      if (!mounted) return;
+      setState(() => _isSending = true);
+      final file = File(result.files.single.path!);
+      final fileName = '${DateTime.now().millisecondsSinceEpoch}_${result.files.single.name}';
+      final storagePath = 'chat-files/$fileName';
+      await _supabase.storage.from('post-images').upload(storagePath, file);
+      final publicUrl = _supabase.storage.from('post-images').getPublicUrl(storagePath);
+      await _sendMessage(publicUrl, 'file');
+    } catch (e) {
+      debugPrint('发送文件失败: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('发送文件失败，请重试')),
+        );
+      }
+    } finally {
+      if (!mounted) return;
+      setState(() => _isSending = false);
+    }
   }
 
   void _startRecording() {
