@@ -1,38 +1,45 @@
 import 'dart:math';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/auth_service.dart';
+import '../../theme/colors.dart';
 
-// ===== 网页版精确 CSS 变量映射 =====
-// --bg-color: #050816
-// --bg-secondary: rgba(15, 15, 35, 0.75)
-// --hover-bg: rgba(255,255,255,0.08)
-// --hover-bg-light: rgba(255,255,255,0.03)
-// --text-color: #FFFFFF
-// --text-secondary: rgba(255,255,255,0.72)
-// --text-placeholder: rgba(255,255,255,0.35)
-// --border-color: rgba(255,255,255,0.08)
-// --input-bg: rgba(255,255,255,0.05)
+// ═══════════════════════════════════════════════════════
+// 网页版 Profile.tsx 精确还原
+// 所有颜色引用 AppColors，所有尺寸从网页版 CSS 提取
+// ═══════════════════════════════════════════════════════
 
-const _kBgColor = Color(0xFF050816);
-const _kBgSecondary = Color.fromRGBO(15, 15, 35, 0.75);
-const _kHoverBg = Color.fromRGBO(255, 255, 255, 0.08);
-const _kHoverBgLight = Color.fromRGBO(255, 255, 255, 0.03);
-const _kTextSecondary = Color.fromRGBO(255, 255, 255, 0.72);
-const _kTextWeak = Color.fromRGBO(255, 255, 255, 0.45);
-const _kTextPlaceholder = Color.fromRGBO(255, 255, 255, 0.35);
-const _kBorderColor = Color.fromRGBO(255, 255, 255, 0.08);
+/// 头像颜色映射（与网页版 AVATAR_COLOR_MAP 一致）
+const Map<String, Color> _avatarColorMap = {
+  'red': AppColors.auroraRed,
+  'orange': AppColors.auroraOrange,
+  'yellow': AppColors.auroraYellow,
+  'green': AppColors.auroraGreen,
+  'cyan': AppColors.auroraCyan,
+  'blue': AppColors.auroraBlue,
+  'purple': AppColors.auroraPurple,
+};
 
-// 七彩渐变色值（来自网页版 rainbow.ts）
-const _kAuroraColors = [
-  Color(0xFFFF4D6D), // red
-  Color(0xFFFF9F1C), // orange
-  Color(0xFFFFD60A), // yellow
-  Color(0xFF70E000), // green
-  Color(0xFF00E5FF), // cyan
-  Color(0xFF3A86FF), // blue
-  Color(0xFF9D4EDD), // purple
+/// 等级名称（与网页版 levelNames 一致）
+const Map<int, String> _levelNames = {
+  1: '探索者', 2: '追寻者', 3: '思辨者', 4: '笃行者', 5: '融通者',
+  6: '守望者', 7: '觉悟者', 8: '至诚者', 9: '明达者', 10: '光明者',
+};
+
+/// 等级阈值（与网页版 LEVEL_THRESHOLDS 一致）
+const List<int> _levelThresholds = [
+  0, 1000, 5000, 25000, 125000, 250000, 500000, 1000000, 2000000, 5000000
+];
+
+/// Fallback 身份标签（与网页版 FALLBACK_FAITH_TAGS 一致）
+const List<String> _fallbackFaithTags = [
+  '基督教', '伊斯兰教', '犹太教', '佛教', '印度教', '道教', '锡克教',
+  '巴哈伊教', '摩门教', '耶和华见证人', '琐罗亚斯德教', '诺斯替',
+  '卡巴拉', '神道教', '耆那教', '德鲁兹教', '约鲁巴教', '伏都教',
+  '雅兹迪', '曼达安', '玛雅/阿兹特克', '毛利宗教', '天理教', '天道教',
+  '高台教', '宗教研究者', '经文爱好者', '寻求者'
 ];
 
 class ProfileScreen extends StatefulWidget {
@@ -43,7 +50,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  // ===== 业务逻辑状态（保持不变）=====
+  // ══════ 业务逻辑状态（全部保留）══════
   Map<String, dynamic>? _profile;
   int _followersCount = 0;
   int _followingCount = 0;
@@ -58,6 +65,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _supabase = Supabase.instance.client;
   final _authService = AuthService();
 
+  // 编辑资料弹窗状态
+  String _editUsername = '';
+  String _editBio = '';
+  String _editFaithTag = '寻求者';
+  String? _selectedDefaultAvatar;
+  bool _editAllowStrangerVisit = true;
+  bool _editAllowFriendVisit = true;
+  bool _isSaving = false;
+  List<String> _faithTags = List.from(_fallbackFaithTags);
+
   String? get _userId {
     final session = _supabase.auth.currentSession;
     return session?.user.id;
@@ -67,6 +84,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     _loadData();
+    _loadFaithTags();
+  }
+
+  Future<void> _loadFaithTags() async {
+    try {
+      final response = await _supabase
+          .from('tags')
+          .select('name')
+          .eq('category', 'identity')
+          .order('name');
+      if (response != null && (response as List).isNotEmpty) {
+        setState(() {
+          _faithTags = (response as List)
+              .map((t) => t['name'] as String)
+              .where((n) => n.isNotEmpty)
+              .toList();
+        });
+      }
+    } catch (e) {
+      debugPrint('[Profile] loadFaithTags error: $e');
+    }
   }
 
   Future<void> _loadData() async {
@@ -92,6 +130,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _hotPoints = (response['hot_points'] as num?)?.toInt() ?? 0;
           _level = (response['level'] as num?)?.toInt() ?? 1;
           _experience = (response['experience'] as num?)?.toInt() ?? 0;
+          _editUsername = (response['nickname'] as String?)?.isNotEmpty == true
+              ? response['nickname'] as String
+              : (response['username'] as String?) ?? '';
+          _editBio = (response['bio'] as String?) ?? '';
+          _editFaithTag = (response['faith_tag'] as String?) ?? '寻求者';
+          _editAllowStrangerVisit = response['allow_stranger_visit'] != false;
+          _editAllowFriendVisit = response['allow_friend_visit'] != false;
         });
       }
 
@@ -113,26 +158,86 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() => _loading = false);
   }
 
+  Future<void> _refreshProfile() async {
+    final userId = _userId;
+    if (userId == null) return;
+    try {
+      final response = await _supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', userId)
+          .maybeSingle();
+      if (response != null) {
+        setState(() {
+          _profile = Map<String, dynamic>.from(response as Map);
+          _followersCount = (response['followers_count'] as num?)?.toInt() ?? 0;
+          _followingCount = (response['following_count'] as num?)?.toInt() ?? 0;
+          _heatCount = (response['heat_count'] as num?)?.toInt() ?? 0;
+          _hotPoints = (response['hot_points'] as num?)?.toInt() ?? 0;
+          _level = (response['level'] as num?)?.toInt() ?? 1;
+          _experience = (response['experience'] as num?)?.toInt() ?? 0;
+        });
+      }
+    } catch (e) {
+      debugPrint('Refresh profile error: $e');
+    }
+  }
+
+  Future<void> _handleSaveProfile() async {
+    final userId = _userId;
+    if (userId == null) return;
+    setState(() => _isSaving = true);
+
+    try {
+      final updates = <String, dynamic>{
+        'nickname': _editUsername,
+        'bio': _editBio,
+        'faith_tag': _editFaithTag,
+        'allow_stranger_visit': _editAllowStrangerVisit,
+        'allow_friend_visit': _editAllowFriendVisit,
+      };
+
+      if (_selectedDefaultAvatar != null) {
+        updates['avatar_url'] = '/images/avatars/default-$_selectedDefaultAvatar.svg';
+      }
+
+      await _supabase
+          .from('profiles')
+          .update(updates)
+          .eq('user_id', userId);
+
+      await _refreshProfile();
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      debugPrint('Save profile error: $e');
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
   Future<void> _handleLogout() async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF0A0E1A),
+        backgroundColor: AppColors.cardBg,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: Colors.white.withOpacity(0.15)),
+          side: BorderSide(color: AppColors.borderColor, width: 0.5),
         ),
-        title: const Text('退出登录', style: TextStyle(color: Colors.white)),
+        title: const Text('退出登录',
+            style: TextStyle(color: AppColors.textPrimary)),
         content: const Text('确定要退出当前账号吗？',
-            style: TextStyle(color: _kTextSecondary)),
+            style: TextStyle(color: AppColors.textSecondary)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('取消', style: TextStyle(color: _kTextSecondary)),
+            child:
+                const Text('取消', style: TextStyle(color: AppColors.textSecondary)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('退出', style: TextStyle(color: Color(0xFFFF4D6D))),
+            child:
+                const Text('退出', style: TextStyle(color: AppColors.accentRed)),
           ),
         ],
       ),
@@ -141,10 +246,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (confirmed == true) {
       await _authService.signOut();
       if (!mounted) return;
-      Navigator.of(context).pushNamedAndRemoveUntil(
-        '/login',
-        (route) => false,
-      );
+      Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
     }
   }
 
@@ -154,37 +256,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return count.toString();
   }
 
-  // 网页版等级名称（精确匹配）
-  String get _levelName {
-    const names = {
-      1: '探索者', 2: '追寻者', 3: '思辨者', 4: '笃行者', 5: '融通者',
-      6: '守望者', 7: '觉悟者', 8: '至诚者', 9: '明达者', 10: '光明者',
-    };
-    return names[_level] ?? '探索者';
-  }
-
-  // 网页版等级阈值（精确匹配）
-  static const _levelThresholds = [0, 1000, 5000, 25000, 125000, 250000, 500000, 1000000, 2000000, 5000000];
+  String get _levelName => _levelNames[_level] ?? '探索者';
 
   double get _expProgress {
     if (_level <= 0 || _level > 10) return 0;
-    final currentThreshold = _levelThresholds[(_level - 1).clamp(0, 9)];
-    final nextThreshold = _levelThresholds[_level.clamp(0, 9)];
-    final range = nextThreshold - currentThreshold;
+    final current = _levelThresholds[(_level - 1).clamp(0, 9)];
+    final next = _levelThresholds[_level.clamp(0, 9)];
+    final range = next - current;
     if (range <= 0) return 100;
-    final progress = (_experience - currentThreshold) / range * 100;
-    return progress.clamp(0, 100).toDouble();
+    return ((_experience - current) / range * 100).clamp(0, 100).toDouble();
   }
 
-  // ===== UI 构建（基于网页版源码精确还原）=====
+  /// 检查信仰标签是否可修改（30天限制）
+  bool _canEditFaithTag() {
+    if (_profile == null) return true;
+    final lastModified = _profile!['tag_last_modified_at'] as String?;
+    if (lastModified == null) return true;
+    final lastDate = DateTime.tryParse(lastModified);
+    if (lastDate == null) return true;
+    return DateTime.now().difference(lastDate).inDays >= 30;
+  }
 
+  // ═══════════════════════════════════════════════════════
+  // BUILD
+  // ═══════════════════════════════════════════════════════
   @override
   Widget build(BuildContext context) {
     if (_loading) {
       return const Scaffold(
-        backgroundColor: _kBgColor,
+        backgroundColor: AppColors.bgColor,
         body: Center(
-          child: CircularProgressIndicator(color: Color(0xFF3A86FF)),
+          child: CircularProgressIndicator(color: AppColors.auroraBlue),
         ),
       );
     }
@@ -196,10 +298,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final avatarUrl = _profile?['avatar_url'] as String?;
     final bio = _profile?['bio'] as String? ?? '';
     final faithTag = _profile?['faith_tag'] as String? ?? '寻求者';
-    final isAdmin = _profile?['is_admin'] as bool? ?? false;
+    final backgroundUrl = _profile?['background_url'] as String?;
 
     return Scaffold(
-      backgroundColor: _kBgColor,
+      backgroundColor: AppColors.bgColor,
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
@@ -209,118 +311,154 @@ class _ProfileScreenState extends State<ProfileScreen> {
               avatarUrl: avatarUrl,
               bio: bio,
               faithTag: faithTag,
-              isAdmin: isAdmin,
+              backgroundUrl: backgroundUrl,
             ),
           ),
           SliverToBoxAdapter(
             child: _buildTabContent(),
           ),
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 80),
-          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 80)),
         ],
       ),
     );
   }
 
+  // ═══════════════════════════════════════════════════════
+  // Profile Header
+  // ═══════════════════════════════════════════════════════
   Widget _buildProfileHeader({
     required String nickname,
     required String username,
     String? avatarUrl,
     required String bio,
     required String faithTag,
-    required bool isAdmin,
+    String? backgroundUrl,
   }) {
     return Column(
       children: [
-        // === 星空 Banner（网页版: h-48 = 192px）===
+        // ── 背景图区域：h-56 ≈ 224px + 渐变遮罩 overlay ──
         SizedBox(
-          height: 192,
+          height: 224,
           width: double.infinity,
           child: Stack(
             children: [
-              // 星空背景（网页版: 8个radial-gradient精确定位）
+              // 背景图 or 星空背景
               Positioned.fill(
-                child: Container(
-                  color: _kBgColor,
-                  child: CustomPaint(
-                    size: const Size(double.infinity, 192),
-                    painter: _WebStarfieldPainter(),
-                  ),
-                ),
+                child: backgroundUrl != null && backgroundUrl.isNotEmpty
+                    ? CachedNetworkImage(
+                        imageUrl: backgroundUrl,
+                        fit: BoxFit.cover,
+                        placeholder: (_, __) => Container(
+                          color: AppColors.bgColor,
+                          child: const _StarfieldPainter(),
+                        ),
+                        errorWidget: (_, __, ___) => Container(
+                          color: AppColors.bgColor,
+                          child: const _StarfieldPainter(),
+                        ),
+                      )
+                    : Container(
+                        color: AppColors.bgColor,
+                        child: const _StarfieldPainter(),
+                      ),
               ),
-              // 左上角菜单按钮（网页版: top-4 left-4 w-10 h-10）
-              Positioned(
-                top: 16, left: 16,
-                child: Container(
-                  width: 40, height: 40,
+              // 渐变遮罩 overlay（网页版: bg-gradient-to-t from-bg-color via-bg-color/60）
+              Positioned.fill(
+                child: DecoratedBox(
                   decoration: BoxDecoration(
-                    color: _kHoverBg,
-                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        AppColors.bgColor.withOpacity(0.2),
+                        AppColors.bgColor.withOpacity(0.6),
+                        AppColors.bgColor,
+                      ],
+                    ),
                   ),
-                  child: const Icon(Icons.menu, color: Colors.white, size: 20),
                 ),
               ),
-              // 右上角分享按钮（网页版: top-4 right-4 w-10 h-10）
+              // 顶部操作栏：返回 + 菜单 + 分享
               Positioned(
-                top: 16, right: 16,
-                child: Container(
-                  width: 40, height: 40,
-                  decoration: BoxDecoration(
-                    color: _kHoverBg,
-                    shape: BoxShape.circle,
+                top: 0,
+                left: 0,
+                right: 0,
+                child: SafeArea(
+                  bottom: false,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 8),
+                    child: Row(
+                      children: [
+                        // 菜单按钮（网页版: w-10 h-10 rounded-full bg-hoverBg）
+                        _buildCircleButton(
+                          icon: Icons.menu,
+                          onTap: () {
+                            // 打开侧边栏
+                          },
+                        ),
+                        const Spacer(),
+                        // 分享按钮
+                        _buildCircleButton(
+                          icon: Icons.share_outlined,
+                          onTap: () => _showShareModal(),
+                        ),
+                      ],
+                    ),
                   ),
-                  child: const Icon(Icons.share_outlined, color: Colors.white, size: 20),
                 ),
               ),
-              // 头像居中在 banner 底部（网页版: -mt-12 = -48px，即半露出）
+              // 头像居中在底部，半露出（网页版: -mt-12 即 bottom: -48）
               Positioned(
                 bottom: -48,
-                left: 0, right: 0,
-                child: Center(
-                  child: _buildAvatar(avatarUrl),
-                ),
+                left: 0,
+                right: 0,
+                child: Center(child: _buildAvatar(avatarUrl)),
               ),
             ],
           ),
         ),
 
-        // === 用户名 + 徽章（网页版: pt-4 因为头像下方有48px露出，这里从头像底部开始）===
+        // ── 用户名 + 信仰标签 + ID + 统计 + 等级 + Bio + Tabs ──
         Padding(
           padding: const EdgeInsets.only(top: 56, left: 16, right: 16),
           child: Column(
             children: [
-              // 用户名 + 徽章（网页版: flex items-center justify-center gap-2 mb-1）
+              // 用户名 + 信仰标签（网页版: flex items-center justify-center gap-2 mb-1）
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    nickname,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20, // text-xl
-                      fontWeight: FontWeight.bold,
+                  Flexible(
+                    child: Text(
+                      nickname,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 24, // text-2xl
+                        fontWeight: FontWeight.bold,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const SizedBox(width: 8), // gap-2
+                  const SizedBox(width: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2), // px-2 py-0.5
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: _kHoverBgLight, // var(--hover-bg-light)
-                      borderRadius: BorderRadius.circular(999), // rounded-full
+                      color: AppColors.hoverBg, // 网页版 hoverBg 背景
+                      borderRadius: BorderRadius.circular(8), // rounded-lg
                     ),
                     child: Text(
-                      isAdmin ? '管理员' : faithTag,
+                      faithTag,
                       style: const TextStyle(
-                        color: Color.fromRGBO(255, 255, 255, 0.8),
-                        fontSize: 12, // text-xs
+                        color: AppColors.textSecondary,
+                        fontSize: 12, // text-sm
                       ),
                     ),
                   ),
                 ],
               ),
 
-              // === ID 行（网页版: flex items-center justify-center gap-2 mb-4）===
+              // ID 行
               const SizedBox(height: 4),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -328,68 +466,76 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Text(
                     'ID: ${username.isNotEmpty ? username : '------'}',
                     style: const TextStyle(
-                      color: _kTextSecondary, // 0.72
+                      color: AppColors.textSecondary,
                       fontSize: 14, // text-sm
                     ),
                   ),
                   const SizedBox(width: 8),
-                  // 二维码按钮（网页版: p-1 rounded bg-secondary）
-                  Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: _kBgSecondary,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: const Icon(
-                      Icons.qr_code_2,
-                      color: _kTextSecondary,
-                      size: 16, // w-4 h-4
+                  // 二维码按钮
+                  GestureDetector(
+                    onTap: () {
+                      // TODO: 显示二维码
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: AppColors.bgSecondary,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Icon(
+                        Icons.qr_code_2,
+                        color: AppColors.textSecondary,
+                        size: 16,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 8),
-                  // 编辑按钮（网页版: w-7 h-7 rounded-full）
+                  // 编辑按钮
                   GestureDetector(
-                    onTap: () {
-                      // TODO: 编辑资料
-                    },
+                    onTap: () => _showEditModal(),
                     child: SizedBox(
-                      width: 28, height: 28,
+                      width: 28,
+                      height: 28,
                       child: Icon(
                         Icons.edit,
-                        color: Colors.white, // 网页版: color: "white"
-                        size: 14, // w-3.5 h-3.5
+                        color: Colors.white,
+                        size: 14,
                       ),
                     ),
                   ),
                 ],
               ),
 
-              // === 统计数据行（网页版: gap-6 md:gap-8 mb-4）===
+              // ── 等级区域（网页版: flex items-center justify-center gap-2 mb-2）──
+              const SizedBox(height: 12),
+              _buildLevelBar(),
+
+              // ── 统计数据（网页版: flex-3列，每列 center）──
               const SizedBox(height: 16),
               Row(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _buildStatItem(_followersCount, '粉丝', Icons.people, Icons.people),
-                  const SizedBox(width: 24), // gap-6
-                  _buildStatItem(_followingCount, '关注', Icons.people, Icons.people),
-                  const SizedBox(width: 24),
-                  _buildStatItem(_heatCount, '热值', Icons.local_fire_department, Icons.local_fire_department),
-                  const SizedBox(width: 24),
-                  _buildStatItem(_hotPoints, '热点', Icons.bolt, Icons.bolt),
+                  Expanded(
+                    child: _buildStatColumn(
+                        _followersCount, '粉丝', () => _showFollowList(true)),
+                  ),
+                  Expanded(
+                    child: _buildStatColumn(
+                        _followingCount, '关注', () => _showFollowList(false)),
+                  ),
+                  Expanded(
+                    child: _buildStatColumn(
+                        _heatCount + _hotPoints, '获赞', null),
+                  ),
                 ],
               ),
 
-              // === 等级区域（网页版: flex items-center justify-center gap-2 mb-2）===
-              const SizedBox(height: 16),
-              _buildLevelBar(),
-
-              // === 引用文字框（网页版: rounded-xl p-4 mb-4）===
+              // ── Bio 引用框 ──
               if (bio.isNotEmpty) ...[
                 const SizedBox(height: 16),
                 _buildBioQuote(bio),
               ],
 
-              // === Tab 按钮栏（网页版: gap-2 mb-4，在 px-4 区域内）===
+              // ── Tab 栏（笔记/计划/收藏）──
               const SizedBox(height: 16),
               _buildTabBar(),
             ],
@@ -399,105 +545,121 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  /// 头像（网页版: w-24 h-24 = 96px，1px rainbow border，background-clip法）
+  // ═══════════════════════════════════════════════════════
+  // Avatar（网页版: w-24 h-24 rounded-full + 彩色渐变边框）
+  // ═══════════════════════════════════════════════════════
   Widget _buildAvatar(String? avatarUrl) {
-    return Container(
-      width: 96,
-      height: 96,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        // 网页版: linear-gradient(#050816, #050816) padding-box + rainbow border-box
-        // 在 Flutter 中用 padding 嵌套法实现
-        gradient: const SweepGradient(
-          colors: [
-            Color.fromRGBO(255, 77, 109, 0.7),
-            Color.fromRGBO(255, 159, 28, 0.7),
-            Color.fromRGBO(255, 214, 10, 0.7),
-            Color.fromRGBO(112, 224, 0, 0.7),
-            Color.fromRGBO(0, 229, 255, 0.7),
-            Color.fromRGBO(58, 134, 255, 0.7),
-            Color.fromRGBO(157, 78, 221, 0.7),
-            Color.fromRGBO(255, 77, 109, 0.7), // 闭合渐变
+    return GestureDetector(
+      onTap: () {
+        // 可点击更换头像
+      },
+      child: Container(
+        width: 96, // w-24
+        height: 96,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          // 彩色渐变边框（网页版: 非七彩，是渐变红色系）
+          gradient: SweepGradient(
+            colors: [
+              AppColors.auroraRed,
+              AppColors.auroraOrange,
+              AppColors.auroraYellow,
+              AppColors.auroraGreen,
+              AppColors.auroraCyan,
+              AppColors.auroraBlue,
+              AppColors.auroraPurple,
+              AppColors.auroraRed, // 闭合
+            ],
+          ),
+          boxShadow: const [
+            BoxShadow(
+              color: Color.fromRGBO(0, 0, 0, 0.4),
+              blurRadius: 15,
+              offset: Offset(0, 10),
+            ),
           ],
         ),
-        boxShadow: const [
-          BoxShadow(
-            color: Color.fromRGBO(0, 0, 0, 0.4),
-            blurRadius: 15,
-            offset: Offset(0, 10),
+        child: Container(
+          margin: const EdgeInsets.all(3), // border width
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            color: AppColors.bgColor,
+          ),
+          child: ClipOval(
+            child: avatarUrl != null && avatarUrl.isNotEmpty
+                ? CachedNetworkImage(
+                    imageUrl: avatarUrl,
+                    fit: BoxFit.cover,
+                    placeholder: (_, __) => _avatarPlaceholder(),
+                    errorWidget: (_, __, ___) => _avatarPlaceholder(),
+                  )
+                : _avatarPlaceholder(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _avatarPlaceholder() => Container(
+        color: AppColors.bgSecondary,
+        child: const Icon(Icons.person,
+            color: AppColors.textPlaceholder, size: 36),
+      );
+
+  // ═══════════════════════════════════════════════════════
+  // Circle button (top bar)
+  // ═══════════════════════════════════════════════════════
+  Widget _buildCircleButton({
+    required IconData icon,
+    VoidCallback? onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: AppColors.hoverBg, // 网页版: bg-hoverBg
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: AppColors.textPrimary, size: 20),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // Stat column（网页版: flex-3列, text-xl bold 数字, text-xs label）
+  // ═══════════════════════════════════════════════════════
+  Widget _buildStatColumn(int count, String label, VoidCallback? onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        children: [
+          Text(
+            _formatCount(count),
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 20, // text-xl
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 12, // text-xs
+            ),
           ),
         ],
       ),
-      child: Container(
-        margin: const EdgeInsets.all(2), // 2px border width (网页版1px但需要覆盖渐变)
-        decoration: const BoxDecoration(
-          shape: BoxShape.circle,
-          color: _kBgColor,
-        ),
-        child: ClipOval(
-          child: avatarUrl != null && avatarUrl.isNotEmpty
-              ? CachedNetworkImage(
-                  imageUrl: avatarUrl,
-                  fit: BoxFit.cover,
-                  placeholder: (_, __) => Container(
-                    color: _kBgSecondary,
-                    child: const Icon(Icons.person, color: _kTextPlaceholder, size: 36),
-                  ),
-                  errorWidget: (_, __, ___) => Container(
-                    color: _kBgSecondary,
-                    child: const Icon(Icons.person, color: _kTextPlaceholder, size: 36),
-                  ),
-                )
-              : Container(
-                  color: _kBgSecondary,
-                  child: const Icon(Icons.person, color: _kTextPlaceholder, size: 36),
-                ),
-        ),
-      ),
     );
   }
 
-  /// 统计数据项（网页版: flex-col items-center, icon+number in row, label below）
-  /// 网页版: icon w-4 h-4 color rgba(255,255,255,0.6), number font-bold, label text-xs
-  Widget _buildStatItem(int count, String label, IconData iconData, IconData iconData2) {
-    return Column(
-      children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              iconData,
-              color: Colors.white.withOpacity(0.6),
-              size: 16, // w-4 h-4
-            ),
-            const SizedBox(width: 4), // gap-1
-            Text(
-              _formatCount(count),
-              style: const TextStyle(
-                color: Colors.white, // var(--text-color)
-                fontSize: 14, // 默认字号，font-bold
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 2),
-        Text(
-          label,
-          style: const TextStyle(
-            color: _kTextSecondary, // 0.72
-            fontSize: 12, // text-xs
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// 等级进度条
-  /// 网页版: LV pill(px-3 py-1 text-sm rounded-full, bg: hover-bg-light, color: rgba(255,255,255,0.8))
-  ///        + level name in same pill
-  ///        + progress bar (w-24 h-2 rounded-full, bg: bg-secondary, fill: white)
-  ///        + percentage text (text-xs, color: text-secondary)
+  // ═══════════════════════════════════════════════════════
+  // Level bar（网页版: LV pill + 进度条 + 百分比）
+  // ═══════════════════════════════════════════════════════
   Widget _buildLevelBar() {
     final progress = _expProgress / 100.0;
     final percent = _expProgress.round();
@@ -505,12 +667,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // LV 标签（网页版: px-3 py-1 text-sm rounded-full）
+        // LV 标签 pill
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          padding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           decoration: BoxDecoration(
-            color: _kHoverBgLight, // 网页版: var(--hover-bg-light)
-            borderRadius: BorderRadius.circular(999), // rounded-full
+            color: AppColors.hoverBgLight, // 网页版: var(--hover-bg-light)
+            borderRadius: BorderRadius.circular(999),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -519,15 +682,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 'LV.$_level $_levelName',
                 style: const TextStyle(
                   color: Color.fromRGBO(255, 255, 255, 0.8),
-                  fontSize: 14, // text-sm
+                  fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(width: 8), // gap-2
-        // 进度条（网页版: w-24 h-2 rounded-full = 96px × 8px）
+        const SizedBox(width: 8),
+        // 进度条（网页版: w-24 h-2 rounded-full，aurora渐变填充）
         SizedBox(
           width: 96,
           height: 8,
@@ -535,14 +698,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             borderRadius: BorderRadius.circular(4),
             child: Stack(
               children: [
-                // 背景
-                Container(color: _kBgSecondary),
-                // 填充（网页版: background: white）
+                Container(color: AppColors.bgSecondary),
                 FractionallySizedBox(
                   widthFactor: progress,
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      gradient: AppColors.auroraGradient,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
@@ -552,130 +713,99 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
         const SizedBox(width: 8),
-        // 百分比
         Text(
           '$percent%',
           style: const TextStyle(
-            color: _kTextSecondary,
-            fontSize: 12, // text-xs
+            color: AppColors.textSecondary,
+            fontSize: 12,
           ),
         ),
       ],
     );
   }
 
-  /// 引用框
-  /// 网页版: rounded-xl p-4 mb-4
-  /// 边框: background-clip法, 1.1px, 0.5透明度彩虹
-  /// 背景: #050816
-  /// 文字: text-sm(14px) leading-relaxed, color: text-secondary(0.72)
+  // ═══════════════════════════════════════════════════════
+  // Bio quote（网页版: rounded-xl p-4, 彩虹渐变边框）
+  // ═══════════════════════════════════════════════════════
   Widget _buildBioQuote(String bio) {
     return Container(
-      padding: const EdgeInsets.all(1), // 模拟 border
+      padding: const EdgeInsets.all(1), // border width
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12), // rounded-xl
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color.fromRGBO(255, 77, 109, 0.5),
-            Color.fromRGBO(255, 159, 28, 0.5),
-            Color.fromRGBO(255, 214, 10, 0.5),
-            Color.fromRGBO(112, 224, 0, 0.5),
-            Color.fromRGBO(0, 229, 255, 0.5),
-            Color.fromRGBO(58, 134, 255, 0.5),
-            Color.fromRGBO(157, 78, 221, 0.5),
-          ],
-        ),
+        borderRadius: BorderRadius.circular(12),
+        gradient: AppColors.auroraGradientWithOpacity(0.5),
       ),
       child: Container(
-        padding: const EdgeInsets.all(16), // p-4
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: _kBgColor, // #050816
+          color: AppColors.bgColor,
           borderRadius: BorderRadius.circular(11),
         ),
         child: Text(
           bio,
           style: const TextStyle(
-            color: _kTextSecondary, // 0.72
-            fontSize: 14, // text-sm
-            height: 1.6, // leading-relaxed
+            color: AppColors.textSecondary,
+            fontSize: 14,
+            height: 1.6,
           ),
         ),
       ),
     );
   }
 
-  /// Tab 按钮栏
-  /// 网页版: gap-2 mb-4
-  /// 选中态: outer padding 2px rainbow gradient, inner rounded-full px-3 py-1 text-xs font-semibold bg:#050816
-  /// 未选中态: px-3 py-1.5 rounded-full text-xs font-medium, bg: bg-secondary, border: 1px solid rgba(255,255,255,0.2)
+  // ═══════════════════════════════════════════════════════
+  // Tab bar（网页版: flex-3, 选中底部 aurora 渐变下划线 2px）
+  // ═══════════════════════════════════════════════════════
   Widget _buildTabBar() {
-    final tabs = ['笔记', '计划', '珍藏'];
+    final tabs = ['笔记', '计划', '收藏'];
 
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(tabs.length, (index) {
         final isSelected = _selectedTab == index;
-        return Padding(
-          padding: EdgeInsets.only(right: index < tabs.length - 1 ? 8 : 0), // gap-2 = 8px
+        return Expanded(
           child: GestureDetector(
             onTap: () => setState(() => _selectedTab = index),
-            child: isSelected
-                // 选中态：2px rainbow padding + inner #050816
-                ? Container(
-                    padding: const EdgeInsets.all(2), // 2px rainbow border
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(999),
-                      gradient: const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: _kAuroraColors,
-                      ),
-                    ),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4), // px-3 py-1
-                      decoration: const BoxDecoration(
-                        color: _kBgColor, // #050816
-                        borderRadius: BorderRadius.all(Radius.circular(999)),
-                      ),
-                      child: Text(
-                        tabs[index],
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12, // text-xs
-                          fontWeight: FontWeight.w600, // font-semibold
-                        ),
-                      ),
-                    ),
-                  )
-                // 未选中态
-                : Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), // px-3 py-1.5
-                    decoration: BoxDecoration(
-                      color: _kBgSecondary,
-                      borderRadius: BorderRadius.circular(999),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.2),
-                        width: 1,
-                      ),
-                    ),
-                    child: Text(
-                      tabs[index],
-                      style: const TextStyle(
-                        color: _kTextSecondary,
-                        fontSize: 12, // text-xs
-                        fontWeight: FontWeight.w500, // font-medium
-                      ),
+            behavior: HitTestBehavior.opaque,
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Text(
+                    tabs[index],
+                    style: TextStyle(
+                      color: isSelected
+                          ? AppColors.textPrimary
+                          : AppColors.textSecondary,
+                      fontSize: 14,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.normal,
                     ),
                   ),
+                ),
+                // 选中底部 aurora 渐变下划线 2px
+                Container(
+                  height: 2,
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    gradient: isSelected
+                        ? AppColors.auroraGradient
+                        : null,
+                    borderRadius: BorderRadius.circular(1),
+                    color: isSelected ? null : Colors.transparent,
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       }),
     );
   }
 
-  /// Tab 内容区域
+  // ═══════════════════════════════════════════════════════
+  // Tab content
+  // ═══════════════════════════════════════════════════════
   Widget _buildTabContent() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -688,17 +818,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  /// 内容区域
   Widget _buildContentArea() {
     if (_loading) {
       return const SizedBox(
         height: 200,
         child: Center(
-          child: CircularProgressIndicator(color: Color(0xFF3A86FF)),
+          child:
+              CircularProgressIndicator(color: AppColors.auroraBlue),
         ),
       );
     }
 
+    // 空状态（网页版: flex-col center, textSecondary）
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 60),
       child: Column(
@@ -709,7 +840,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 : _selectedTab == 1
                     ? Icons.event_note_outlined
                     : Icons.star_outline,
-            color: Colors.white.withOpacity(0.2),
+            color: AppColors.textPrimary.withOpacity(0.2),
             size: 48,
           ),
           const SizedBox(height: 12),
@@ -718,9 +849,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ? '暂无笔记'
                 : _selectedTab == 1
                     ? '暂无计划'
-                    : '暂无珍藏',
+                    : '暂无收藏',
             style: const TextStyle(
-              color: _kTextPlaceholder,
+              color: AppColors.textSecondary,
               fontSize: 14,
             ),
           ),
@@ -728,19 +859,669 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
+
+  // ═══════════════════════════════════════════════════════
+  // Share Modal
+  // ═══════════════════════════════════════════════════════
+  void _showShareModal() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: BoxDecoration(
+          color: AppColors.bgColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          border: Border(
+            top: BorderSide(color: AppColors.borderActive, width: 0.5),
+          ),
+        ),
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              '分享',
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildShareItem(Icons.person, '好友'),
+                _buildShareItem(Icons.group, '群聊'),
+                _buildShareItem(Icons.share, '更多'),
+                _buildShareItem(Icons.link, '复制链接'),
+              ],
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              '点击"更多"可分享到微信、QQ、微博等应用',
+              style: TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 12,
+              ),
+            ),
+            const SizedBox(height: 16),
+            GestureDetector(
+              onTap: () => Navigator.pop(ctx),
+              child: const Padding(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: Text('取消',
+                    style: TextStyle(
+                        color: AppColors.textSecondary, fontSize: 14)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShareItem(IconData icon, String label) {
+    return Column(
+      children: [
+        Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: AppColors.auroraGradientWithOpacity(0.5),
+          ),
+          child: Container(
+            margin: const EdgeInsets.all(1),
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.bgColor,
+            ),
+            child: Icon(icon, color: AppColors.textPrimary, size: 24),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(label,
+            style: const TextStyle(
+                color: AppColors.textSecondary, fontSize: 12)),
+      ],
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // Follow list modal
+  // ═══════════════════════════════════════════════════════
+  void _showFollowList(bool isFollowers) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => Container(
+        height: MediaQuery.of(ctx).size.height * 0.7,
+        decoration: BoxDecoration(
+          color: AppColors.bgColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          border: Border(
+            top: BorderSide(color: AppColors.borderActive, width: 0.5),
+          ),
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Text(
+                  isFollowers ? '粉丝' : '关注',
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Spacer(),
+                GestureDetector(
+                  onTap: () => Navigator.pop(ctx),
+                  child: const Icon(Icons.close,
+                      color: AppColors.iconColor, size: 20),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: Center(
+                child: Text(
+                  isFollowers ? '暂无粉丝' : '暂无关注',
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // Edit Profile Modal（网页版: rounded-2xl, cardBg 背景）
+  // ═══════════════════════════════════════════════════════
+  void _showEditModal() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(ctx).size.height * 0.85,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.cardBg,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        padding: const EdgeInsets.all(24),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Title
+              Row(
+                children: [
+                  const Text(
+                    '编辑资料',
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Spacer(),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(ctx),
+                    child: const Icon(Icons.close,
+                        color: AppColors.iconColor, size: 20),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              // ── 头像选择区 ──
+              Center(
+                child: Column(
+                  children: [
+                    Text('更换头像',
+                        style: const TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 14)),
+                    const SizedBox(height: 12),
+                    // 当前头像
+                    _buildEditAvatar(),
+                    const SizedBox(height: 16),
+                    // 默认头像颜色选择（7色圆形按钮）
+                    Text('选择头像颜色',
+                        style: const TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 12)),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children:
+                          _avatarColorMap.entries.map((entry) {
+                        final isSelected =
+                            _selectedDefaultAvatar == entry.key;
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selectedDefaultAvatar = entry.key;
+                            });
+                          },
+                          child: Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  entry.value,
+                                  entry.value.withOpacity(0.67),
+                                ],
+                              ),
+                              border: isSelected
+                                  ? Border.all(
+                                      color: Colors.white, width: 2)
+                                  : null,
+                            ),
+                            child: isSelected
+                                ? const Icon(Icons.check,
+                                    color: Colors.white, size: 16)
+                                : null,
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                    if (_selectedDefaultAvatar != null) ...[
+                      const SizedBox(height: 8),
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _selectedDefaultAvatar = null;
+                          });
+                        },
+                        child: const Text('使用自定义头像',
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 12,
+                              decoration: TextDecoration.underline,
+                            )),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // ── 背景图更换区 ──
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text('更换背景图',
+                    style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 14)),
+              ),
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: () {
+                  // TODO: 选择背景图
+                },
+                child: Container(
+                  height: 96, // h-24
+                  decoration: BoxDecoration(
+                    color: AppColors.bgSecondary,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Center(
+                    child: Text('点击更换背景图',
+                        style: const TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 12)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // ── 昵称输入框 ──
+              _buildLabel('昵称'),
+              const SizedBox(height: 8),
+              _buildInputField(
+                hintText: '请输入昵称',
+                onChanged: (v) => _editUsername = v,
+                initialValue: _editUsername,
+              ),
+              const SizedBox(height: 20),
+
+              // ── 签名 ──
+              _buildLabel('个性签名'),
+              const SizedBox(height: 8),
+              _buildTextArea(
+                hintText: '请输入个性签名',
+                onChanged: (v) => setState(() => _editBio = v),
+                initialValue: _editBio,
+                maxLength: 100,
+              ),
+              const SizedBox(height: 20),
+
+              // ── 信仰标签下拉选择 ──
+              _buildLabel(
+                '信仰标签',
+                suffix: _canEditFaithTag()
+                    ? null
+                    : '（30天内仅可修改一次）',
+              ),
+              const SizedBox(height: 8),
+              _buildFaithTagDropdown(),
+              const SizedBox(height: 20),
+
+              // ── 隐私设置 ──
+              Container(
+                decoration: BoxDecoration(
+                  border: Border(
+                    top: BorderSide(
+                        color: AppColors.borderColor, width: 0.5),
+                  ),
+                ),
+                padding: const EdgeInsets.only(top: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('隐私设置',
+                        style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        )),
+                    const SizedBox(height: 12),
+                    // 允许陌生人访问
+                    _buildPrivacyToggle(
+                      title: '允许陌生人访问主页',
+                      subtitle: '关闭后，只有好友才能访问',
+                      value: _editAllowStrangerVisit,
+                      onChanged: (v) {
+                        setState(() => _editAllowStrangerVisit = v);
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    // 允许好友访问
+                    _buildPrivacyToggle(
+                      title: '允许好友访问主页',
+                      subtitle: '双向关注即为好友',
+                      value: _editAllowFriendVisit,
+                      onChanged: (v) {
+                        setState(() => _editAllowFriendVisit = v);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // ── 保存按钮（aurora-btn 七彩渐变）──
+              GestureDetector(
+                onTap: _isSaving ? null : _handleSaveProfile,
+                child: Container(
+                  width: double.infinity,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: AppColors.auroraGradient,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Center(
+                    child: Text(
+                      _isSaving ? '保存中...' : '保存修改',
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEditAvatar() {
+    final selectedColor = _selectedDefaultAvatar != null
+        ? _avatarColorMap[_selectedDefaultAvatar]
+        : null;
+    final displayColor = selectedColor ?? AppColors.auroraPurple;
+
+    return Container(
+      width: 80,
+      height: 80,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: displayColor,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [displayColor, displayColor.withOpacity(0.67)],
+        ),
+      ),
+      child: const Icon(Icons.person, color: Colors.white, size: 36),
+    );
+  }
+
+  Widget _buildLabel(String text, {String? suffix}) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(text,
+              style: const TextStyle(
+                  color: AppColors.textPrimary, fontSize: 14)),
+          if (suffix != null)
+            Text(suffix,
+                style: const TextStyle(
+                    color: AppColors.textSecondary, fontSize: 12)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInputField({
+    required String hintText,
+    required ValueChanged<String> onChanged,
+    String? initialValue,
+  }) {
+    return SizedBox(
+      height: 48,
+      child: TextField(
+        onChanged: onChanged,
+        controller:
+            initialValue != null ? TextEditingController(text: initialValue) : null,
+        style:
+            const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+        decoration: InputDecoration(
+          hintText: hintText,
+          hintStyle: const TextStyle(
+              color: AppColors.textPlaceholder, fontSize: 14),
+          filled: true,
+          fillColor: AppColors.bgColor,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: AppColors.borderColor, width: 1),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: AppColors.borderActive, width: 1),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextArea({
+    required String hintText,
+    required ValueChanged<String> onChanged,
+    String? initialValue,
+    int? maxLength,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        SizedBox(
+          height: 80,
+          child: TextField(
+            onChanged: onChanged,
+            maxLength: maxLength,
+            controller: initialValue != null
+                ? TextEditingController(text: initialValue)
+                : null,
+            style: const TextStyle(
+                color: AppColors.textPrimary, fontSize: 14),
+            maxLines: 3,
+            decoration: InputDecoration(
+              hintText: hintText,
+              hintStyle: const TextStyle(
+                  color: AppColors.textPlaceholder, fontSize: 14),
+              filled: true,
+              fillColor: AppColors.bgColor,
+              contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16, vertical: 12),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide:
+                    BorderSide(color: AppColors.borderColor, width: 1),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide:
+                    BorderSide(color: AppColors.borderActive, width: 1),
+              ),
+              counterText: '',
+            ),
+          ),
+        ),
+        if (maxLength != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(
+              '${_editBio.length}/$maxLength',
+              style: const TextStyle(
+                  color: AppColors.textSecondary, fontSize: 12),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildFaithTagDropdown() {
+    return SizedBox(
+      height: 48,
+      child: DropdownButtonFormField<String>(
+        value: _faithTags.contains(_editFaithTag) ? _editFaithTag : null,
+        isExpanded: true,
+        style:
+            const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+        dropdownColor: AppColors.cardBg,
+        decoration: InputDecoration(
+          filled: true,
+          fillColor: AppColors.bgColor,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: AppColors.borderColor, width: 1),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide:
+                BorderSide(color: AppColors.borderActive, width: 1),
+          ),
+        ),
+        icon: const Icon(Icons.keyboard_arrow_down,
+            color: AppColors.iconColor, size: 20),
+        items: _faithTags.map((tag) {
+          return DropdownMenuItem<String>(
+            value: tag,
+            child: Text(tag,
+                style: const TextStyle(
+                    color: AppColors.textPrimary, fontSize: 14)),
+          );
+        }).toList(),
+        onChanged: (v) {
+          if (v != null) setState(() => _editFaithTag = v);
+        },
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // Privacy toggle（网页版: 七彩渐变边框 + 渐变滑块）
+  // ═══════════════════════════════════════════════════════
+  Widget _buildPrivacyToggle({
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title,
+                  style: const TextStyle(
+                      color: AppColors.textPrimary, fontSize: 14)),
+              const SizedBox(height: 2),
+              Text(subtitle,
+                  style: const TextStyle(
+                      color: AppColors.textSecondary, fontSize: 12)),
+            ],
+          ),
+        ),
+        const SizedBox(width: 12),
+        GestureDetector(
+          onTap: () => onChanged(!value),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            width: 48,
+            height: 24,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              // 开启：七彩渐变边框
+              // 关闭：普通灰色背景
+              gradient: value ? AppColors.auroraGradient : null,
+              color: value ? null : AppColors.hoverBgLight,
+              border: value
+                  ? null
+                  : Border.all(
+                      color: AppColors.borderActive, width: 1),
+            ),
+            child: value
+                ? Container(
+                    margin: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: AppColors.bgColor,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Container(
+                          width: 18,
+                          height: 18,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: AppColors.auroraGradient,
+                          ),
+                          margin: const EdgeInsets.only(right: 2),
+                        ),
+                      ],
+                    ),
+                  )
+                : Stack(
+                    children: [
+                      Positioned(
+                        left: 3,
+                        top: 3,
+                        child: Container(
+                          width: 18,
+                          height: 18,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.textWeak,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
-/// 星空效果绘制器 — 精确匹配网页版8个radial-gradient
-/// 网页版:
-///   radial-gradient(1.5px 1.5px at 10% 30%, rgba(255,255,255,0.8), transparent),
-///   radial-gradient(1px 1px at 40% 60%, rgba(200,220,255,0.7), transparent),
-///   radial-gradient(2px 2px at 70% 20%, rgba(255,255,255,0.9), transparent),
-///   radial-gradient(1px 1px at 85% 70%, rgba(180,200,255,0.7), transparent),
-///   radial-gradient(1.2px 1.2px at 25% 80%, rgba(255,255,255,0.6), transparent),
-///   radial-gradient(1px 1px at 55% 45%, rgba(200,220,255,0.8), transparent),
-///   radial-gradient(1.5px 1.5px at 90% 40%, rgba(255,255,255,0.7), transparent),
-///   radial-gradient(1px 1px at 15% 55%, rgba(180,200,255,0.6), transparent)
-class _WebStarfieldPainter extends CustomPainter {
+// ═══════════════════════════════════════════════════════
+// Starfield painter — 精确匹配网页版8个 radial-gradient
+// ═══════════════════════════════════════════════════════
+class _StarfieldPainter extends CustomPainter {
+  const _StarfieldPainter();
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint();
@@ -776,7 +1557,7 @@ class _WebStarfieldPainter extends CustomPainter {
       );
     }
 
-    // 额外添加一些微弱的随机小星点增加质感
+    // 额外的微弱随机星点
     final random = Random(42);
     for (int i = 0; i < 30; i++) {
       final x = random.nextDouble() * size.width;
@@ -797,5 +1578,5 @@ class _Star {
   final double radius;
   final Color color;
 
-  _Star(this.xPercent, this.yPercent, this.radius, this.color);
+  const _Star(this.xPercent, this.yPercent, this.radius, this.color);
 }
