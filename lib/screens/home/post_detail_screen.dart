@@ -15,7 +15,7 @@ class PostDetailScreen extends StatefulWidget {
   State<PostDetailScreen> createState() => _PostDetailScreenState();
 }
 
-class _PostDetailScreenState extends State<PostDetailScreen> {
+class _PostDetailScreenState extends State<PostDetailScreen> with TickerProviderStateMixin {
   final _supabase = Supabase.instance.client;
   final _commentController = TextEditingController();
   final _scrollController = ScrollController();
@@ -27,6 +27,77 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   bool _isBookmarked = false;
   bool _isFollowing = false;
   bool _sendingComment = false;
+
+  // ══════ EXP 动画 ══════
+  AnimationController? _expAnimController;
+  Animation<Offset>? _expSlideAnimation;
+  Animation<double>? _expFadeAnimation;
+  OverlayEntry? _expOverlayEntry;
+
+  void _showExpAnimation(int amount) {
+    _expOverlayEntry?.remove();
+    _expAnimController?.dispose();
+
+    _expAnimController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
+    _expSlideAnimation = Tween<Offset>(
+      begin: Offset.zero,
+      end: const Offset(0, -1.5),
+    ).animate(CurvedAnimation(
+      parent: _expAnimController!,
+      curve: Curves.easeOut,
+    ));
+    _expFadeAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.0,
+    ).animate(CurvedAnimation(
+      parent: _expAnimController!,
+      curve: const Interval(0.5, 1.0, curve: Curves.easeIn),
+    ));
+
+    _expOverlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        bottom: MediaQuery.of(context).size.height * 0.12,
+        left: 0,
+        right: 0,
+        child: Center(
+          child: AnimatedBuilder(
+            animation: _expAnimController!,
+            builder: (context, child) {
+              return Opacity(
+                opacity: _expFadeAnimation!.value,
+                child: FractionalTranslation(
+                  translation: _expSlideAnimation!.value,
+                  child: Text(
+                    '+$amount EXP',
+                    style: const TextStyle(
+                      color: Color(0xFFFFD700),
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      shadows: [
+                        Shadow(
+                          color: Color(0xFFFFD700).withOpacity(0.5),
+                          blurRadius: 8,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+
+    Overlay.of(context).insert(_expOverlayEntry!);
+    _expAnimController!.forward().then((_) {
+      _expOverlayEntry?.remove();
+      _expOverlayEntry = null;
+    });
+  }
 
   int _likeCount = 0;
   int _commentCount = 0;
@@ -58,6 +129,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     _commentController.dispose();
     _scrollController.dispose();
     _pageController.dispose();
+    _expAnimController?.dispose();
+    _expOverlayEntry?.remove();
     super.dispose();
   }
 
@@ -192,6 +265,18 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         _sendingComment = false;
       });
       _loadComments();
+
+      // 增加经验值 +2
+      try {
+        await _supabase.rpc('increment_experience', params: {
+          'p_user_id': user.id,
+          'p_amount': 2,
+        });
+      } catch (_) {}
+
+      if (mounted) {
+        _showExpAnimation(2);
+      }
     } catch (e) {
       debugPrint('发送评论失败: $e');
       setState(() => _sendingComment = false);

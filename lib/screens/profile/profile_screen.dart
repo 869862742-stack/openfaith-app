@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/auth_service.dart';
+import 'widgets/edit_profile_dialog.dart';
 import '../../theme/colors.dart';
 
 // ═══════════════════════════════════════════════════════
@@ -75,6 +76,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _isSaving = false;
   List<String> _faithTags = List.from(_fallbackFaithTags);
 
+  // ══════ 编辑次数限制 ══════
+  int _profileEditCount = 0;
+  String _profileEditMonth = '';
+  bool _isVip = false;
+
+  int get _remainingEditCount {
+    if (_isVip) return -1; // VIP 无限制
+    final now = DateTime.now();
+    final currentMonth = '${now.year}-${now.month.toString().padLeft(2, '0')}';
+    if (_profileEditMonth != currentMonth) return 3; // 新月重置
+    return (3 - _profileEditCount).clamp(0, 3);
+  }
+
+  String get _editCountLabel {
+    if (_isVip) return '编辑资料';
+    return '编辑资料（本月剩余 ${_remainingEditCount} 次）';
+  }
+
   String? get _userId {
     final session = _supabase.auth.currentSession;
     return session?.user.id;
@@ -137,6 +156,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _editFaithTag = (response['faith_tag'] as String?) ?? '寻求者';
           _editAllowStrangerVisit = response['allow_stranger_visit'] != false;
           _editAllowFriendVisit = response['allow_friend_visit'] != false;
+          _isVip = response['is_vip'] == true;
+          _profileEditCount = (response['profile_edit_count'] as num?)?.toInt() ?? 0;
+          _profileEditMonth = (response['profile_edit_month'] as String?) ?? '';
         });
       }
 
@@ -176,6 +198,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _hotPoints = (response['hot_points'] as num?)?.toInt() ?? 0;
           _level = (response['level'] as num?)?.toInt() ?? 1;
           _experience = (response['experience'] as num?)?.toInt() ?? 0;
+          _isVip = response['is_vip'] == true;
+          _profileEditCount = (response['profile_edit_count'] as num?)?.toInt() ?? 0;
+          _profileEditMonth = (response['profile_edit_month'] as String?) ?? '';
         });
       }
     } catch (e) {
@@ -186,6 +211,62 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _handleSaveProfile() async {
     final userId = _userId;
     if (userId == null) return;
+
+    // ══ 编辑次数检查 ══
+    if (!_isVip) {
+      final now = DateTime.now();
+      final currentMonth = '${now.year}-${now.month.toString().padLeft(2, '0')}';
+      int monthCount = (_profileEditMonth == currentMonth) ? _profileEditCount : 0;
+      if (monthCount >= 3) {
+        if (mounted) {
+          showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              backgroundColor: AppColors.cardBg,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: const BorderSide(color: AppColors.auroraPurple, width: 1),
+              ),
+              title: const Text('提示', style: TextStyle(color: AppColors.textPrimary)),
+              content: const Text(
+                '本月编辑次数已达上限（3次），升级VIP可无限修改',
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text('知道了', style: TextStyle(color: AppColors.textSecondary)),
+                ),
+              ],
+            ),
+          );
+        }
+        return;
+      }
+    }
+
+    // ══ 信仰标签30天限制检查 ══
+    final oldFaithTag = _profile?['faith_tag'] as String? ?? '寻求者';
+    if (_editFaithTag != oldFaithTag && !_canEditFaithTag()) {
+      final lastModified = _profile?['tag_last_modified_at'] as String?;
+      int daysAgo = 0;
+      if (lastModified != null) {
+        final lastDate = DateTime.tryParse(lastModified);
+        if (lastDate != null) {
+          daysAgo = DateTime.now().difference(lastDate).inDays;
+        }
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('身份标签修改间隔需至少30天，上次修改于 $daysAgo 天前'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+      return;
+    }
+
     setState(() => _isSaving = true);
 
     try {
@@ -199,6 +280,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       if (_selectedDefaultAvatar != null) {
         updates['avatar_url'] = '/images/avatars/default-$_selectedDefaultAvatar.svg';
+      }
+
+      // 信仰标签修改时更新 tag_last_modified_at
+      if (_editFaithTag != oldFaithTag) {
+        updates['tag_last_modified_at'] = DateTime.now().toIso8601String();
+      }
+
+      // 更新编辑次数
+      if (!_isVip) {
+        final now = DateTime.now();
+        final currentMonth = '${now.year}-${now.month.toString().padLeft(2, '0')}';
+        int newCount = (_profileEditMonth == currentMonth) ? _profileEditCount + 1 : 1;
+        updates['profile_edit_count'] = newCount;
+        updates['profile_edit_month'] = currentMonth;
       }
 
       await _supabase
@@ -1008,6 +1103,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // Edit Profile Modal（网页版: rounded-2xl, cardBg 背景）
   // ═══════════════════════════════════════════════════════
   void _showEditModal() {
+    // 编辑次数预检查
+    if (!_isVip && _remainingEditCount <= 0) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: AppColors.cardBg,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: const BorderSide(color: AppColors.auroraPurple, width: 1),
+          ),
+          title: const Text('提示', style: TextStyle(color: AppColors.textPrimary)),
+          content: const Text(
+            '本月编辑次数已达上限（3次），升级VIP可无限修改',
+            style: TextStyle(color: AppColors.textSecondary),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('知道了', style: TextStyle(color: AppColors.textSecondary)),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -1028,9 +1148,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               // Title
               Row(
                 children: [
-                  const Text(
-                    '编辑资料',
-                    style: TextStyle(
+                  Text(
+                    _editCountLabel,
+                    style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,

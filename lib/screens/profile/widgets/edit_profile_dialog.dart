@@ -53,6 +53,19 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
 
   final _supabase = Supabase.instance.client;
 
+  // ══════ 编辑次数限制 ══════
+  late bool _isVip;
+  late int _profileEditCount;
+  late String _profileEditMonth;
+
+  int get _remainingEditCount {
+    if (_isVip) return -1; // VIP 无限制
+    final now = DateTime.now();
+    final currentMonth = '${now.year}-${now.month.toString().padLeft(2, '0')}';
+    if (_profileEditMonth != currentMonth) return 3;
+    return (3 - _profileEditCount).clamp(0, 3);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -64,6 +77,9 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
     _editBgUrl = p['background_url'] as String?;
     _allowStrangerVisit = p['allow_stranger_visit'] != false;
     _allowFriendVisit = p['allow_friend_visit'] != false;
+    _isVip = p['is_vip'] == true;
+    _profileEditCount = (p['profile_edit_count'] as num?)?.toInt() ?? 0;
+    _profileEditMonth = (p['profile_edit_month'] as String?) ?? '';
   }
 
   @override
@@ -76,9 +92,18 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
   bool _canEditFaithTag() {
     final tagModified = widget.profile['tag_last_modified_at'] as String?;
     if (tagModified == null) return true;
-    final lastModified = DateTime.parse(tagModified);
+    final lastModified = DateTime.tryParse(tagModified);
+    if (lastModified == null) return true;
     final now = DateTime.now();
     return now.difference(lastModified).inDays >= 30;
+  }
+
+  int get _tagDaysAgo {
+    final tagModified = widget.profile['tag_last_modified_at'] as String?;
+    if (tagModified == null) return -1;
+    final lastModified = DateTime.tryParse(tagModified);
+    if (lastModified == null) return -1;
+    return DateTime.now().difference(lastModified).inDays;
   }
 
   void _showSnack(String msg) {
@@ -143,9 +168,18 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
       _showSnack('昵称不能为空');
       return;
     }
-    if (_editFaithTag != (widget.profile['faith_tag'] as String? ?? '') &&
-        !_canEditFaithTag()) {
-      _showSnack('信仰标签每30天仅可修改一次');
+
+    // ══ 编辑次数检查 ══
+    if (!_isVip && _remainingEditCount <= 0) {
+      _showSnack('本月编辑次数已达上限（3次），升级VIP可无限修改');
+      return;
+    }
+
+    // ══ 信仰标签30天限制 ══
+    final oldFaithTag = widget.profile['faith_tag'] as String? ?? '';
+    if (_editFaithTag != oldFaithTag && !_canEditFaithTag()) {
+      final daysAgo = _tagDaysAgo;
+      _showSnack('身份标签修改间隔需至少30天，上次修改于 $daysAgo 天前');
       return;
     }
 
@@ -163,7 +197,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
         'allow_stranger_visit': _allowStrangerVisit,
         'allow_friend_visit': _allowFriendVisit,
       };
-      if (_editFaithTag != (widget.profile['faith_tag'] as String? ?? '')) {
+      if (_editFaithTag != oldFaithTag) {
         updates['faith_tag'] = _editFaithTag;
         updates['tag_last_modified_at'] = DateTime.now().toIso8601String();
       }
@@ -173,6 +207,16 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
       if (_editBgUrl != (widget.profile['background_url'] as String?)) {
         updates['background_url'] = _editBgUrl;
       }
+
+      // 更新编辑次数
+      if (!_isVip) {
+        final now = DateTime.now();
+        final currentMonth = '${now.year}-${now.month.toString().padLeft(2, '0')}';
+        int newCount = (_profileEditMonth == currentMonth) ? _profileEditCount + 1 : 1;
+        updates['profile_edit_count'] = newCount;
+        updates['profile_edit_month'] = currentMonth;
+      }
+
       await _supabase.from('profiles').update(updates).eq('user_id', userId);
       if (!mounted) return;
       widget.onSaveSuccess();
@@ -214,8 +258,8 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                         bottom: BorderSide(color: AppColors.borderColor.withOpacity(0.3))),
                   ),
                   child: Row(children: [
-                    const Text('编辑资料',
-                        style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
+                    Text(_isVip ? '编辑资料' : '编辑资料（本月剩余 ${_remainingEditCount} 次）',
+                        style: const TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
                     const Spacer(),
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
@@ -319,9 +363,9 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                         const Text('信仰标签', style: TextStyle(color: AppColors.textPrimary, fontSize: 14)),
                         if (!_canEditFaithTag() &&
                             _editFaithTag == (widget.profile['faith_tag'] as String? ?? ''))
-                          const Padding(
-                            padding: EdgeInsets.only(left: 8),
-                            child: Text('(每30天可修改一次)', style: TextStyle(color: AppColors.textMuted, fontSize: 11)),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8),
+                            child: Text('(${_tagDaysAgo >= 0 ? _tagDaysAgo : 0}天后可修改)', style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
                           ),
                       ]),
                       const SizedBox(height: 8),

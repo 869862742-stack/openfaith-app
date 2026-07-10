@@ -15,6 +15,7 @@ import '../sidebar_pages/support_screen.dart';
 import '../sidebar_pages/vip_screen.dart';
 import '../sidebar_pages/gongjing_screen.dart';
 import '../../widgets/hot_ranking.dart';
+import '../profile/heating_records_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -48,6 +49,8 @@ class _HomeScreenState extends State<HomeScreen> {
   int _onlineCount = 0;
   List<Map<String, dynamic>> _rooms = [];
   bool _showHotRanking = false;
+  bool _checkedInToday = false;
+  bool _checkinLoading = false;
 
   static const int _pageSize = 20;
   int _currentPage = 0;
@@ -71,6 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _checkMutedStatus();
     _fetchOnlineCount();
     _fetchAvailableTags();
+    _checkTodayCheckin();
   }
 
   @override
@@ -599,6 +603,214 @@ class _HomeScreenState extends State<HomeScreen> {
     return '${wan.toInt()}W';
   }
 
+
+  // ==========================================================================
+  // 每日签到逻辑
+  // ==========================================================================
+  Future<void> _checkTodayCheckin() async {
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) return;
+      final now = DateTime.now();
+      final today = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+      final resp = await _supabase
+          .from('checkin_records')
+          .select('id')
+          .eq('user_id', user.id)
+          .gte('created_at', '${today}T00:00:00')
+          .lte('created_at', '${today}T23:59:59')
+          .limit(1);
+      if (mounted) {
+        setState(() => _checkedInToday = (resp as List).isNotEmpty);
+      }
+    } catch (e) {
+      debugPrint('Check checkin error: $e');
+    }
+  }
+
+  Future<void> _doCheckin() async {
+    if (_checkedInToday || _checkinLoading) return;
+    setState(() => _checkinLoading = true);
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) throw Exception('未登录');
+
+      // Check VIP status for bonus
+      bool isVip = false;
+      try {
+        final profile = await _supabase
+            .from('profiles')
+            .select('is_vip')
+            .eq('user_id', user.id)
+            .maybeSingle();
+        isVip = profile?['is_vip'] == true;
+      } catch (_) {}
+
+      final points = isVip ? 10 : 2;
+
+      // Insert checkin record
+      await _supabase.from('checkin_records').insert({
+        'user_id': user.id,
+      });
+
+      // Update hot_points
+      await _supabase.rpc('increment_hot_points', params: {
+        'p_user_id': user.id,
+        'p_amount': points,
+      });
+
+      setState(() {
+        _checkedInToday = true;
+        _checkinLoading = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('签到成功！+$points 热点'),
+            backgroundColor: AppColors.success,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Checkin error: $e');
+      // Fallback: direct update if RPC doesn't exist
+      try {
+        final user = _supabase.auth.currentUser;
+        if (user != null) {
+          await _supabase.from('checkin_records').insert({
+            'user_id': user.id,
+          });
+          // Direct update
+          final current = await _supabase
+              .from('profiles')
+              .select('hot_points')
+              .eq('user_id', user.id)
+              .maybeSingle();
+          final currentPoints = (current?['hot_points'] as num?)?.toInt() ?? 0;
+          final isVip = current?['is_vip'] == true;
+          final points = isVip ? 10 : 2;
+          await _supabase
+              .from('profiles')
+              .update({'hot_points': currentPoints + points})
+              .eq('user_id', user.id);
+          setState(() {
+            _checkedInToday = true;
+            _checkinLoading = false;
+          });
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('签到成功！+$points 热点'),
+                backgroundColor: AppColors.success,
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
+        }
+      } catch (e2) {
+        debugPrint('Checkin fallback error: $e2');
+        setState(() => _checkinLoading = false);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('签到失败: $e2'), backgroundColor: AppColors.error),
+          );
+        }
+      }
+    }
+  }
+
+  Widget _buildCheckinBanner() {
+    if (_checkedInToday) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: AppColors.auroraGreen.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.auroraGreen.withOpacity(0.2)),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.check_circle, color: AppColors.auroraGreen, size: 18),
+              const SizedBox(width: 10),
+              const Expanded(
+                child: Text(
+                  '今日已签到 ✓',
+                  style: TextStyle(color: AppColors.auroraGreen, fontSize: 13, fontWeight: FontWeight.w600),
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const HeatingRecordsScreen()));
+                },
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('查看记录', style: TextStyle(color: AppColors.auroraGreen, fontSize: 12)),
+                    SizedBox(width: 2),
+                    Icon(Icons.chevron_right, color: AppColors.auroraGreen, size: 14),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      child: GestureDetector(
+        onTap: _checkinLoading ? null : _doCheckin,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            gradient: _checkinLoading
+                ? null
+                : const LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [AppColors.auroraOrange, AppColors.auroraRed],
+                  ),
+            color: _checkinLoading ? AppColors.cardBg : null,
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.local_fire_department, color: Colors.white, size: 20),
+              const SizedBox(width: 10),
+              const Expanded(
+                child: Text(
+                  '每日签到，领取热点奖励 🔥',
+                  style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+                ),
+              ),
+              _checkinLoading
+                  ? const SizedBox(
+                      width: 16, height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Text(
+                        '签到',
+                        style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   // ==========================================================================
   // UI 构建 - 完全对齐网页版 Home.tsx 结构
   // ==========================================================================
@@ -644,6 +856,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 // --- Sticky Header (毛玻璃效果) ---
                 _buildStickyHeader(),
+
+                // --- 每日签到提醒 ---
+                if (_currentTab == 0)
+                  _buildCheckinBanner(),
 
                 // --- HotRanking ---
                 if (_currentTab == 0)
