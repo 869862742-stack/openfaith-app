@@ -428,9 +428,9 @@ class _MessagesScreenState extends State<MessagesScreen>
     return LayoutBuilder(builder: (context, constraints) {
         final size = Size(constraints.maxWidth, constraints.maxHeight);
         return Container(
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(radius + 1),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(radius + 2),
         gradient: _diagonalGradient(size)),
-      padding: const EdgeInsets.all(1.0),
+      padding: const EdgeInsets.all(2.0),
       child: Container(decoration: BoxDecoration(borderRadius: BorderRadius.circular(radius),
         color: AppColors.bgColor), child: child),
     );
