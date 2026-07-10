@@ -5,7 +5,7 @@ import '../theme/colors.dart';
 import '../services/auth_service.dart';
 
 /// Sidebar overlay component (对齐网页版 Sidebar.tsx)
-/// 从左侧滑入，宽272px，半透明遮罩层，暗黑背景 #0D1117
+/// 从左侧滑入，宽288px，半透明遮罩层，暗黑背景 #0D1117
 class Sidebar extends StatefulWidget {
   final VoidCallback onClose;
   final void Function(String menuItemId)? onMenuItemTap;
@@ -443,13 +443,13 @@ class _SidebarState extends State<Sidebar>
         onTap: () => _handleMenuTap(item.id),
         borderRadius: BorderRadius.circular(12),
         splashColor: AppColors.borderColor,
-        highlightColor: AppColors.borderSubtle,
+        highlightColor: AppColors.hoverBg,
         child: Container(
           width: double.infinity,
           margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: AppColors.borderSubtle,
+            color: Colors.transparent,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(

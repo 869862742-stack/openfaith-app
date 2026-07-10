@@ -159,7 +159,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     bool isDestructive = false,
   }) {
     final iconColor = isDestructive
-        ? AppColors.auroraGradient // gradient handled below
+        ? AppColors.accentRed
         : AppColors.iconColor;
 
     return GestureDetector(
@@ -174,14 +174,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Row(
           children: [
             // Icon
-            if (isDestructive)
-              ShaderMask(
-                shaderCallback: (rect) => AppColors.auroraGradient
-                    .createShader(rect),
-                child: Icon(icon, size: 20, color: AppColors.textPrimary),
-              )
-            else
-              Icon(icon, color: AppColors.iconColor, size: 20),
+            Icon(icon, color: iconColor, size: 20),
             const SizedBox(width: 16), // gap-4
             // Title
             Expanded(

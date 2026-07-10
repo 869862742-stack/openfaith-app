@@ -484,7 +484,7 @@ class _MessagesScreenState extends State<MessagesScreen>
               : GestureDetector(onTap: () => _tabController.animateTo(i),
                   child: Container(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                     decoration: BoxDecoration(borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: AppColors.textPlaceholder)),
+                      border: Border.all(color: const Color(0x4DFFFFFF))),
                     child: Text(tabs[i], style: TextStyle(color: AppColors.textWeak, fontSize: 14, fontWeight: FontWeight.w500)))),
           );
         })));
@@ -766,26 +766,62 @@ class _MessagesScreenState extends State<MessagesScreen>
           Padding(padding: const EdgeInsets.all(12),
             child: Center(child: Text('暂无好友',
               style: TextStyle(color: AppColors.textPlaceholder, fontSize: 12))))
-        else ...List.generate(sorted.length, (i) {
-          final f = sorted[i];
-          final nm = f['nickname'] as String? ?? f['username'] as String? ?? '未命名用户';
-          final fuid = f['user_id'] as String? ?? f['id'] as String;
-          return Container(decoration: BoxDecoration(
-            border: Border(bottom: BorderSide(color: AppColors.borderSubtle))),
-            child: ListTile(contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-              leading: Container(width: 40, height: 40,
-                decoration: const BoxDecoration(shape: BoxShape.circle),
-                child: ClipOval(child: f['avatar_url'] != null
-                  ? Image.network(f['avatar_url'], fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const Icon(Icons.person, color: AppColors.textPlaceholder, size: 20))
-                  : const Icon(Icons.person, color: AppColors.textPlaceholder, size: 20))),
-              title: Text(nm, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500),
-                maxLines: 1, overflow: TextOverflow.ellipsis),
-              trailing: Icon(Icons.chevron_right, size: 18, color: AppColors.textPlaceholder),
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) =>
-                UserProfileScreen(userId: fuid))),
-          ));
-        }),
+        else ...(() {
+          // Group friends by first letter (A-Z, 0-9, #)
+          final grouped = <String, List<Map<String, dynamic>>>{};
+          for (final f in sorted) {
+            final nm = f['nickname'] as String? ?? f['username'] as String? ?? '';
+            final first = nm.isNotEmpty ? nm[0].toUpperCase() : '#';
+            final letter = RegExp(r'[A-Z]').hasMatch(first) ? first : RegExp(r'[0-9]').hasMatch(first) ? '0-9' : '#';
+            grouped.putIfAbsent(letter, () => []);
+            grouped[letter]!.add(f);
+          }
+          final order = ['0-9', ...List.generate(26, (i) => String.fromCharCode(65 + i)), '#'];
+          final widgets = <Widget>[];
+          for (final letter in order) {
+            final items = grouped[letter];
+            if (items == null || items.isEmpty) continue;
+            // Letter group header
+            widgets.add(Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              color: const Color(0x05FFFFFF),
+              child: Text(letter, style: const TextStyle(color: AppColors.textPlaceholder, fontSize: 12, fontWeight: FontWeight.w500)),
+            ));
+            for (final f in items) {
+              final nm = f['nickname'] as String? ?? f['username'] as String? ?? '未命名用户';
+              final fuid = f['user_id'] as String? ?? f['id'] as String;
+              widgets.add(Container(decoration: BoxDecoration(
+                border: Border(bottom: BorderSide(color: AppColors.borderSubtle))),
+                child: ListTile(contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                  leading: LayoutBuilder(builder: (context, constraints) {
+                    final size = Size(constraints.maxWidth, constraints.maxHeight);
+                    return Container(width: 40, height: 40,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(width: 0.7, color: Colors.transparent),
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft, end: Alignment.bottomRight,
+                          colors: AppColors.rainbowColors.map((c) => c.withOpacity(0.7)).toList(),
+                        ),
+                      ),
+                      padding: const EdgeInsets.all(1),
+                      child: Container(decoration: const BoxDecoration(
+                        shape: BoxShape.circle, color: AppColors.bgColor),
+                        child: ClipOval(child: f['avatar_url'] != null
+                          ? Image.network(f['avatar_url'], fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => const Icon(Icons.person, color: AppColors.textPlaceholder, size: 18))
+                          : const Icon(Icons.person, color: AppColors.textPlaceholder, size: 18))));
+                  }),
+                  title: Text(nm, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500),
+                    maxLines: 1, overflow: TextOverflow.ellipsis),
+                  trailing: Icon(Icons.chevron_right, size: 18, color: AppColors.textPlaceholder),
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) =>
+                    UserProfileScreen(userId: fuid))),
+              ));
+            }
+          }
+          return widgets;
+        }()),
       ]));
   }
 
