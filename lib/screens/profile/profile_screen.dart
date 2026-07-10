@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/auth_service.dart';
+import 'heating_records_screen.dart';
 import 'widgets/edit_profile_dialog.dart';
 import '../../theme/colors.dart';
 
@@ -622,6 +623,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         _heatCount + _hotPoints, '获赞', null),
                   ),
                 ],
+              ),
+
+              // ── 签到 / 加热记录 ──
+              const SizedBox(height: 12),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const HeatingRecordsScreen()));
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: AppColors.cardBg,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.borderSubtle),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.local_fire_department, color: AppColors.auroraOrange, size: 20),
+                      const SizedBox(width: 8),
+                      const Expanded(
+                        child: Text(
+                          '加热记录 & 每日签到',
+                          style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right, color: AppColors.textWeak, size: 18),
+                    ],
+                  ),
+                ),
               ),
 
               // ── Bio 引用框 ──

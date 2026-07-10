@@ -2,6 +2,8 @@ import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../theme/app_colors.dart';
 
 class PublishVideoScreen extends StatefulWidget {
@@ -20,6 +22,8 @@ class _PublishVideoScreenState extends State<PublishVideoScreen> {
   bool _publishing = false;
   String? _error;
   List<String> _selectedTags = [];
+  String? _selectedVideoName;
+  String? _selectedVideoSize;
 
   @override
   void dispose() {
@@ -87,6 +91,105 @@ class _PublishVideoScreenState extends State<PublishVideoScreen> {
         content: const Text('已保存到草稿箱'),
         backgroundColor: AppColors.cardBg,
       ),
+    );
+  }
+
+
+  void _showTagPicker(BuildContext context) {
+    final allTags = ['基督教', '天主教', '伊斯兰教', '佛教', '道教', '人生', '信仰', '祷告', '圣经', '感悟', '见证', '灵修'];
+    List<String> tempSelected = List.from(_selectedTags);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setModalState) {
+            return Container(
+              padding: const EdgeInsets.all(20),
+              constraints: BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.6),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('选择话题标签', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: allTags.map((tag) {
+                          final isSelected = tempSelected.contains(tag);
+                          return GestureDetector(
+                            onTap: () {
+                              setModalState(() {
+                                if (isSelected) {
+                                  tempSelected.remove(tag);
+                                } else {
+                                  tempSelected.add(tag);
+                                }
+                              });
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              decoration: isSelected
+                                  ? BoxDecoration(
+                                      borderRadius: BorderRadius.circular(20),
+                                      gradient: AppColors.auroraGradient,
+                                    )
+                                  : BoxDecoration(
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(color: AppColors.borderDefault),
+                                      color: AppColors.cardBg,
+                                    ),
+                              child: Text(
+                                '#$tag',
+                                style: TextStyle(
+                                  color: isSelected ? Colors.white : AppColors.textSecondary,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _selectedTags = List.from(tempSelected);
+                        });
+                        Navigator.pop(ctx);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: Ink(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          gradient: AppColors.auroraGradient,
+                        ),
+                        child: const Center(child: Text('确认', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold))),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -178,13 +281,31 @@ class _PublishVideoScreenState extends State<PublishVideoScreen> {
                   const Text('视频', style: TextStyle(color: AppColors.textWeak, fontSize: 13)),
                   const SizedBox(height: 8),
                   GestureDetector(
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('视频选择器待集成'),
-                          backgroundColor: AppColors.cardBg,
-                        ),
-                      );
+                    onTap: () async {
+                      try {
+                        final result = await FilePicker.platform.pickFiles(
+                          type: FileType.custom,
+                          allowedExtensions: ['mp4', 'mov', 'avi', 'mkv'],
+                        );
+                        if (result != null && result.files.single.path != null) {
+                          final file = result.files.single;
+                          final sizeMB = (file.size / 1024 / 1024).toStringAsFixed(1);
+                          setState(() {
+                            _selectedVideoPath = file.path;
+                            _selectedVideoName = file.name;
+                            _selectedVideoSize = '${sizeMB}MB';
+                          });
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('选择视频失败: $e'),
+                              backgroundColor: AppColors.cardBg,
+                            ),
+                          );
+                        }
+                      }
                     },
                     child: AspectRatio(
                       aspectRatio: 16 / 9,
@@ -236,13 +357,24 @@ class _PublishVideoScreenState extends State<PublishVideoScreen> {
                   Text('视频封面（可选）', style: TextStyle(color: AppColors.textWeak, fontSize: 13)),
                   const SizedBox(height: 8),
                   GestureDetector(
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('封面选择器待集成'),
-                          backgroundColor: AppColors.cardBg,
-                        ),
-                      );
+                    onTap: () async {
+                      try {
+                        final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
+                        if (picked != null) {
+                          setState(() {
+                            _coverImagePath = picked.path;
+                          });
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('选择封面失败: $e'),
+                              backgroundColor: AppColors.cardBg,
+                            ),
+                          );
+                        }
+                      }
                     },
                     child: AspectRatio(
                       aspectRatio: 16 / 9,
@@ -346,12 +478,7 @@ class _PublishVideoScreenState extends State<PublishVideoScreen> {
                   const SizedBox(height: 8),
                   GestureDetector(
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('标签选择器待集成'),
-                          backgroundColor: AppColors.cardBg,
-                        ),
-                      );
+                      _showTagPicker(context);
                     },
                     child: Container(
                       height: 48,

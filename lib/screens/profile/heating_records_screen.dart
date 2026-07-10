@@ -12,11 +12,14 @@ class HeatingRecordsScreen extends StatefulWidget {
 class _HeatingRecordsScreenState extends State<HeatingRecordsScreen> {
   List<Map<String, dynamic>> _records = [];
   bool _loading = true;
+  bool _checkedInToday = false;
+  bool _checkinLoading = false;
 
   @override
   void initState() {
     super.initState();
     _loadRecords();
+    _checkTodayCheckin();
   }
 
   Future<void> _loadRecords() async {
@@ -41,6 +44,96 @@ class _HeatingRecordsScreenState extends State<HeatingRecordsScreen> {
     }
     if (mounted) setState(() => _loading = false);
   }
+
+  Future<void> _checkTodayCheckin() async {
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user == null) return;
+      final now = DateTime.now();
+      final today = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+      final resp = await Supabase.instance.client
+          .from('checkin_records')
+          .select('id')
+          .eq('user_id', user.id)
+          .gte('created_at', '${today}T00:00:00')
+          .lte('created_at', '${today}T23:59:59')
+          .limit(1);
+      if (mounted) {
+        setState(() => _checkedInToday = (resp as List).isNotEmpty);
+      }
+    } catch (e) {
+      debugPrint('Check checkin error: $e');
+    }
+  }
+
+  Future<void> _doCheckin() async {
+    if (_checkedInToday || _checkinLoading) return;
+    setState(() => _checkinLoading = true);
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user == null) throw Exception('未登录');
+
+      bool isVip = false;
+      try {
+        final profile = await Supabase.instance.client
+            .from('profiles')
+            .select('is_vip')
+            .eq('user_id', user.id)
+            .maybeSingle();
+        isVip = profile?['is_vip'] == true;
+      } catch (_) {}
+
+      final points = isVip ? 10 : 2;
+
+      await Supabase.instance.client.from('checkin_records').insert({
+        'user_id': user.id,
+      });
+
+      // Try RPC first, fallback to direct update
+      try {
+        await Supabase.instance.client.rpc('increment_hot_points', params: {
+          'p_user_id': user.id,
+          'p_amount': points,
+        });
+      } catch (_) {
+        final current = await Supabase.instance.client
+            .from('profiles')
+            .select('hot_points')
+            .eq('user_id', user.id)
+            .maybeSingle();
+        final currentPoints = (current?['hot_points'] as num?)?.toInt() ?? 0;
+        await Supabase.instance.client
+            .from('profiles')
+            .update({'hot_points': currentPoints + points})
+            .eq('user_id', user.id);
+      }
+
+      setState(() {
+        _checkedInToday = true;
+        _checkinLoading = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('签到成功！+$points 热点'),
+            backgroundColor: const Color(0xFF4CAF50),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+        _loadRecords(); // Reload records
+      }
+    } catch (e) {
+      setState(() => _checkinLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('签到失败: $e'), backgroundColor: const Color(0xFFFF4D6D)),
+        );
+      }
+    }
+  }
+
+
 
   String _formatDate(String isoStr) {
     final dt = DateTime.parse(isoStr);
@@ -164,6 +257,53 @@ class _HeatingRecordsScreenState extends State<HeatingRecordsScreen> {
                                 const SizedBox(height: 8),
                                 Text('累计打卡 ${_records.length} 次',
                                     style: TextStyle(color: AppColors.iconColorWeak, fontSize: 12)),
+                                const SizedBox(height: 16),
+                                // 签到按钮
+                                GestureDetector(
+                                  onTap: _checkinLoading ? null : _doCheckin,
+                                  child: _checkedInToday
+                                      ? Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.hoverBgLight,
+                                            borderRadius: BorderRadius.circular(20),
+                                            border: Border.all(color: AppColors.borderSubtle),
+                                          ),
+                                          child: const Text(
+                                            '今日已签到 ✓',
+                                            style: TextStyle(color: AppColors.textWeak, fontSize: 14),
+                                          ),
+                                        )
+                                      : Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(20),
+                                            gradient: const LinearGradient(
+                                              colors: [AppColors.auroraOrange, AppColors.auroraRed],
+                                            ),
+                                          ),
+                                          child: _checkinLoading
+                                              ? const SizedBox(
+                                                  width: 16, height: 16,
+                                                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                                )
+                                              : const Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    Icon(Icons.local_fire_department, color: Colors.white, size: 16),
+                                                    SizedBox(width: 4),
+                                                    Text(
+                                                      '立即签到 +2',
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 14,
+                                                        fontWeight: FontWeight.w600,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                        ),
+                                ),
                               ],
                             ),
                           ),

@@ -72,6 +72,105 @@ class _PublishPlanScreenState extends State<PublishPlanScreen> {
     return '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
   }
 
+
+  void _showTagPicker(BuildContext context) {
+    final allTags = ['基督教', '天主教', '伊斯兰教', '佛教', '道教', '人生', '信仰', '祷告', '圣经', '感悟', '见证', '灵修'];
+    List<String> tempSelected = List.from(_selectedTags);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setModalState) {
+            return Container(
+              padding: const EdgeInsets.all(20),
+              constraints: BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.6),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('选择话题标签', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: allTags.map((tag) {
+                          final isSelected = tempSelected.contains(tag);
+                          return GestureDetector(
+                            onTap: () {
+                              setModalState(() {
+                                if (isSelected) {
+                                  tempSelected.remove(tag);
+                                } else {
+                                  tempSelected.add(tag);
+                                }
+                              });
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              decoration: isSelected
+                                  ? BoxDecoration(
+                                      borderRadius: BorderRadius.circular(20),
+                                      gradient: AppColors.auroraGradient,
+                                    )
+                                  : BoxDecoration(
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(color: AppColors.borderDefault),
+                                      color: AppColors.cardBg,
+                                    ),
+                              child: Text(
+                                '#$tag',
+                                style: TextStyle(
+                                  color: isSelected ? Colors.white : AppColors.iconColorWeak,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _selectedTags = List.from(tempSelected);
+                        });
+                        Navigator.pop(ctx);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: Ink(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          gradient: AppColors.auroraGradient,
+                        ),
+                        child: const Center(child: Text('确认', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold))),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -283,12 +382,7 @@ class _PublishPlanScreenState extends State<PublishPlanScreen> {
                   const SizedBox(height: 8),
                   GestureDetector(
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('标签选择器待集成'),
-                          backgroundColor: AppColors.cardBg,
-                        ),
-                      );
+                      _showTagPicker(context);
                     },
                     child: Container(
                       height: 48,
