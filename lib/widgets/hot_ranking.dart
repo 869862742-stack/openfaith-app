@@ -45,7 +45,7 @@ class _HotRankingState extends State<HotRanking> {
   ];  static const _rainbowColors = [
 
 
-    Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A), Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD)
+    AppColors.auroraRed, AppColors.auroraOrange, AppColors.auroraYellow, AppColors.auroraGreen, AppColors.auroraCyan, AppColors.auroraBlue, AppColors.auroraPurple
   ];
 
   LinearGradient _diagonalGradient(Size size) {
@@ -158,7 +158,7 @@ class _HotRankingState extends State<HotRanking> {
         ),
         child: Container(
           decoration: const BoxDecoration(
-            color: Color(0xFF050816),
+            color: AppColors.bgColor,
             borderRadius: BorderRadius.vertical(top: Radius.circular(19)),
           ),
           child: StatefulBuilder(
@@ -283,12 +283,12 @@ class _HotRankingState extends State<HotRanking> {
                   height: 11,
                   decoration: BoxDecoration(
                     gradient: index == 0
-                        ? const LinearGradient(colors: [Color(0xFFFF4D6D), Color(0xFFFF9F1C)])
+                        ? const LinearGradient(colors: [AppColors.auroraRed, AppColors.auroraOrange])
                         : index == 1
-                            ? const LinearGradient(colors: [Color(0xFF3A86FF), Color(0xFF9D4EDD)])
+                            ? const LinearGradient(colors: [AppColors.auroraBlue, AppColors.auroraPurple])
                             : const LinearGradient(
                               begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,colors: [Color(0xFF70E000), Color(0xFF00E5FF)]),
+                              end: Alignment.bottomRight,colors: [AppColors.auroraGreen, AppColors.auroraCyan]),
                   ),
                 ),
               ),
@@ -304,10 +304,10 @@ class _HotRankingState extends State<HotRanking> {
                 shape: BoxShape.circle,
                 gradient: index < 3
                     ? (index == 0
-                        ? const LinearGradient(begin: Alignment(0, -0.33), end: Alignment(1, 1), colors: [Color(0xFFFF6B6B), Color(0xFFFF4D6D), Color(0xFFFF9F1C)])
+                        ? const LinearGradient(begin: Alignment(0, -0.33), end: Alignment(1, 1), colors: [AppColors.accentPink, AppColors.auroraRed, AppColors.auroraOrange])
                         : index == 1
-                            ? const LinearGradient(begin: Alignment(0, -0.33), end: Alignment(1, 1), colors: [Color(0xFF3A86FF), Color(0xFF7B2CBF), Color(0xFF9D4EDD)])
-                            : const LinearGradient(begin: Alignment(0, -0.33), end: Alignment(1, 1), colors: [Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF38B000)]))
+                            ? const LinearGradient(begin: Alignment(0, -0.33), end: Alignment(1, 1), colors: [AppColors.auroraBlue, AppColors.auroraPurple, AppColors.auroraPurple])
+                            : const LinearGradient(begin: Alignment(0, -0.33), end: Alignment(1, 1), colors: [AppColors.auroraGreen, AppColors.auroraCyan, AppColors.auroraGreen]))
                     : null,
                 color: index >= 3 ? AppColors.borderColor : null,
                 border: Border.all(color: AppColors.borderActive, width: 1.5),
@@ -315,14 +315,14 @@ class _HotRankingState extends State<HotRanking> {
                     ? [
                         BoxShadow(
                           color: index == 0
-                              ? const Color(0xFFFF4D6D).withOpacity(0.3)
+                              ? const AppColors.auroraRed.withOpacity(0.3)
                               : index == 1
-                                  ? const Color(0xFF9D4EDD).withOpacity(0.25)
-                                  : const Color(0xFF00E5FF).withOpacity(0.2),
+                                  ? const AppColors.auroraPurple.withOpacity(0.25)
+                                  : const AppColors.auroraCyan.withOpacity(0.2),
                           blurRadius: 6,
                           offset: const Offset(0, 1),
                         ),
-                        const BoxShadow(color: Color(0x4DFFFFFF), blurRadius: 1, offset: Offset(0, 1)),
+                        const BoxShadow(color: AppColors.textPlaceholder, blurRadius: 1, offset: Offset(0, 1)),
                       ]
                     : null,
               ),
@@ -381,7 +381,7 @@ class _HotRankingState extends State<HotRanking> {
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(11),
-          color: const Color(0xFF050816).withOpacity(0.92),
+          color: const AppColors.bgColor.withOpacity(0.92),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -401,7 +401,7 @@ class _HotRankingState extends State<HotRanking> {
                     child: const Text('热点排行', style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.bold)),
                   ),
                   const Spacer(),
-                  const Icon(Icons.chevron_right, size: 16, color: Color(0xFF6B7280)),
+                  const Icon(Icons.chevron_right, size: 16, color: AppColors.textWeak),
                 ],
               ),
             ),

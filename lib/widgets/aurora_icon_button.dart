@@ -60,7 +60,7 @@ class AuroraIconButton extends StatelessWidget {
                         gradient: const LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
-                          colors: [AppColors.auroraRed, Color(0xFFFF6B6B)],
+                          colors: [AppColors.auroraRed, AppColors.accentPink],
                         ),
                       ),
                       child: Center(

@@ -548,7 +548,7 @@ class _MessagesScreenState extends State<MessagesScreen>
                   if (msg.badge > 0 && msg.type == 'private')
                     Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(borderRadius: BorderRadius.circular(10),
-                        gradient: const LinearGradient(colors: [AppColors.auroraRed, Color(0xFFFF6B6B)])),
+                        gradient: const LinearGradient(colors: [AppColors.auroraRed, AppColors.accentPink])),
                       child: Text(msg.badge > 99 ? '99+' : '${msg.badge}',
                         style: const TextStyle(color: AppColors.textPrimary, fontSize: 11, fontWeight: FontWeight.bold)))
                   else if (msg.badge > 0)
@@ -946,10 +946,10 @@ class _MessagesScreenState extends State<MessagesScreen>
               maxLines: 1, overflow: TextOverflow.ellipsis)),
             Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(color: g['status'] == 'pending'
-                ? AppColors.auroraOrange.withOpacity(0.15) : const Color(0xFFEF4444).withOpacity(0.15),
+                ? AppColors.auroraOrange.withOpacity(0.15) : const AppColors.errorRed.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(8)),
               child: Text(g['status'] == 'pending' ? '待审核' : '已拒绝',
-                style: TextStyle(color: g['status'] == 'pending' ? const AppColors.auroraOrange : const Color(0xFFEF4444), fontSize: 11))),
+                style: TextStyle(color: g['status'] == 'pending' ? const AppColors.auroraOrange : const AppColors.errorRed, fontSize: 11))),
           ]),
           if (g['content'] != null) ...[const SizedBox(height: 4),
             Text(g['content'] as String, style: TextStyle(color: AppColors.textSecondary, fontSize: 12),

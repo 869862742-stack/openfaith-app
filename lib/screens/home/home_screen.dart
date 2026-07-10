@@ -1349,7 +1349,7 @@ class _HomeScreenState extends State<HomeScreen> {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [AppColors.cardBg, Color(0xFF050816)],
+          colors: [AppColors.cardBg, AppColors.bgColor],
         ),
       ),
       child: Center(

@@ -112,7 +112,7 @@ class _SidebarState extends State<Sidebar>
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF0A0E1A),
+        backgroundColor: const AppColors.bgColor,
         title: const Text('退出登录', style: TextStyle(color: AppColors.textPrimary)),
         content: const Text('确定要退出登录吗？',
             style: TextStyle(color: AppColors.textSecondary)),
@@ -175,7 +175,7 @@ class _SidebarState extends State<Sidebar>
         id: 'vip',
         icon: Icons.workspace_premium,
         label: '订阅会员',
-        color: const Color(0xFFFFD60A),
+        color: const AppColors.auroraYellow,
         highlight: true,
       ),
       if (_isAdmin)
@@ -209,7 +209,7 @@ class _SidebarState extends State<Sidebar>
               width: 272,
               height: double.infinity,
               child: Material(
-                color: const Color(0xFF0A0E1A), // 实色深色背景（对齐网页版 --card-bg）
+                color: const AppColors.bgColor, // 实色深色背景（对齐网页版 --card-bg）
                 elevation: 8,
                 child: SafeArea(
                   child: Column(

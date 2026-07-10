@@ -9,6 +9,7 @@ class AppColors {
   static const Color bgColor = Color(0xFF050816);           // --bg-color
   static const Color background = bgColor;                   // 兼容旧引用
   static const Color bgSecondary = Color.fromRGBO(15, 15, 35, 0.75);  // --bg-secondary
+  static const Color bgSecondarySolid = Color(0xFF0A0E1F);             // 实色版，用于 BottomNav 等
   static const Color cardBg = Color.fromRGBO(15, 15, 35, 0.85);       // --card-bg
   static const Color cardBgHover = Color(0x14FFFFFF);                  // --hover-bg 8% white
   static const Color hoverBg = Color(0x14FFFFFF);                      // --hover-bg 8% white
@@ -95,10 +96,12 @@ class AppColors {
 
   // ===== 功能色 =====
   static const Color error = Color(0xFFFF4D6D);
+  static const Color errorRed = Color(0xFFEF4444);          // Tailwind red-500，用于状态指示
   static const Color success = Color(0xFF4CAF50);
   static const Color warning = Color(0xFFFFD60A);
   static const Color info = Color(0xFF00E5FF);
   static const Color accentRed = Color(0xFFFF4D6D);
+  static const Color accentPink = Color(0xFFFF6B6B);        // 渐变辅助色
 
   // ===== 遮罩/背景 =====
   static const Color overlay = Color(0x80000000);        // 50% black

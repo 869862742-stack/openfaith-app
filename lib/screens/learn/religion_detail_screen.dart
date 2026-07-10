@@ -524,7 +524,7 @@ class _ReligionDetailScreenState extends State<ReligionDetailScreen> {
                   ),
                   border: const Border(
                     left: BorderSide(
-                        color: Color(0x4DFFFFFF), width: 3),
+                        color: AppColors.textPlaceholder, width: 3),
                   ),
                 ),
                 child: Text(
@@ -802,7 +802,7 @@ class _ReligionDetailScreenState extends State<ReligionDetailScreen> {
           color: AppColors.bgSecondary,
           borderRadius: BorderRadius.circular(8),
           border: const Border(
-            left: BorderSide(color: Color(0x4DFFFFFF), width: 3),
+            left: BorderSide(color: AppColors.textPlaceholder, width: 3),
           ),
         ),
         child: Column(
@@ -899,7 +899,7 @@ class _ReligionDetailScreenState extends State<ReligionDetailScreen> {
                 ]),
           ),
           const Icon(Icons.chevron_right,
-              color: Color(0x4DFFFFFF), size: 20),
+              color: AppColors.textPlaceholder, size: 20),
         ]),
       ),
     );
@@ -1140,7 +1140,7 @@ class _ReligionDetailScreenState extends State<ReligionDetailScreen> {
       return Scaffold(
         backgroundColor: AppColors.bgColor,
         body: const Center(
-          child: CircularProgressIndicator(color: Color(0x4DFFFFFF)),
+          child: CircularProgressIndicator(color: AppColors.textPlaceholder),
         ),
       );
     }
@@ -1180,7 +1180,7 @@ class _ReligionDetailScreenState extends State<ReligionDetailScreen> {
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [Color(0xFF0A0F2E), AppColors.bgColor],
+                      colors: [AppColors.bgColor, AppColors.bgColor],
                     ),
                   ),
                   child: Stack(
@@ -1691,7 +1691,7 @@ class _StarfieldPainter extends CustomPainter {
       AppColors.auroraCyan,
       AppColors.auroraPurple,
       AppColors.textWeak,
-      const Color(0xFFC8DCFF).withOpacity(0.4),
+      const AppColors.textSecondary.withOpacity(0.4),
     ];
 
     for (int i = 0; i < 8; i++) {

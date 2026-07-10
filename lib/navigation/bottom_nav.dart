@@ -40,7 +40,7 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
   static const _badgeGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFFFF4D6D), Color(0xFFFF6B6B)],
+    colors: [AppColors.auroraRed, AppColors.accentPink],
   );
 
   @override
@@ -219,7 +219,7 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
             // 网页版: 内圈 background #0A0E1F
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
-              color: Color(0xFF0A0E1F),
+              color: AppColors.bgSecondarySolid,
             ),
             child: Center(
               // 网页版: w-5 h-5 = 20x20, 颜色白色
@@ -244,7 +244,7 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
         // 网页版: rounded-t-2xl p-6, background rgba(10,14,31,0.98)
         padding: const EdgeInsets.all(24),
         decoration: const BoxDecoration(
-          color: Color(0xFA0A0E1F), // rgba(10,14,31,0.98)
+          color: AppColors.bgSecondarySolid, // rgba(10,14,31,0.98)
           borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
         ),
         child: Column(
@@ -364,7 +364,7 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
               child: Container(
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Color(0xFF0A0E1F),
+                  color: AppColors.bgSecondarySolid,
                 ),
                 // 网页版: 图标 w-6 h-6 = 24x24, text-color
                 child: Center(
