@@ -103,7 +103,35 @@ class _SplashScreenState extends State<SplashScreen>
     }
   }
 
+
+  Future<void> _autoLogin() async {
+    try {
+      final response = await Supabase.instance.client.auth.signInWithPassword(
+        email: '869862742@qq.com',
+        password: 'qifei886',
+      );
+      if (response.session != null) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('user_token', response.session!.accessToken);
+        await prefs.setString('user_id', response.session.user.id);
+        await Future.delayed(const Duration(milliseconds: 1500));
+        if (mounted) Navigator.of(context).pushReplacementNamed('/home');
+      } else {
+        if (mounted) Navigator.of(context).pushReplacementNamed('/login');
+      }
+    } catch (e) {
+      debugPrint('[Splash] Auto-login error: $e');
+      if (mounted) Navigator.of(context).pushReplacementNamed('/login');
+    }
+  }
+
   void _navigate(bool hasToken) {
+    // Auto-login mode for screenshot testing
+    const isScreenshotMode = bool.fromEnvironment('SCREENSHOT_MODE', defaultValue: false);
+    if (isScreenshotMode) {
+      _autoLogin();
+      return;
+    }
     if (!mounted) return;
     if (hasToken) {
       Navigator.of(context).pushReplacementNamed('/home');
