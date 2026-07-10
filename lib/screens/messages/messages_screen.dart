@@ -519,11 +519,11 @@ class _MessagesScreenState extends State<MessagesScreen>
 
   Widget _buildUnifiedMessageItem(UnifiedMessage msg) {
     Widget av;
-    final abg = msg.type == 'announcement' ? const AppColors.auroraOrange.withOpacity(0.15)
-      : msg.type == 'notification' ? const AppColors.auroraPurple.withOpacity(0.15)
-      : msg.type == 'comment' ? const AppColors.auroraGreen.withOpacity(0.15)
-      : msg.type == 'group' ? const AppColors.auroraBlue.withOpacity(0.15)
-      : const AppColors.auroraOrange.withOpacity(0.15);
+    final abg = msg.type == 'announcement' ? AppColors.auroraOrange.withOpacity(0.15)
+      : msg.type == 'notification' ? AppColors.auroraPurple.withOpacity(0.15)
+      : msg.type == 'comment' ? AppColors.auroraGreen.withOpacity(0.15)
+      : msg.type == 'group' ? AppColors.auroraBlue.withOpacity(0.15)
+      : AppColors.auroraOrange.withOpacity(0.15);
     if (msg.avatar != null && msg.avatar!.isNotEmpty) {
       av = ClipOval(child: Image.network(msg.avatar!, width: 48, height: 48, fit: BoxFit.cover,
         errorBuilder: (_, __, ___) => _defAv(msg)));
@@ -616,7 +616,7 @@ class _MessagesScreenState extends State<MessagesScreen>
       content: SingleChildScrollView(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         if (ann['is_pinned'] == true) Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2), margin: const EdgeInsets.only(bottom: 8),
-          decoration: BoxDecoration(color: const AppColors.auroraOrange.withOpacity(0.15), borderRadius: BorderRadius.circular(8)),
+          decoration: BoxDecoration(color: AppColors.auroraOrange.withOpacity(0.15), borderRadius: BorderRadius.circular(8)),
           child: const Text('置顶', style: TextStyle(color: AppColors.auroraOrange, fontSize: 11))),
         Text(ann['title'] as String? ?? '', style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
         const SizedBox(height: 12),
@@ -946,7 +946,7 @@ class _MessagesScreenState extends State<MessagesScreen>
               maxLines: 1, overflow: TextOverflow.ellipsis)),
             Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(color: g['status'] == 'pending'
-                ? const AppColors.auroraOrange.withOpacity(0.15) : const Color(0xFFEF4444).withOpacity(0.15),
+                ? AppColors.auroraOrange.withOpacity(0.15) : const Color(0xFFEF4444).withOpacity(0.15),
                 borderRadius: BorderRadius.circular(8)),
               child: Text(g['status'] == 'pending' ? '待审核' : '已拒绝',
                 style: TextStyle(color: g['status'] == 'pending' ? const AppColors.auroraOrange : const Color(0xFFEF4444), fontSize: 11))),
@@ -979,7 +979,7 @@ class _MessagesScreenState extends State<MessagesScreen>
           child: Padding(padding: const EdgeInsets.all(16),
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Container(width: 48, height: 48,
-                decoration: BoxDecoration(color: const AppColors.auroraBlue.withOpacity(0.15), borderRadius: BorderRadius.circular(12)),
+                decoration: BoxDecoration(color: AppColors.auroraBlue.withOpacity(0.15), borderRadius: BorderRadius.circular(12)),
                 child: const Icon(Icons.groups, color: AppColors.textMuted, size: 26)),
               const SizedBox(width: 12),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -1007,7 +1007,7 @@ class _MessagesScreenState extends State<MessagesScreen>
     return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
       Container(width: 80, height: 80,
         decoration: BoxDecoration(shape: BoxShape.circle, gradient: LinearGradient(colors: [
-          const AppColors.auroraBlue.withOpacity(0.15), const AppColors.auroraPurple.withOpacity(0.15)])),
+          AppColors.auroraBlue.withOpacity(0.15), AppColors.auroraPurple.withOpacity(0.15)])),
         child: const Icon(Icons.meeting_room, size: 36, color: AppColors.auroraBlue)),
       const SizedBox(height: 20),
       Text('房间功能即将开放',
