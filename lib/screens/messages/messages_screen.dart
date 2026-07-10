@@ -640,28 +640,120 @@ class _MessagesScreenState extends State<MessagesScreen>
   }
 
   void _showAnnDlg(Map<String, dynamic> ann) {
-    showDialog(context: context, builder: (context) => AlertDialog(
-      backgroundColor: AppColors.cardBg,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      title: const Row(children: [
-        Icon(Icons.notifications_active, color: AppColors.auroraOrange, size: 22),
-        SizedBox(width: 8),
-        Text('公告详情', style: TextStyle(color: AppColors.textPrimary, fontSize: 16)),
-      ]),
-      content: SingleChildScrollView(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        if (ann['is_pinned'] == true) Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2), margin: const EdgeInsets.only(bottom: 8),
-          decoration: BoxDecoration(color: AppColors.auroraOrange.withOpacity(0.15), borderRadius: BorderRadius.circular(8)),
-          child: const Text('置顶', style: TextStyle(color: AppColors.auroraOrange, fontSize: 11))),
-        Text(ann['title'] as String? ?? '', style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 12),
-        Text(ann['content'] as String? ?? '', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6)),
-        const SizedBox(height: 12),
-        Text(_formatTime(ann['created_at'] as String), style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
-      ])),
-      actions: [TextButton(onPressed: () => Navigator.pop(context),
-        child: Text('关闭', style: TextStyle(color: AppColors.textSecondary, fontSize: 14)))],
-    ));
+    showDialog(
+      context: context,
+      barrierColor: Colors.black54,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 420, maxHeight: 500),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                AppColors.auroraRed, AppColors.auroraOrange, AppColors.auroraYellow,
+                AppColors.auroraGreen, AppColors.auroraCyan, AppColors.auroraBlue, AppColors.auroraPurple,
+              ],
+            ),
+          ),
+          child: Container(
+            margin: const EdgeInsets.all(1),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(15),
+              color: const Color(0xFF050816),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 16, 12),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: AppColors.auroraOrange.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.notifications_active, color: AppColors.auroraOrange, size: 20),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          ann['title'] as String? ?? '公告',
+                          style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: const Icon(Icons.close, color: AppColors.textSecondary, size: 20),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(height: 0.5, color: AppColors.borderColor),
+                Flexible(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (ann['is_pinned'] == true) Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          margin: const EdgeInsets.only(bottom: 12),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [AppColors.auroraOrange.withOpacity(0.2), AppColors.auroraRed.withOpacity(0.1)],
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Text('📌 置顶公告', style: TextStyle(color: AppColors.auroraOrange, fontSize: 11, fontWeight: FontWeight.w500)),
+                        ),
+                        Text(
+                          ann['content'] as String? ?? '',
+                          style: const TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.8),
+                        ),
+                        const SizedBox(height: 20),
+                        Row(
+                          children: [
+                            Icon(Icons.access_time, size: 14, color: AppColors.textWeak),
+                            const SizedBox(width: 4),
+                            Text(
+                              _formatTime(ann['created_at'] as String),
+                              style: TextStyle(color: AppColors.textWeak, fontSize: 12),
+                            ),
+                            const Spacer(),
+                            GestureDetector(
+                              onTap: () => Navigator.pop(context),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(20),
+                                  gradient: const LinearGradient(
+                                    colors: [AppColors.auroraBlue, AppColors.auroraPurple],
+                                  ),
+                                ),
+                                child: const Text('关闭', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   // TAB2: 好友

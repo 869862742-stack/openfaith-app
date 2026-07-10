@@ -9,6 +9,7 @@ import '../../theme/colors.dart';
 import 'book_detail_screen.dart';
 import 'religion_detail_screen.dart';
 import 'holidays_data.dart';
+import '../../services/learn_data_cache.dart';
 
 class Religion {
   final String id;
@@ -100,6 +101,26 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
   Future<void> _loadData() async {
     setState(() => _loading = true);
     try {
+      // 优先使用预加载缓存（网页版 preloadLearnData 对齐）
+      final cache = LearnDataCache();
+      if (cache.isLoaded) {
+        if (cache.religions.isNotEmpty) {
+          _religions = cache.religions.map((e) => Religion.fromMap(e)).toList();
+        }
+        if (cache.bookGroups.isNotEmpty) {
+          _groups = cache.bookGroups.map((e) => BookGroup.fromMap(e)).toList();
+        }
+        if (cache.books.isNotEmpty) {
+          _books = cache.books.map((e) => BookItem.fromMap(e)).toList();
+        }
+        if (cache.chaptersMap.isNotEmpty) {
+          _chaptersMap = Map<String, int>.from(cache.chaptersMap);
+        }
+        if (mounted) setState(() => _loading = false);
+        return;
+      }
+
+      // 缓存未就绪，走网络请求
       final client = Supabase.instance.client;
       final results = await Future.wait([
         client.from('religions').select().eq('is_active', true).order('sort_order').order('name'),
@@ -1190,11 +1211,25 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
   // ========== HOLIDAY DETAIL DIALOG ==========
   void _showHolidayDetail(ReligiousHoliday holiday) {
     showDialog(context: context, builder: (ctx) => Dialog(
-      backgroundColor: AppColors.cardBg,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      backgroundColor: Colors.transparent,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       child: Container(
         constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85),
-        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          gradient: const LinearGradient(
+            colors: _rainbowColors,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        padding: const EdgeInsets.all(1),
+        child: Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFF050816),
+            borderRadius: BorderRadius.circular(17),
+          ),
+          padding: const EdgeInsets.all(24),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1295,6 +1330,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
           ),
         ),
       ),
+    ),
     ));
   }
 

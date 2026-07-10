@@ -88,6 +88,10 @@ class _HomeScreenState extends State<HomeScreen> {
     _fetchAvailableTags();
     _checkTodayCheckin();
     _initDeepLink();
+    // 延迟预加载学习页数据，与网页版 preloadLearnData() 对齐
+    Future.delayed(const Duration(seconds: 1), () {
+      LearnDataCache().preload();
+    });
   }
 
   /// 初始化 Deep Link 监听
