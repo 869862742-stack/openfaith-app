@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:uni_links/uni_links.dart';
+import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -16,6 +18,7 @@ import '../sidebar_pages/vip_screen.dart';
 import '../sidebar_pages/gongjing_screen.dart';
 import '../../widgets/hot_ranking.dart';
 import '../profile/heating_records_screen.dart';
+import '../../services/learn_data_cache.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -49,11 +52,20 @@ class _HomeScreenState extends State<HomeScreen> {
   int _onlineCount = 0;
   List<Map<String, dynamic>> _rooms = [];
   bool _showHotRanking = false;
+  StreamSubscription? _uniLinkSub;
+  String? _pendingNoteId;
+  String? _pendingCommentId;
   bool _checkedInToday = false;
   bool _checkinLoading = false;
 
   static const int _pageSize = 20;
   int _currentPage = 0;
+
+  // Following tab pagination
+  int _followingPage = 0;
+  bool _followingHasMore = true;
+  bool _loadingFollowingMore = false;
+  static const int _followingPageSize = 30;
 
   // ==========================================================================
   // 七彩渐变常量（铁律）
@@ -75,12 +87,89 @@ class _HomeScreenState extends State<HomeScreen> {
     _fetchOnlineCount();
     _fetchAvailableTags();
     _checkTodayCheckin();
+    _initDeepLink();
+  }
+
+  /// 初始化 Deep Link 监听
+  void _initDeepLink() {
+    // 处理冷启动 deep link
+    try {
+      getInitialUri().then((uri) {
+        if (uri != null) _handleDeepLink(uri);
+      });
+    } catch (e) {
+      debugPrint('[DeepLink] getInitialUri error: $e');
+    }
+
+    // 监听热启动 deep link
+    _uniLinkSub = uriLinkStream.listen((Uri? uri) {
+      if (uri != null) _handleDeepLink(uri);
+    }, onError: (err) {
+      debugPrint('[DeepLink] uriLinkStream error: $err');
+    });
+  }
+
+  /// 解析 deep link 参数并导航
+  void _handleDeepLink(Uri uri) {
+    final noteId = uri.queryParameters['openNoteId'];
+    final commentId = uri.queryParameters['openCommentId'];
+    if (noteId == null || noteId.isEmpty) return;
+
+    // 在已加载的帖子列表中查找
+    final allItems = [..._pinnedPosts, ..._posts];
+    final matchIndex = allItems.indexWhere((p) => p['id'] == noteId);
+
+    if (matchIndex != -1) {
+      _pendingNoteId = noteId;
+      _pendingCommentId = commentId;
+      final post = allItems[matchIndex];
+      if (!mounted) return;
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => PostDetailScreen(
+            post: post,
+            highlightCommentId: commentId,
+          ),
+        ),
+      );
+    } else {
+      // 帖子不在当前列表中，通过 API 加载
+      _loadPostById(noteId, commentId);
+    }
+  }
+
+  /// 通过 ID 加载帖子并打开详情
+  Future<void> _loadPostById(String noteId, String? commentId) async {
+    try {
+      final response = await _supabase
+          .from('posts')
+          .select('*, profiles:user_id(nickname, username, avatar_url, faith_tag)')
+          .eq('id', noteId)
+          .maybeSingle();
+      if (response != null && mounted) {
+        _pendingNoteId = noteId;
+        _pendingCommentId = commentId;
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => PostDetailScreen(
+              post: Map<String, dynamic>.from(response),
+              highlightCommentId: commentId,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('[DeepLink] loadPostById error: $e');
+    }
   }
 
   @override
   void dispose() {
     _searchController.dispose();
     _scrollController.dispose();
+    _uniLinkSub?.cancel();
     super.dispose();
   }
 
@@ -89,6 +178,15 @@ class _HomeScreenState extends State<HomeScreen> {
   // ==========================================================================
 
   void _onScroll() {
+    if (_currentTab == 1) {
+      // Following tab: use dedicated pagination
+      if (_loadingFollowingMore || !_followingHasMore) return;
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 300) {
+        _loadMoreFollowingPosts();
+      }
+      return;
+    }
     if (_loadingMore || !_hasMore) return;
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 300) {
@@ -476,9 +574,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _fetchFollowingPosts() async {
     if (_followingIds.isEmpty) {
-      setState(() => _posts = []);
+      setState(() {
+        _posts = [];
+        _followingPage = 0;
+        _followingHasMore = false;
+      });
       return;
     }
+    setState(() => _loadingMore = true);
     try {
       final res = await _supabase
           .from('posts')
@@ -486,13 +589,56 @@ class _HomeScreenState extends State<HomeScreen> {
           .inFilter('user_id', _followingIds)
           .eq('status', 'published')
           .order('created_at', ascending: false)
-          .limit(30);
+          .limit(_followingPageSize);
       final posts = List<Map<String, dynamic>>.from(res as List? ?? []);
       await _enrichWithProfiles(posts);
       if (!mounted) return;
-      setState(() => _posts = posts);
+      setState(() {
+        _posts = posts;
+        _followingPage = 1;
+        _followingHasMore = posts.length >= _followingPageSize;
+        _loadingMore = false;
+      });
     } catch (e) {
       debugPrint('获取关注帖子失败: $e');
+      if (!mounted) return;
+      setState(() => _loadingMore = false);
+    }
+  }
+
+  Future<void> _loadMoreFollowingPosts() async {
+    if (_loadingFollowingMore || !_followingHasMore || _followingIds.isEmpty) return;
+    setState(() => _loadingFollowingMore = true);
+    try {
+      final offset = _followingPage * _followingPageSize;
+      final res = await _supabase
+          .from('posts')
+          .select('*')
+          .inFilter('user_id', _followingIds)
+          .eq('status', 'published')
+          .order('created_at', ascending: false)
+          .range(offset, offset + _followingPageSize - 1);
+      final newPosts = List<Map<String, dynamic>>.from(res as List? ?? []);
+      if (newPosts.isEmpty) {
+        if (!mounted) return;
+        setState(() {
+          _followingHasMore = false;
+          _loadingFollowingMore = false;
+        });
+        return;
+      }
+      await _enrichWithProfiles(newPosts);
+      if (!mounted) return;
+      setState(() {
+        _posts = [..._posts, ...newPosts];
+        _followingPage += 1;
+        _followingHasMore = newPosts.length >= _followingPageSize;
+        _loadingFollowingMore = false;
+      });
+    } catch (e) {
+      debugPrint('加载更多关注帖子失败: $e');
+      if (!mounted) return;
+      setState(() => _loadingFollowingMore = false);
     }
   }
 
@@ -544,6 +690,8 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() => _currentTab = index);
 
     if (index == 1) {
+      _followingPage = 0;
+      _followingHasMore = true;
       _fetchFollowingPosts();
     } else {
       _applyFilters();

@@ -10,6 +10,8 @@ import '../../services/auth_service.dart';
 import 'heating_records_screen.dart';
 import 'widgets/edit_profile_dialog.dart';
 import '../../theme/colors.dart';
+import '../../utils/format_utils.dart';
+import 'widgets/level_benefits_dialog.dart';
 
 // ═══════════════════════════════════════════════════════
 // 网页版 Profile.tsx 精确还原
@@ -355,11 +357,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  String _formatCount(int count) {
-    if (count >= 10000) return '${(count / 10000).toStringAsFixed(1)}w';
-    if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}k';
-    return count.toString();
-  }
+  String _formatCount(int count) => formatCount(count);
 
   String get _levelName => _levelNames[_level] ?? '探索者';
 
@@ -664,7 +662,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
               // ── 等级区域（网页版: flex items-center justify-center gap-2 mb-2）──
               const SizedBox(height: 12),
-              _buildLevelBar(),
+              GestureDetector(
+                onTap: () => showDialog(
+                  context: context,
+                  builder: (_) => LevelBenefitsDialog(
+                    currentLevel: _level,
+                    experience: _experience,
+                    isVip: _isVip,
+                  ),
+                ),
+                child: _buildLevelBar(),
+              ),
 
               // ── 统计数据（网页版: flex-3列，每列 center）──
               const SizedBox(height: 16),

@@ -5,11 +5,13 @@ import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../theme/app_colors.dart';
+import '../../utils/format_utils.dart';
 
 class PostDetailScreen extends StatefulWidget {
   final Map<String, dynamic> post;
+  final String? highlightCommentId;
 
-  const PostDetailScreen({super.key, required this.post});
+  const PostDetailScreen({super.key, required this.post, this.highlightCommentId});
 
   @override
   State<PostDetailScreen> createState() => _PostDetailScreenState();
@@ -27,6 +29,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
   bool _isBookmarked = false;
   bool _isFollowing = false;
   bool _sendingComment = false;
+
+  // ══════ 评论高亮 ══════
+  String? _highlightedCommentId;
+  bool _isHighlighting = false;
 
   // ══════ EXP 动画 ══════
   AnimationController? _expAnimController;
@@ -118,7 +124,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
     _authorProfile = widget.post['profiles'] as Map<String, dynamic>?;
     _images = _extractImages(widget.post);
     _incrementViews();
-    _loadComments();
+    _loadCommentsAndHighlight();
     _checkLikeStatus();
     _checkBookmarkStatus();
     _checkFollowStatus();
@@ -215,6 +221,48 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
       }
     } catch (e) {
       debugPrint('关注状态失败: $e');
+    }
+  }
+
+  /// 加载评论并处理高亮定位
+  Future<void> _loadCommentsAndHighlight() async {
+    await _loadComments();
+    if (widget.highlightCommentId != null && widget.highlightCommentId!.isNotEmpty && _comments.isNotEmpty) {
+      final idx = _comments.indexWhere((c) => c['id'] == widget.highlightCommentId);
+      if (idx != -1) {
+        // 延迟一帧确保布局完成
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          setState(() {
+            _highlightedCommentId = widget.highlightCommentId;
+            _isHighlighting = true;
+          });
+          // 滚动到评论位置（估算位置）
+          // 评论列表从帖子内容下方开始，每个评论约 100px 高度
+          final estimatedOffset = 400.0 + idx * 100.0;
+          if (_scrollController.hasClients) {
+            _scrollController.animateTo(
+              estimatedOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
+              duration: const Duration(milliseconds: 600),
+              curve: Curves.easeOutCubic,
+            );
+          }
+          // 2秒后停止高亮动画
+          Future.delayed(const Duration(seconds: 2), () {
+            if (!mounted) return;
+            setState(() {
+              _isHighlighting = false;
+            });
+            // 渐隐后再清除 ID
+            Future.delayed(const Duration(milliseconds: 500), () {
+              if (!mounted) return;
+              setState(() {
+                _highlightedCommentId = null;
+              });
+            });
+          });
+        });
+      }
     }
   }
 
@@ -1389,7 +1437,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
     final commentFaithTag = profile?['faith_tag'] as String?;
     final isAuthor = widget.post['user_id'] == comment['user_id'];
 
-    return Padding(
+    final isHighlighted = _highlightedCommentId == comment['id'];
+
+    Widget commentCard = Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1486,6 +1536,38 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
         ],
       ),
     );
+
+    // 如果该评论需要高亮，添加七彩渐变边框动画
+    if (isHighlighted && _isHighlighting) {
+      return Container(
+        padding: const EdgeInsets.all(2),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: AppColors.rainbowColors,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.auroraBlue.withOpacity(0.3),
+              blurRadius: 12,
+              spreadRadius: 2,
+            ),
+          ],
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.cardBg,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          padding: const EdgeInsets.all(8),
+          child: commentCard,
+        ),
+      );
+    }
+
+    return commentCard;
   }
 
   /// 封面图 Widget（支持 base64 和 URL）
@@ -1565,9 +1647,5 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
     }
   }
 
-  String _formatCount(int count) {
-    if (count > 999999) return '${(count / 1000000).toStringAsFixed(1)}M';
-    if (count > 999) return '${(count / 1000).toStringAsFixed(1)}k';
-    return count.toString();
-  }
+  String _formatCount(int count) => formatCount(count);
 }
