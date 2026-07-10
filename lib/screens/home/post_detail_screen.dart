@@ -86,7 +86,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
                       fontWeight: FontWeight.bold,
                       shadows: [
                         Shadow(
-                          color: Color(0xFFFFD700).withOpacity(0.5),
+                          color: Color(0x80FFD700),
                           blurRadius: 8,
                         ),
                       ],

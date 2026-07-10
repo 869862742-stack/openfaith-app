@@ -636,7 +636,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(12),
-                                      gradient: LinearGradient(colors: AppColors.auroraGradient),
+                                      gradient: AppColors.auroraGradient,
                                     ),
                                     child: const Text('复制链接', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                                   ),

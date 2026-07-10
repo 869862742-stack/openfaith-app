@@ -165,7 +165,7 @@ class _HeatingRecordsScreenState extends State<HeatingRecordsScreen> {
           // Header - 对齐网页版
           Container(
             padding: EdgeInsets.only(
-              top: MediaQuery.of(context).paddingTop + 16,
+              top: MediaQuery.of(context).padding.top + 16,
               left: 16,
               right: 16,
               bottom: 12,

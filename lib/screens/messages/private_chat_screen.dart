@@ -1270,7 +1270,7 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
 
   Future<void> _pickAndSendFile() async {
     try {
-      final result = await FilePicker.platform.pickFiles(type: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']);
+      final result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['pdf', 'doc', 'docx']);
       if (result == null || result.files.isEmpty) return;
       if (!mounted) return;
       setState(() => _isSending = true);
