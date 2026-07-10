@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../utils/api_cache.dart';
 import 'package:postgrest/postgrest.dart';
 import '../../theme/app_colors.dart';
 
@@ -90,6 +91,8 @@ class _MyPostsScreenState extends State<MyPostsScreen> {
     if (confirmed == true) {
       try {
         await _supabase.from('posts').delete().eq('id', postId);
+        // Invalidate home posts cache
+        await ApiCache.instance.invalidate('home:posts:0');
         _loadPosts();
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(

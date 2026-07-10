@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../utils/api_cache.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
@@ -692,6 +693,8 @@ class _PublishNoteScreenState extends State<PublishNoteScreen> {
 
       if (_editingPostId != null) {
         await _supabase.from('posts').update(postData).eq('id', _editingPostId!);
+        // Invalidate home posts cache after editing
+        await ApiCache.instance.invalidate('home:posts:0');
         postId = _editingPostId;
       } else {
         final result = await _supabase.from('posts').insert(postData).select().single();

@@ -6,6 +6,7 @@ import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../theme/colors.dart';
+import '../../i18n/app_localizations.dart';
 import '../../components/sidebar.dart';
 import 'post_detail_screen.dart';
 import '../profile/settings_screen.dart';
@@ -482,7 +483,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 16),
                 Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.borderColor, borderRadius: BorderRadius.circular(2))),
                 const SizedBox(height: 16),
-                const Text('选择标签筛选', style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+                Text(context.tr('select_tags'), style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 12),
                 if (_selectedTags.isNotEmpty)
                   Padding(
@@ -568,7 +569,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(color: AppColors.borderActive),
                           ),
-                          child: const Center(child: Text('清除', style: TextStyle(color: AppColors.textSecondary, fontSize: 14))),
+                          child: Center(child: Text(context.tr('clear'), style: const TextStyle(color: AppColors.textSecondary, fontSize: 14))),
                         ),
                       ),
                     ),
@@ -584,7 +585,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,colors: AppColors.rainbowColors),
                           ),
-                          child: const Center(child: Text('确定', style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600))),
+                          child: Center(child: Text(context.tr('confirm'), style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600))),
                         ),
                       ),
                     ),
@@ -769,7 +770,7 @@ class _HomeScreenState extends State<HomeScreen> {
         break;
       case 'admin':
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: const Text('管理后台功能开发中...'), backgroundColor: AppColors.cardBg, behavior: SnackBarBehavior.floating),
+          SnackBar(content: Text(context.tr('admin_coming_soon')), backgroundColor: AppColors.cardBg, behavior: SnackBarBehavior.floating),
         );
         break;
     }
@@ -860,7 +861,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('签到成功！+$points 热点'),
+            content: Text('${context.tr('checkin_success')}$points ${context.tr('hot_points')}'),
             backgroundColor: AppColors.success,
             duration: const Duration(seconds: 2),
           ),
@@ -897,7 +898,7 @@ class _HomeScreenState extends State<HomeScreen> {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('签到成功！+$points 热点'),
+                content: Text('${context.tr('checkin_success')}$points ${context.tr('hot_points')}'),
                 backgroundColor: AppColors.success,
                 duration: const Duration(seconds: 2),
               ),
@@ -910,7 +911,7 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() => _checkinLoading = false);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('签到失败: $e2'), backgroundColor: AppColors.error),
+            SnackBar(content: Text('${context.tr('checkin_failed')}: $e2'), backgroundColor: AppColors.error),
           );
         }
       }
@@ -932,9 +933,9 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               const Icon(Icons.check_circle, color: AppColors.auroraGreen, size: 18),
               const SizedBox(width: 10),
-              const Expanded(
+              Expanded(
                 child: Text(
-                  '今日已签到 ✓',
+                  context.tr('checkin_done'),
                   style: TextStyle(color: AppColors.auroraGreen, fontSize: 13, fontWeight: FontWeight.w600),
                 ),
               ),
@@ -942,10 +943,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 onTap: () {
                   Navigator.push(context, MaterialPageRoute(builder: (_) => const HeatingRecordsScreen()));
                 },
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('查看记录', style: TextStyle(color: AppColors.auroraGreen, fontSize: 12)),
+                    Text(context.tr('view_records'), style: const TextStyle(color: AppColors.auroraGreen, fontSize: 12)),
                     SizedBox(width: 2),
                     Icon(Icons.chevron_right, color: AppColors.auroraGreen, size: 14),
                   ],
@@ -978,10 +979,10 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               const Icon(Icons.local_fire_department, color: Colors.white, size: 20),
               const SizedBox(width: 10),
-              const Expanded(
+              Expanded(
                 child: Text(
-                  '每日签到，领取热点奖励 🔥',
-                  style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+                  context.tr('checkin_subtitle'),
+                  style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
                 ),
               ),
               _checkinLoading
@@ -995,9 +996,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         color: Colors.white.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Text(
-                        '签到',
-                        style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                      child: Text(
+                        context.tr('checkin_button'),
+                        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
                       ),
                     ),
             ],
@@ -1039,10 +1040,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           const Icon(Icons.warning_amber_rounded, color: AppColors.warning, size: 16),
                           const SizedBox(width: 8),
-                          const Expanded(
+                          Expanded(
                             child: Text(
-                              '你的账号已被禁言，评论和发布功能暂时受限',
-                              style: TextStyle(color: AppColors.warning, fontSize: 12),
+                              context.tr('muted_warning'),
+                              style: const TextStyle(color: AppColors.warning, fontSize: 12),
                             ),
                           ),
                         ],
@@ -1188,7 +1189,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                '搜索笔记、用户、话题、房间...',
+                context.tr('search_hint'),
                 // 对齐网页版: placeholder = var(--text-placeholder) = rgba(255,255,255,0.35)
                 style: TextStyle(color: AppColors.textPlaceholder, fontSize: 13),
               ),
@@ -1211,13 +1212,13 @@ class _HomeScreenState extends State<HomeScreen> {
       // 对齐网页版: gap-2 = 8px
       child: Row(
         children: [
-          _buildTabItem(0, '推荐'),
+          _buildTabItem(0, context.tr('tab_recommend')),
           const SizedBox(width: 8),
-          _buildTabItem(1, '关注'),
+          _buildTabItem(1, context.tr('tab_following')),
           const SizedBox(width: 8),
-          _buildTabItem(2, '标签'),
+          _buildTabItem(2, context.tr('tab_tags')),
           const SizedBox(width: 8),
-          _buildTabItem(3, '共境'),
+          _buildTabItem(3, context.tr('gongjing_tab')),
         ],
       ),
     );
@@ -1286,7 +1287,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Row(
         children: [
           Text(
-            '已选标签：',
+            context.tr('selected_tags'),
             style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
           ),
           const SizedBox(width: 4),
@@ -1323,7 +1324,7 @@ class _HomeScreenState extends State<HomeScreen> {
               _applyFilters();
             },
             child: Text(
-              '取消',
+              context.tr('cancel'),
               style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
             ),
           ),
@@ -1370,14 +1371,14 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 const Icon(Icons.push_pin, size: 14, color: AppColors.auroraOrange),
                 const SizedBox(width: 6),
-                const Text(
-                  '置顶',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.auroraOrange),
+                Text(
+                  context.tr('pinned'),
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.auroraOrange),
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  '· 轮播展示',
-                  style: TextStyle(fontSize: 10, color: AppColors.textPlaceholder),
+                  context.tr('pinned_carousel'),
+                  style: const TextStyle(fontSize: 10, color: AppColors.textPlaceholder),
                 ),
               ],
             ),
@@ -1391,7 +1392,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 separatorBuilder: (_, __) => const SizedBox(width: 8),
                 itemBuilder: (context, index) {
                   final post = _pinnedPosts[index];
-                  final title = post['title'] as String? ?? post['content'] as String? ?? '置顶';
+                  final title = post['title'] as String? ?? post['content'] as String? ?? context.tr('pinned');
                   final coverImage = post['cover_image'] as String?;
                   final profile = post['profiles'] as Map<String, dynamic>?;
                   final nickname = _extractNickname(profile);
@@ -1461,9 +1462,9 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Icon(Icons.explore, size: 64, color: AppColors.textMuted),
             SizedBox(height: 16),
-            Text('共境', style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(context.tr('gongjing_tab'), style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
             SizedBox(height: 8),
-            Text('功能即将上线', textAlign: TextAlign.center, style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
+            Text(context.tr('gongjing_coming_soon'), textAlign: TextAlign.center, style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
           ],
         ),
       );
@@ -1517,7 +1518,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final profile = post['profiles'] as Map<String, dynamic>?;
     final nickname = _extractNickname(profile);
     final avatarUrl = profile?['avatar_url'] as String?;
-    final faithTag = profile?['faith_tag'] as String? ?? '寻求者';
+    final faithTag = profile?['faith_tag'] as String? ?? context.tr('seeker');
     final coverImage = post['cover_image'] as String?;
     final title = post['title'] as String? ?? '';
     final content = post['content'] as String? ?? '';
@@ -1714,9 +1715,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final raw = profile?['nickname'] ?? profile?['username'] ?? '';
     if (raw.toString().startsWith('member_') ||
         (raw.toString().contains('-') && raw.toString().length > 20)) {
-      return '匿名';
+      return context.tr('anonymous');
     }
-    return raw.toString().isEmpty ? '匿名' : raw.toString();
+    return raw.toString().isEmpty ? context.tr('anonymous') : raw.toString();
   }
 
   Widget _buildCoverImage(String? coverImage) {
@@ -1799,7 +1800,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: AppColors.rainbowEnd,
               )
             : Text(
-                _hasMore ? '' : '没有更多了',
+                _hasMore ? '' : context.tr('no_more'),
                 style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
               ),
       ),
@@ -1820,16 +1821,16 @@ class _EmptyView extends StatelessWidget {
         const SizedBox(height: 120),
         const Icon(Icons.inbox_outlined, size: 64, color: AppColors.textMuted),
         const SizedBox(height: 16),
-        const Text(
-          '还没有动态',
+        Text(
+          context.tr('empty_posts'),
           textAlign: TextAlign.center,
-          style: TextStyle(color: AppColors.textSecondary, fontSize: 16, fontWeight: FontWeight.w500),
+          style: const TextStyle(color: AppColors.textSecondary, fontSize: 16, fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 8),
-        const Text(
-          '下拉刷新看看',
+        Text(
+          context.tr('empty_pull_refresh'),
           textAlign: TextAlign.center,
-          style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+          style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
         ),
       ],
     );
@@ -1927,8 +1928,8 @@ class _SearchPageState extends State<_SearchPage> {
                   controller: _controller,
                   autofocus: true,
                   style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
-                  decoration: const InputDecoration(
-                    hintText: '搜索笔记、用户、话题...',
+                  decoration: InputDecoration(
+                    hintText: context.tr('search_hint'),
                     hintStyle: TextStyle(color: AppColors.textSecondary, fontSize: 14),
                     border: InputBorder.none,
                     isDense: true,
@@ -1952,15 +1953,15 @@ class _SearchPageState extends State<_SearchPage> {
       body: _searching
           ? const Center(child: CircularProgressIndicator(color: AppColors.rainbowEnd))
           : !_hasSearched
-              ? const Center(
-                  child: Text('输入关键词开始搜索',
-                      style: TextStyle(color: AppColors.textMuted, fontSize: 14)),
+              ? Center(
+                  child: Text(context.tr('search_start'),
+                      style: const TextStyle(color: AppColors.textMuted, fontSize: 14)),
                 )
               : ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
                     if (_userResults.isNotEmpty) ...[
-                      const Text('用户', style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+                      Text(context.tr('search_users'), style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
                       const SizedBox(height: 8),
                       ..._userResults.map((u) => Padding(
                         padding: const EdgeInsets.only(bottom: 8),
@@ -1986,7 +1987,7 @@ class _SearchPageState extends State<_SearchPage> {
                       const SizedBox(height: 16),
                     ],
                     if (_results.isNotEmpty) ...[
-                      const Text('笔记', style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+                      Text(context.tr('search_notes'), style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
                       const SizedBox(height: 8),
                       ..._results.map((post) => Padding(
                         padding: const EdgeInsets.only(bottom: 12),
@@ -2002,7 +2003,7 @@ class _SearchPageState extends State<_SearchPage> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                              Text(post['title'] ?? '无标题',
+                              Text(post['title'] ?? context.tr('untitled'),
                                   style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500),
                                   maxLines: 1, overflow: TextOverflow.ellipsis),
                               if ((post['content'] ?? '').toString().isNotEmpty)
@@ -2031,7 +2032,7 @@ class _SearchPageState extends State<_SearchPage> {
                       const Center(
                         child: Padding(
                           padding: EdgeInsets.all(40),
-                          child: Text('未找到相关内容', style: TextStyle(color: AppColors.textMuted, fontSize: 14)),
+                          child: Text(context.tr('search_no_result'), style: TextStyle(color: AppColors.textMuted, fontSize: 14)),
                         ),
                       ),
                   ],

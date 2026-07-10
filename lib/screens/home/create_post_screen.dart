@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../utils/api_cache.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
@@ -351,6 +352,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       };
 
       await _supabase.from('posts').insert(postData);
+
+      // Invalidate home posts cache so next load shows the new post
+      await ApiCache.instance.invalidate('home:posts:0');
 
       // Delete draft if editing
       if (widget.editDraft != null) {

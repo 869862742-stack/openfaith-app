@@ -11,6 +11,7 @@ import 'heating_records_screen.dart';
 import 'widgets/edit_profile_dialog.dart';
 import '../../theme/colors.dart';
 import '../../utils/format_utils.dart';
+import '../../utils/api_cache.dart';
 import 'widgets/level_benefits_dialog.dart';
 
 // ═══════════════════════════════════════════════════════
@@ -142,33 +143,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     try {
-      final response = await _supabase
-          .from('profiles')
-          .select('*')
-          .eq('user_id', userId)
-          .maybeSingle();
+      // ── SWR cache layer for user profile ──
+      final response = await ApiCache.instance.staleWhileRevalidate<Map<String, dynamic>>(
+        'profile:$userId',
+        () async {
+          final r = await _supabase
+              .from('profiles')
+              .select('*')
+              .eq('user_id', userId)
+              .maybeSingle();
+          return r != null ? Map<String, dynamic>.from(r as Map) : <String, dynamic>{};
+        },
+        staleTime: const Duration(minutes: 10),
+        ttl: const Duration(minutes: 10),
+        onRefresh: (freshProfile) {
+          if (mounted && freshProfile.isNotEmpty) _applyProfile(freshProfile);
+        },
+      );
 
-      if (response != null) {
-        if (!mounted) return;
-        setState(() {
-          _profile = Map<String, dynamic>.from(response as Map);
-          _followersCount = (response['followers_count'] as num?)?.toInt() ?? 0;
-          _followingCount = (response['following_count'] as num?)?.toInt() ?? 0;
-          _heatCount = (response['heat_count'] as num?)?.toInt() ?? 0;
-          _hotPoints = (response['hot_points'] as num?)?.toInt() ?? 0;
-          _level = (response['level'] as num?)?.toInt() ?? 1;
-          _experience = (response['experience'] as num?)?.toInt() ?? 0;
-          _editUsername = (response['nickname'] as String?)?.isNotEmpty == true
-              ? response['nickname'] as String
-              : (response['username'] as String?) ?? '';
-          _editBio = (response['bio'] as String?) ?? '';
-          _editFaithTag = (response['faith_tag'] as String?) ?? '寻求者';
-          _editAllowStrangerVisit = response['allow_stranger_visit'] != false;
-          _editAllowFriendVisit = response['allow_friend_visit'] != false;
-          _isVip = response['is_vip'] == true;
-          _profileEditCount = (response['profile_edit_count'] as num?)?.toInt() ?? 0;
-          _profileEditMonth = (response['profile_edit_month'] as String?) ?? '';
-        });
+      if (response != null && (response as Map).isNotEmpty) {
+        _applyProfile(response);
       }
 
       final postsResp = await _supabase
@@ -191,29 +185,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() => _loading = false);
   }
 
+
+  /// Apply profile data to state (shared between initial load and SWR refresh).
+  void _applyProfile(Map<String, dynamic> response) {
+    if (!mounted) return;
+    setState(() {
+      _profile = Map<String, dynamic>.from(response);
+      _followersCount = (response['followers_count'] as num?)?.toInt() ?? 0;
+      _followingCount = (response['following_count'] as num?)?.toInt() ?? 0;
+      _heatCount = (response['heat_count'] as num?)?.toInt() ?? 0;
+      _hotPoints = (response['hot_points'] as num?)?.toInt() ?? 0;
+      _level = (response['level'] as num?)?.toInt() ?? 1;
+      _experience = (response['experience'] as num?)?.toInt() ?? 0;
+      _editUsername = (response['nickname'] as String?)?.isNotEmpty == true
+          ? response['nickname'] as String
+          : (response['username'] as String?) ?? '';
+      _editBio = (response['bio'] as String?) ?? '';
+      _editFaithTag = (response['faith_tag'] as String?) ?? '寻求者';
+      _editAllowStrangerVisit = response['allow_stranger_visit'] != false;
+      _editAllowFriendVisit = response['allow_friend_visit'] != false;
+      _isVip = response['is_vip'] == true;
+      _profileEditCount = (response['profile_edit_count'] as num?)?.toInt() ?? 0;
+      _profileEditMonth = (response['profile_edit_month'] as String?) ?? '';
+    });
+  }
+
   Future<void> _refreshProfile() async {
     final userId = _userId;
     if (userId == null) return;
     try {
+      // Invalidate cache before refreshing
+      await ApiCache.instance.invalidate('profile:$userId');
       final response = await _supabase
           .from('profiles')
           .select('*')
           .eq('user_id', userId)
           .maybeSingle();
       if (response != null) {
+        final profileMap = Map<String, dynamic>.from(response as Map);
+        // Update cache with fresh data
+        await ApiCache.instance.set('profile:$userId', profileMap,
+            ttl: const Duration(minutes: 10));
         if (!mounted) return;
-        setState(() {
-          _profile = Map<String, dynamic>.from(response as Map);
-          _followersCount = (response['followers_count'] as num?)?.toInt() ?? 0;
-          _followingCount = (response['following_count'] as num?)?.toInt() ?? 0;
-          _heatCount = (response['heat_count'] as num?)?.toInt() ?? 0;
-          _hotPoints = (response['hot_points'] as num?)?.toInt() ?? 0;
-          _level = (response['level'] as num?)?.toInt() ?? 1;
-          _experience = (response['experience'] as num?)?.toInt() ?? 0;
-          _isVip = response['is_vip'] == true;
-          _profileEditCount = (response['profile_edit_count'] as num?)?.toInt() ?? 0;
-          _profileEditMonth = (response['profile_edit_month'] as String?) ?? '';
-        });
+        _applyProfile(profileMap);
       }
     } catch (e) {
       debugPrint('Refresh profile error: $e');
@@ -312,6 +326,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           .from('profiles')
           .update(updates)
           .eq('user_id', userId);
+
+      // Invalidate profile cache after update
+      await ApiCache.instance.invalidate('profile:$userId');
 
       await _refreshProfile();
       if (mounted) Navigator.pop(context);

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../utils/api_cache.dart';
 import '../../theme/app_colors.dart';
 import '../../utils/format_utils.dart';
 import '../../utils/emoji_icons.dart';
@@ -312,6 +313,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
           .from('posts')
           .update({'comments_count': _commentCount + 1})
           .eq('id', postId);
+      // Invalidate home posts cache (comment count changed)
+      ApiCache.instance.invalidate('home:posts:0');
 
       _commentController.clear();
       if (!mounted) return;
@@ -363,6 +366,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
           'user_id': user.id,
           'post_id': postId,
         });
+        // Invalidate home posts cache (like count changed)
+        ApiCache.instance.invalidate('home:posts:0');
         if (!mounted) return;
         setState(() {
           _isLiked = true;

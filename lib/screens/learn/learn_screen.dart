@@ -10,6 +10,7 @@ import 'book_detail_screen.dart';
 import 'religion_detail_screen.dart';
 import 'holidays_data.dart';
 import '../../services/learn_data_cache.dart';
+import '../../utils/api_cache.dart';
 
 class Religion {
   final String id;
@@ -120,7 +121,33 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
         return;
       }
 
-      // 缓存未就绪，走网络请求
+      // 缓存未就绪，尝试 ApiCache 二级缓存
+      final apiCache = ApiCache.instance;
+      final cachedReligions = await apiCache.get<List<dynamic>>('learn:religions');
+      final cachedGroups = await apiCache.get<List<dynamic>>('learn:book_groups');
+      final cachedBooks = await apiCache.get<List<dynamic>>('learn:books');
+
+      if (cachedReligions != null && cachedGroups != null && cachedBooks != null) {
+        // Use disk-cached data
+        _religions = cachedReligions.map((e) => Religion.fromMap(Map<String, dynamic>.from(e as Map))).toList();
+        _groups = cachedGroups.map((e) => BookGroup.fromMap(Map<String, dynamic>.from(e as Map))).toList();
+        _books = cachedBooks.map((e) => BookItem.fromMap(Map<String, dynamic>.from(e as Map))).toList();
+        if (mounted) setState(() => _loading = false);
+        // Background refresh
+        _fetchAndCacheLearnData(apiCache);
+        return;
+      }
+
+      // 全部未命中，走网络请求
+      await _fetchAndCacheLearnData(apiCache);
+    } catch (e) { debugPrint('loadData error: $e'); }
+    finally { if (mounted) setState(() => _loading = false); }
+  }
+
+
+  /// Fetch learn data from network and cache via ApiCache (30-min TTL).
+  Future<void> _fetchAndCacheLearnData(ApiCache apiCache) async {
+    try {
       final client = Supabase.instance.client;
       final results = await Future.wait([
         client.from('religions').select().eq('is_active', true).order('sort_order').order('name'),
@@ -128,9 +155,23 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
         client.from('books').select().order('sort_order').order('title'),
         client.from('chapters').select('book_id').limit(1000),
       ]);
-      if (results[0].isNotEmpty) _religions = (results[0] as List).map((e) => Religion.fromMap(e as Map<String, dynamic>)).toList();
-      if (results[1].isNotEmpty) _groups = (results[1] as List).map((e) => BookGroup.fromMap(e as Map<String, dynamic>)).toList();
-      if (results[2].isNotEmpty) _books = (results[2] as List).map((e) => BookItem.fromMap(e as Map<String, dynamic>)).toList();
+
+      const ttl = Duration(minutes: 30);
+      if (results[0].isNotEmpty) {
+        final data = results[0] as List;
+        _religions = data.map((e) => Religion.fromMap(e as Map<String, dynamic>)).toList();
+        await apiCache.set('learn:religions', data, ttl: ttl);
+      }
+      if (results[1].isNotEmpty) {
+        final data = results[1] as List;
+        _groups = data.map((e) => BookGroup.fromMap(e as Map<String, dynamic>)).toList();
+        await apiCache.set('learn:book_groups', data, ttl: ttl);
+      }
+      if (results[2].isNotEmpty) {
+        final data = results[2] as List;
+        _books = data.map((e) => BookItem.fromMap(e as Map<String, dynamic>)).toList();
+        await apiCache.set('learn:books', data, ttl: ttl);
+      }
       if (results[3].isNotEmpty) {
         final chapters = results[3] as List;
         _chaptersMap = {};
@@ -139,8 +180,11 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
           if (bookId != null) _chaptersMap[bookId] = (_chaptersMap[bookId] ?? 0) + 1;
         }
       }
-    } catch (e) { debugPrint('loadData error: $e'); }
-    finally { if (mounted) setState(() => _loading = false); }
+      if (mounted) setState(() => _loading = false);
+    } catch (e) {
+      debugPrint('loadData network error: $e');
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   Future<void> _loadLocalData() async {
