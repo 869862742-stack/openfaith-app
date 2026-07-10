@@ -430,7 +430,7 @@ class _MessagesScreenState extends State<MessagesScreen>
         return Container(
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(radius + 1),
         gradient: _diagonalGradient(size)),
-      padding: const EdgeInsets.all(0.5),
+      padding: const EdgeInsets.all(1.0),
       child: Container(decoration: BoxDecoration(borderRadius: BorderRadius.circular(radius),
         color: AppColors.bgColor), child: child),
     );
@@ -453,20 +453,20 @@ class _MessagesScreenState extends State<MessagesScreen>
   Widget _buildSearchBar() {
     return Padding(padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       child: Container(height: 40,
-        decoration: BoxDecoration(color: const Color(0xFF0D1117), borderRadius: BorderRadius.circular(12)),
+        decoration: BoxDecoration(color: AppColors.bgSecondary, borderRadius: BorderRadius.circular(12)),
         padding: const EdgeInsets.symmetric(horizontal: 12),
         child: Row(children: [
-          const Icon(Icons.search, size: 18, color: Color(0xFF484F58)),
+          Icon(Icons.search, size: 18, color: AppColors.textWeak),
           const SizedBox(width: 8),
           Expanded(child: TextField(controller: _searchController,
             style: const TextStyle(color: Colors.white, fontSize: 14),
             decoration: const InputDecoration(hintText: '搜索消息...',
-              hintStyle: TextStyle(color: Color(0xFF484F58), fontSize: 14),
+              hintStyle: TextStyle(color: AppColors.textPlaceholder, fontSize: 14),
               border: InputBorder.none, isDense: true, contentPadding: EdgeInsets.symmetric(vertical: 10)),
             onChanged: (v) { setState(() => _searchQuery = v); _buildUnifiedMessages(); })),
           if (_searchQuery.isNotEmpty) GestureDetector(onTap: () {
             _searchController.clear(); setState(() => _searchQuery = ''); _buildUnifiedMessages();
-          }, child: const Icon(Icons.close, size: 16, color: Color(0xFF484F58))),
+          }, child: Icon(Icons.close, size: 16, color: AppColors.textWeak)),
         ])));
   }
 
@@ -485,7 +485,7 @@ class _MessagesScreenState extends State<MessagesScreen>
                   child: Container(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                     decoration: BoxDecoration(borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: Colors.white.withOpacity(0.3))),
-                    child: Text(tabs[i], style: const TextStyle(color: Colors.white54, fontSize: 14, fontWeight: FontWeight.w500)))),
+                    child: Text(tabs[i], style: TextStyle(color: AppColors.textWeak, fontSize: 14, fontWeight: FontWeight.w500)))),
           );
         })));
   }
@@ -494,9 +494,9 @@ class _MessagesScreenState extends State<MessagesScreen>
     if (_loadingMessages) return const Center(child: CircularProgressIndicator(color: AppColors.rainbowEnd));
     if (_loadError != null && _unifiedMessages.isEmpty) {
       return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-        const Icon(Icons.error_outline, size: 48, color: Color(0xFF484F58)),
+        Icon(Icons.error_outline, size: 48, color: AppColors.textWeak),
         const SizedBox(height: 12),
-        Text('加载失败', style: TextStyle(color: Colors.white.withOpacity(0.7))),
+        Text('加载失败', style: TextStyle(color: AppColors.textSecondary)),
         const SizedBox(height: 16),
         _rainbowBordered(child: TextButton(onPressed: _loadAllData,
           child: const Text('重试', style: TextStyle(color: Colors.white, fontSize: 14)))),
@@ -508,7 +508,7 @@ class _MessagesScreenState extends State<MessagesScreen>
         const SizedBox(height: 12),
         Text('暂无消息', style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 16)),
         const SizedBox(height: 4),
-        Text('暂无新消息，下拉刷新试试', style: const TextStyle(color: Color(0xFF484F58), fontSize: 12)),
+        Text('暂无新消息，下拉刷新试试', style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
       ]));
     }
     return RefreshIndicator(color: AppColors.rainbowEnd, onRefresh: _loadAllData,
@@ -529,14 +529,14 @@ class _MessagesScreenState extends State<MessagesScreen>
         errorBuilder: (_, __, ___) => _defAv(msg)));
     } else { av = _defAv(msg); }
     return Container(margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(color: const Color(0xFF0D1117), borderRadius: BorderRadius.circular(12),
+      decoration: BoxDecoration(color: AppColors.cardBg, borderRadius: BorderRadius.circular(12),
         border: msg.type == 'announcement' ? const Border(left: BorderSide(color: Color(0xFFFF9F1C), width: 3)) : null),
       child: Material(color: Colors.transparent,
         child: InkWell(borderRadius: BorderRadius.circular(12), onTap: () => _handleMessageTap(msg),
-          child: Padding(padding: const EdgeInsets.all(14),
+          child: Padding(padding: const EdgeInsets.all(16),
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
               if (!msg.isRead) Container(width: 8, height: 8, margin: const EdgeInsets.only(top: 6, right: 4),
-                decoration: const BoxDecoration(color: Color(0xFFFF4D6D), shape: BoxShape.circle))
+                decoration: const BoxDecoration(color: AppColors.accentRed, shape: BoxShape.circle))
               else const SizedBox(width: 12),
               Container(width: 48, height: 48, decoration: BoxDecoration(shape: BoxShape.circle, color: abg), child: av),
               const SizedBox(width: 12),
@@ -555,10 +555,10 @@ class _MessagesScreenState extends State<MessagesScreen>
                     Text('🔥 ${msg.badge}', style: const TextStyle(color: Color(0xFF8B949E), fontSize: 12)),
                 ]),
                 const SizedBox(height: 4),
-                Text(msg.subtitle, style: const TextStyle(color: Color(0xFF8B949E), fontSize: 12),
+                Text(msg.subtitle, style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
                   maxLines: 1, overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 4),
-                Text(msg.time, style: const TextStyle(color: Color(0xFF484F58), fontSize: 11)),
+                Text(msg.time, style: TextStyle(color: AppColors.textWeak, fontSize: 11)),
               ])),
               const SizedBox(width: 4),
               Icon(Icons.chevron_right, size: 18, color: Colors.white.withOpacity(0.3)),
@@ -606,7 +606,7 @@ class _MessagesScreenState extends State<MessagesScreen>
 
   void _showAnnDlg(Map<String, dynamic> ann) {
     showDialog(context: context, builder: (context) => AlertDialog(
-      backgroundColor: const Color(0xFF1A1F36),
+      backgroundColor: AppColors.cardBg,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       title: const Row(children: [
         Icon(Icons.notifications_active, color: Color(0xFFFF9F1C), size: 22),
@@ -620,12 +620,12 @@ class _MessagesScreenState extends State<MessagesScreen>
           child: const Text('置顶', style: TextStyle(color: Color(0xFFFF9F1C), fontSize: 11))),
         Text(ann['title'] as String? ?? '', style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
         const SizedBox(height: 12),
-        Text(ann['content'] as String? ?? '', style: const TextStyle(color: Color(0xFF8B949E), fontSize: 14, height: 1.6)),
+        Text(ann['content'] as String? ?? '', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6)),
         const SizedBox(height: 12),
-        Text(_formatTime(ann['created_at'] as String), style: const TextStyle(color: Color(0xFF484F58), fontSize: 12)),
+        Text(_formatTime(ann['created_at'] as String), style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
       ])),
       actions: [TextButton(onPressed: () => Navigator.pop(context),
-        child: const Text('关闭', style: TextStyle(color: Color(0xFF8B949E), fontSize: 14)))],
+        child: Text('关闭', style: TextStyle(color: AppColors.textSecondary, fontSize: 14)))],
     ));
   }
 
@@ -646,9 +646,9 @@ class _MessagesScreenState extends State<MessagesScreen>
         else if (fu.isNotEmpty) _buildRecSec(fu, isSearch)
         else if (isSearch) Padding(padding: const EdgeInsets.all(24),
           child: Center(child: Column(children: [
-            Icon(Icons.person_search, size: 40, color: Colors.white.withOpacity(0.15)),
+            Icon(Icons.person_search, size: 40, color: AppColors.borderActive),
             const SizedBox(height: 8),
-            Text('未找到匹配的用户', style: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 14)),
+            Text('未找到匹配的用户', style: TextStyle(color: AppColors.textPlaceholder, fontSize: 14)),
           ]))),
         const SizedBox(height: 24),
       ]));
@@ -657,21 +657,21 @@ class _MessagesScreenState extends State<MessagesScreen>
   Widget _buildFriendSearchBar() {
     return Row(children: [
       Expanded(child: Container(height: 40,
-        decoration: BoxDecoration(color: Colors.white.withOpacity(0.06), borderRadius: BorderRadius.circular(12)),
+        decoration: BoxDecoration(color: AppColors.hoverBg, borderRadius: BorderRadius.circular(12)),
         padding: const EdgeInsets.symmetric(horizontal: 12),
         child: Row(children: [
-          const Icon(Icons.search, size: 16, color: Color(0xFF484F58)),
+          Icon(Icons.search, size: 16, color: AppColors.textWeak),
           const SizedBox(width: 8),
           Expanded(child: TextField(controller: _friendSearchController,
             style: const TextStyle(color: Colors.white, fontSize: 14),
             decoration: const InputDecoration(hintText: '搜索昵称、ID...',
-              hintStyle: TextStyle(color: Color(0xFF484F58), fontSize: 14),
+              hintStyle: TextStyle(color: AppColors.textPlaceholder, fontSize: 14),
               border: InputBorder.none, isDense: true, contentPadding: EdgeInsets.symmetric(vertical: 10)),
             onChanged: (_) => setState(() {}),
             onSubmitted: (_) => _handleFriendSearch())),
           if (_friendSearchController.text.isNotEmpty) GestureDetector(onTap: () {
             _friendSearchController.clear(); setState(() => _searchResults = []);
-          }, child: const Icon(Icons.close, size: 16, color: Color(0xFF484F58))),
+          }, child: Icon(Icons.close, size: 16, color: AppColors.textWeak)),
         ]))),
       const SizedBox(width: 8),
       _rainbowBordered(radius: 12, child: GestureDetector(onTap: _handleFriendSearch,
@@ -715,7 +715,7 @@ class _MessagesScreenState extends State<MessagesScreen>
                 style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
                 maxLines: 1, overflow: TextOverflow.ellipsis),
               if (rq['message'] != null) Text(rq['message'] as String,
-                style: const TextStyle(color: Color(0xFF484F58), fontSize: 12),
+                style: TextStyle(color: AppColors.textPlaceholder, fontSize: 12),
                 maxLines: 1, overflow: TextOverflow.ellipsis),
             ])),
             Row(mainAxisSize: MainAxisSize.min, children: [
@@ -734,7 +734,7 @@ class _MessagesScreenState extends State<MessagesScreen>
                 child: Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: Colors.white.withOpacity(0.06)),
                   child: Text(ip ? '...' : '✕ 拒绝',
-                    style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)))),
+                    style: TextStyle(color: AppColors.textWeak, fontSize: 12)))),
             ]),
           ]));
       }),
@@ -748,13 +748,13 @@ class _MessagesScreenState extends State<MessagesScreen>
       final nB = (b['nickname'] as String? ?? b['username'] as String? ?? '').toLowerCase();
       return nA.compareTo(nB);
     });
-    return Container(decoration: BoxDecoration(color: Colors.white.withOpacity(0.04), borderRadius: BorderRadius.circular(12)),
+    return Container(decoration: BoxDecoration(color: AppColors.cardBg, borderRadius: BorderRadius.circular(12)),
       clipBehavior: Clip.antiAlias,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Container(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          decoration: BoxDecoration(color: Colors.white.withOpacity(0.02)),
+          decoration: BoxDecoration(color: AppColors.hoverBgLight),
           child: Row(children: [
-            const Icon(Icons.groups, size: 14, color: Colors.white),
+            Icon(Icons.groups, size: 14, color: AppColors.textPrimary),
             const SizedBox(width: 8),
             Text('我的好友 (${_friendsList.length})',
               style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
@@ -765,7 +765,7 @@ class _MessagesScreenState extends State<MessagesScreen>
         else if (sorted.isEmpty)
           Padding(padding: const EdgeInsets.all(12),
             child: Center(child: Text('暂无好友',
-              style: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 12))))
+              style: TextStyle(color: AppColors.textPlaceholder, fontSize: 12))))
         else ...List.generate(sorted.length, (i) {
           final f = sorted[i];
           final nm = f['nickname'] as String? ?? f['username'] as String? ?? '未命名用户';
@@ -774,8 +774,7 @@ class _MessagesScreenState extends State<MessagesScreen>
             border: Border(bottom: BorderSide(color: Colors.white.withOpacity(0.04)))),
             child: ListTile(contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
               leading: Container(width: 40, height: 40,
-                decoration: BoxDecoration(shape: BoxShape.circle,
-                  border: Border.all(width: 0.7, color: const Color(0xFFFF4D6D).withOpacity(0.5))),
+                decoration: const BoxDecoration(shape: BoxShape.circle),
                 child: ClipOval(child: f['avatar_url'] != null
                   ? Image.network(f['avatar_url'], fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => const Icon(Icons.person, color: Color(0xFF484F58), size: 20))
@@ -811,7 +810,7 @@ class _MessagesScreenState extends State<MessagesScreen>
             ? Border(bottom: BorderSide(color: Colors.white.withOpacity(0.06))) : null),
           child: Row(children: [
             Container(width: 40, height: 40,
-              decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withOpacity(0.05)),
+              decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.hoverBg),
               child: ClipOval(child: u['avatar_url'] != null
                 ? Image.network(u['avatar_url'], fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => const Icon(Icons.person, color: Color(0xFF484F58), size: 20))
@@ -823,13 +822,13 @@ class _MessagesScreenState extends State<MessagesScreen>
             if (isF) Row(mainAxisSize: MainAxisSize.min, children: [
               const Icon(Icons.check, size: 14, color: Color(0xFF484F58)),
               const SizedBox(width: 4),
-              Text('已添加', style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 12)),
+              Text('已添加', style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
             ])
             else if (isP) Row(mainAxisSize: MainAxisSize.min, children: [
               SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 1.5,
-                color: Colors.white.withOpacity(0.4))),
+                color: AppColors.textWeak)),
               const SizedBox(width: 4),
-              Text('待确认', style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 12)),
+              Text('待确认', style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
             ])
             else GestureDetector(onTap: () => _showAddFriendDlg(u),
               child: LayoutBuilder(builder: (context, constraints) {
@@ -858,7 +857,7 @@ class _MessagesScreenState extends State<MessagesScreen>
       title: const Text('添加好友', style: TextStyle(color: Colors.white, fontSize: 16)),
       content: Column(mainAxisSize: MainAxisSize.min, children: [
         Container(padding: const EdgeInsets.all(12), margin: const EdgeInsets.only(bottom: 12),
-          decoration: BoxDecoration(color: const Color(0xFF0D1117), borderRadius: BorderRadius.circular(12)),
+          decoration: BoxDecoration(color: AppColors.bgSecondary, borderRadius: BorderRadius.circular(12)),
           child: Row(children: [
             Container(width: 48, height: 48,
               decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withOpacity(0.08)),
@@ -872,18 +871,18 @@ class _MessagesScreenState extends State<MessagesScreen>
           ])),
         TextField(controller: mc, style: const TextStyle(color: Colors.white, fontSize: 14), maxLines: 3,
           decoration: InputDecoration(hintText: '添加好友时发送的招呼语...',
-            hintStyle: const TextStyle(color: Color(0xFF484F58), fontSize: 14),
-            filled: true, fillColor: const Color(0xFF0D1117),
+            hintStyle: TextStyle(color: AppColors.textPlaceholder, fontSize: 14),
+            filled: true, fillColor: AppColors.bgSecondary,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
             contentPadding: const EdgeInsets.all(12))),
       ]),
       actions: [
         TextButton(onPressed: () => Navigator.pop(context),
-          child: const Text('取消', style: TextStyle(color: Color(0xFF8B949E), fontSize: 14))),
+          child: Text('取消', style: TextStyle(color: AppColors.textSecondary, fontSize: 14)))
         ElevatedButton(onPressed: () {
           _sendFriendRequest(u['user_id'] as String? ?? u['id'] as String, mc.text);
           Navigator.pop(context);
-        }, style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0D1117),
+        }, style: ElevatedButton.styleFrom(backgroundColor: AppColors.bgSecondary,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
           child: const Text('发送请求', style: TextStyle(color: Colors.white, fontSize: 14))),
       ],
@@ -895,9 +894,9 @@ class _MessagesScreenState extends State<MessagesScreen>
     if (_isLoadingGroups) return const Center(child: CircularProgressIndicator(color: AppColors.rainbowEnd));
     if (_groupChats.isEmpty && _pendingGroupChats.isEmpty) {
       return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-        Icon(Icons.groups, size: 56, color: Colors.white.withOpacity(0.2)),
+        Icon(Icons.groups, size: 56, color: AppColors.borderActive),
         const SizedBox(height: 12),
-        Text('暂无群聊', style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 16)),
+        Text('暂无群聊', style: TextStyle(color: AppColors.textSecondary, fontSize: 16)),
         const SizedBox(height: 16),
         _rainbowBordered(child: TextButton.icon(
           onPressed: () {}, icon: const Icon(Icons.add, color: Colors.white, size: 18),
@@ -934,11 +933,11 @@ class _MessagesScreenState extends State<MessagesScreen>
     final tags = (g['tags'] as List?)?.cast<String>() ?? [];
     final dt = tags.where((t) => t != '__group_chat__').take(3).toList();
     return Container(margin: const EdgeInsets.only(bottom: 8), padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: const Color(0xFF0D1117), borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(color: AppColors.cardBg, borderRadius: BorderRadius.circular(12)),
       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Container(width: 40, height: 40,
           decoration: BoxDecoration(color: Colors.white.withOpacity(0.06), borderRadius: BorderRadius.circular(8)),
-          child: const Icon(Icons.groups, color: Color(0xFF8B949E), size: 22)),
+          child: Icon(Icons.groups, color: AppColors.textSecondary, size: 22)),
         const SizedBox(width: 12),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
@@ -953,15 +952,15 @@ class _MessagesScreenState extends State<MessagesScreen>
                 style: TextStyle(color: g['status'] == 'pending' ? const Color(0xFFFF9F1C) : const Color(0xFFEF4444), fontSize: 11))),
           ]),
           if (g['content'] != null) ...[const SizedBox(height: 4),
-            Text(g['content'] as String, style: const TextStyle(color: Color(0xFF8B949E), fontSize: 12),
+            Text(g['content'] as String, style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
               maxLines: 1, overflow: TextOverflow.ellipsis)],
           if (dt.isNotEmpty) ...[const SizedBox(height: 8),
             Wrap(spacing: 4, children: dt.map<Widget>((tag) => Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(color: Colors.white.withOpacity(0.06), borderRadius: BorderRadius.circular(8)),
-              child: Text(tag, style: const TextStyle(color: Color(0xFF8B949E), fontSize: 11)))).toList())],
+              decoration: BoxDecoration(color: AppColors.hoverBgLight, borderRadius: BorderRadius.circular(8)),
+              child: Text(tag, style: TextStyle(color: AppColors.textSecondary, fontSize: 11)))).toList())],
           const SizedBox(height: 8),
           Text('提交时间: ${_formatTime(g['created_at'] as String)}',
-            style: const TextStyle(color: Color(0xFF484F58), fontSize: 11)),
+            style: TextStyle(color: AppColors.textWeak, fontSize: 11)),
         ])),
       ]));
   }
@@ -971,7 +970,7 @@ class _MessagesScreenState extends State<MessagesScreen>
     final dt = tags.where((t) => t != '__group_chat__').take(3).toList();
     final hc = g['heat_count'] as int? ?? 0;
     return Container(margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(color: const Color(0xFF0D1117), borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(color: AppColors.cardBg, borderRadius: BorderRadius.circular(12)),
       child: Material(color: Colors.transparent,
         child: InkWell(borderRadius: BorderRadius.circular(12), onTap: () {
           Navigator.push(context, MaterialPageRoute(builder: (_) =>
@@ -988,10 +987,10 @@ class _MessagesScreenState extends State<MessagesScreen>
                   Expanded(child: Text(g['title'] as String? ?? '',
                     style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
                     maxLines: 1, overflow: TextOverflow.ellipsis)),
-                  if (hc > 0) Text('🔥 $hc', style: const TextStyle(color: Color(0xFF8B949E), fontSize: 12)),
+                  if (hc > 0) Text('🔥 $hc', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
                 ]),
                 if (g['content'] != null) ...[const SizedBox(height: 4),
-                  Text(g['content'] as String, style: const TextStyle(color: Color(0xFF8B949E), fontSize: 12),
+                  Text(g['content'] as String, style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
                     maxLines: 1, overflow: TextOverflow.ellipsis)],
                 if (dt.isNotEmpty) ...[const SizedBox(height: 8),
                   Wrap(spacing: 4, children: dt.map<Widget>((tag) => Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -1012,10 +1011,10 @@ class _MessagesScreenState extends State<MessagesScreen>
         child: const Icon(Icons.meeting_room, size: 36, color: Color(0xFF3A86FF))),
       const SizedBox(height: 20),
       Text('房间功能即将开放',
-        style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 16, fontWeight: FontWeight.w500)),
+        style: TextStyle(color: AppColors.textSecondary, fontSize: 16, fontWeight: FontWeight.w500)),
       const SizedBox(height: 8),
       Text('敬请期待，即将上线多人语音房间功能',
-        style: const TextStyle(color: Color(0xFF484F58), fontSize: 13)),
+        style: TextStyle(color: AppColors.textWeak, fontSize: 13)),
     ]));
   }
 }

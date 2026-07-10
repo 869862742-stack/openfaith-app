@@ -705,9 +705,10 @@ class _HomeScreenState extends State<HomeScreen> {
         filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
         child: Container(
           decoration: BoxDecoration(
-            color: AppColors.background.withOpacity(0.65),
+            // 对齐网页版: backgroundColor: var(--header-bg) = rgba(5, 8, 22, 0.92)
+            color: AppColors.headerBg,
             border: Border(
-              bottom: BorderSide(color: AppColors.borderColor.withOpacity(0.5), width: 0.5),
+              bottom: BorderSide(color: AppColors.borderColor, width: 0.5),
             ),
           ),
           padding: EdgeInsets.only(
@@ -755,26 +756,29 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // ==========================================================================
-  // 搜索栏（对齐网页版 SearchBar 样式）
+  // 搜索栏（对齐网页版 SearchBar: bg-secondary背景, 圆角30px）
   // ==========================================================================
   Widget _buildSearchBar() {
     return GestureDetector(
       onTap: _openSearchPage,
       child: Container(
         height: 40,
+        // 对齐网页版: backgroundColor: var(--bg-secondary) = rgba(15, 15, 35, 0.75)
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.08),
+          color: AppColors.bgSecondary,
           borderRadius: BorderRadius.circular(30),
         ),
         child: Row(
           children: [
             const SizedBox(width: 16),
-            const Icon(Icons.search, color: AppColors.textSecondary, size: 20),
+            // 对齐网页版: icon color = var(--icon-color) = white
+            const Icon(Icons.search, color: AppColors.iconColor, size: 20),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
                 '搜索笔记、用户、话题、房间...',
-                style: TextStyle(color: Colors.white.withOpacity(0.35), fontSize: 13),
+                // 对齐网页版: placeholder = var(--text-placeholder) = rgba(255,255,255,0.35)
+                style: TextStyle(color: AppColors.textPlaceholder, fontSize: 13),
               ),
             ),
             const SizedBox(width: 8),
@@ -786,10 +790,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // ==========================================================================
   // Channel Tabs（对齐网页版 ChannelTabs: 推荐/关注/标签/共境）
+  // 选中态：七彩边框(1px) + bgColor内层
+  // 未选中态：透明背景 + borderColor(8%白)border
   // ==========================================================================
   Widget _buildChannelTabs() {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
+      // 对齐网页版: gap-2 = 8px
       child: Row(
         children: [
           _buildTabItem(0, '推荐'),
@@ -807,7 +814,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildTabItem(int index, String label) {
     final isActive = _currentTab == index;
     if (isActive) {
-      // 选中态：七彩边框 + 深色内底（铁律）
+      // 选中态：七彩边框(1px) + bgColor内层（铁律）
       return GestureDetector(
         onTap: () => _switchTab(index),
         child: Container(
@@ -819,11 +826,12 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             decoration: BoxDecoration(
-              color: AppColors.background,
+              color: AppColors.bgColor,
               borderRadius: BorderRadius.circular(19),
             ),
             child: Text(
               label,
+              // 对齐网页版: text color = var(--text-color) = white
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 14,
@@ -834,19 +842,21 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       );
     }
-    // 未选中态
+    // 未选中态：透明背景 + borderColor border（对齐网页版）
     return GestureDetector(
       onTap: () => _switchTab(index),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withOpacity(0.08), width: 1),
+          // 对齐网页版: border = 1px solid rgba(255,255,255,0.08) = AppColors.borderColor
+          border: Border.all(color: AppColors.borderColor, width: 1),
         ),
         child: Text(
           label,
-          style: const TextStyle(
-            color: Color(0x80FFFFFF),
+          // 对齐网页版: text color = rgba(255,255,255,0.5)
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.5),
             fontSize: 14,
             fontWeight: FontWeight.w500,
           ),
@@ -936,7 +946,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Container(
         // 内层 #050816（铁律）
         decoration: BoxDecoration(
-          color: AppColors.background,
+          color: AppColors.bgColor,
           borderRadius: BorderRadius.circular(15),
         ),
         padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
@@ -1133,7 +1143,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: _buildCoverImage(coverImage),
               ),
             ),
-            // --- 文字内容区域 (对齐网页版 p-3) ---
+            // --- 文字内容区域 (对齐网页版 p-3)
             Padding(
               padding: const EdgeInsets.all(12),
               child: Column(
@@ -1147,6 +1157,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
+                          // 对齐网页版: text-sm font-medium text-white
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 14,
@@ -1177,8 +1188,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         content,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
+                        // 对齐网页版: text-xs text-[var(--text-weak)] = 12px, AppColors.textWeak
                         style: const TextStyle(
-                          color: AppColors.textMuted,
+                          color: AppColors.textWeak,
                           fontSize: 12,
                         ),
                       ),
@@ -1197,6 +1209,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 nickname,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
+                                // 对齐网页版: text-xs text-[var(--text-secondary)] font-medium
                                 style: const TextStyle(
                                   color: AppColors.textSecondary,
                                   fontSize: 12,
@@ -1214,6 +1227,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                                 child: Text(
                                   faithTag,
+                                  // 对齐网页版: color: rgba(255,255,255,0.4)
                                   style: const TextStyle(
                                     color: Color(0x66FFFFFF),
                                     fontSize: 8,
@@ -1231,15 +1245,20 @@ class _HomeScreenState extends State<HomeScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           if (commentCount > 0) ...[
-                            Icon(
+                            // 对齐网页版: MessageCircle icon color = var(--text-placeholder)
+                            const Icon(
                               Icons.chat_bubble_outline,
                               size: 12,
-                              color: Colors.white.withOpacity(0.35),
+                              color: AppColors.textPlaceholder,
                             ),
                             const SizedBox(width: 2),
+                            // 对齐网页版: text-[10px] text-[var(--text-weak)]
                             Text(
                               '$commentCount',
-                              style: TextStyle(color: Colors.white.withOpacity(0.35), fontSize: 10),
+                              style: const TextStyle(
+                                color: AppColors.textWeak,
+                                fontSize: 10,
+                              ),
                             ),
                             const SizedBox(width: 8),
                           ],
@@ -1267,76 +1286,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                 ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ==========================================================================
-  // 底部导航（对齐网页版 BottomNav: 首页/探索/消息/我的）
-  // ==========================================================================
-  Widget _buildBottomNav() {
-    return Container(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).padding.bottom,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.background.withOpacity(0.85),
-        border: Border(
-          top: BorderSide(color: AppColors.borderColor.withOpacity(0.5), width: 0.5),
-        ),
-      ),
-      child: ClipRect(
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-          child: SizedBox(
-            height: 56,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildNavItem(Icons.home_rounded, '首页', true, null),
-                _buildNavItem(Icons.explore_outlined, '探索', false, () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const GongjingScreen()));
-                }),
-                _buildNavItem(Icons.notifications_outlined, '消息', false, () {
-                  // 消息页面
-                }),
-                _buildNavItem(Icons.person_outline, '我的', false, () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()));
-                }),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(IconData icon, String label, bool active, VoidCallback? onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: SizedBox(
-        width: 64,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            active
-                ? ShaderMask(
-                    shaderCallback: (bounds) => _auroraGradient.createShader(bounds),
-                    child: Icon(icon, color: Colors.white, size: 24),
-                  )
-                : Icon(icon, color: Colors.white.withOpacity(0.5), size: 24),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(
-                color: active ? Colors.white : Colors.white.withOpacity(0.5),
-                fontSize: 10,
-                fontWeight: active ? FontWeight.w600 : FontWeight.w400,
               ),
             ),
           ],
@@ -1540,7 +1489,7 @@ class _SearchPageState extends State<_SearchPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.bgColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
