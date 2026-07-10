@@ -315,10 +315,10 @@ class _HotRankingState extends State<HotRanking> {
                     ? [
                         BoxShadow(
                           color: index == 0
-                              ? const AppColors.auroraRed.withOpacity(0.3)
+                              ? AppColors.auroraRed.withOpacity(0.3)
                               : index == 1
-                                  ? const AppColors.auroraPurple.withOpacity(0.25)
-                                  : const AppColors.auroraCyan.withOpacity(0.2),
+                                  ? AppColors.auroraPurple.withOpacity(0.25)
+                                  : AppColors.auroraCyan.withOpacity(0.2),
                           blurRadius: 6,
                           offset: const Offset(0, 1),
                         ),
@@ -381,7 +381,7 @@ class _HotRankingState extends State<HotRanking> {
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(11),
-          color: const AppColors.bgColor.withOpacity(0.92),
+          color: AppColors.bgColor.withOpacity(0.92),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

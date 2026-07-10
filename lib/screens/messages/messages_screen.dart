@@ -570,10 +570,10 @@ class _MessagesScreenState extends State<MessagesScreen>
       : msg.type == 'notification' ? Icons.notifications
       : msg.type == 'comment' ? Icons.comment
       : msg.type == 'group' ? Icons.groups : Icons.person;
-    final cl = msg.type == 'announcement' ? const AppColors.auroraOrange
-      : msg.type == 'notification' ? const AppColors.auroraPurple
-      : msg.type == 'comment' ? const AppColors.auroraGreen
-      : msg.type == 'group' ? const AppColors.auroraBlue : const AppColors.auroraOrange;
+    final cl = msg.type == 'announcement' ? AppColors.auroraOrange
+      : msg.type == 'notification' ? AppColors.auroraPurple
+      : msg.type == 'comment' ? AppColors.auroraGreen
+      : msg.type == 'group' ? AppColors.auroraBlue : AppColors.auroraOrange;
     return Center(child: Icon(ic, size: 22, color: cl));
   }
 
@@ -791,7 +791,7 @@ class _MessagesScreenState extends State<MessagesScreen>
               final nm = f['nickname'] as String? ?? f['username'] as String? ?? '未命名用户';
               final fuid = f['user_id'] as String? ?? f['id'] as String;
               widgets.add(Container(decoration: BoxDecoration(
-                border: Border(bottom: BorderSide(color: AppColors.borderSubtle))),
+                border: Border(bottom: BorderSide(color: AppColors.borderSubtle)),
                 child: ListTile(contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
                   leading: LayoutBuilder(builder: (context, constraints) {
                     final size = Size(constraints.maxWidth, constraints.maxHeight);
@@ -982,10 +982,10 @@ class _MessagesScreenState extends State<MessagesScreen>
               maxLines: 1, overflow: TextOverflow.ellipsis)),
             Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(color: g['status'] == 'pending'
-                ? AppColors.auroraOrange.withOpacity(0.15) : const AppColors.errorRed.withOpacity(0.15),
+                ? AppColors.auroraOrange.withOpacity(0.15) : AppColors.errorRed.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(8)),
               child: Text(g['status'] == 'pending' ? '待审核' : '已拒绝',
-                style: TextStyle(color: g['status'] == 'pending' ? const AppColors.auroraOrange : const AppColors.errorRed, fontSize: 11))),
+                style: TextStyle(color: g['status'] == 'pending' ? AppColors.auroraOrange : AppColors.errorRed, fontSize: 11))),
           ]),
           if (g['content'] != null) ...[const SizedBox(height: 4),
             Text(g['content'] as String, style: TextStyle(color: AppColors.textSecondary, fontSize: 12),

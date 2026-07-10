@@ -1691,7 +1691,7 @@ class _StarfieldPainter extends CustomPainter {
       AppColors.auroraCyan,
       AppColors.auroraPurple,
       AppColors.textWeak,
-      const AppColors.textSecondary.withOpacity(0.4),
+      AppColors.textSecondary.withOpacity(0.4),
     ];
 
     for (int i = 0; i < 8; i++) {
