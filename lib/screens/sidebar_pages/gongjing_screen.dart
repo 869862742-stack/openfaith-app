@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'dart:ui';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../theme/app_colors.dart';
@@ -21,6 +23,8 @@ class _GongjingScreenState extends State<GongjingScreen> {
   String _selectedStatus = '安静中';
   int _selectedDuration = 30;
   String? _musicName;
+  String? _musicPath;
+  String? _musicFileSize;
   bool _creating = false;
   String? _error;
 
@@ -673,9 +677,23 @@ class _GongjingScreenState extends State<GongjingScreen> {
         ),
         const SizedBox(height: 16),
         GestureDetector(
-          onTap: () {
-            // TODO: 文件选择
-            setState(() => _musicName = '示例音乐.mp3');
+          onTap: () async {
+            final result = await FilePicker.platform.pickFiles(
+              type: FileType.custom,
+              allowedExtensions: ['mp3', 'wav', 'm4a', 'ogg', 'flac'],
+            );
+            if (result != null && result.files.isNotEmpty) {
+              final file = result.files.first;
+              final sizeMB = (file.size / 1024 / 1024);
+              final sizeStr = sizeMB >= 1
+                  ? '${sizeMB.toStringAsFixed(1)} MB'
+                  : '${(file.size / 1024).toStringAsFixed(0)} KB';
+              setState(() {
+                _musicName = file.name;
+                _musicPath = file.path;
+                _musicFileSize = sizeStr;
+              });
+            }
           },
           child: Container(
             width: double.infinity,

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -19,6 +20,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
   final List<String> _selectedTags = [];
   String? _musicFilePath;
   String? _musicTitle;
+  String? _musicFileSize;
   bool _isPublic = true;
   bool _creating = false;
   String? _error;
@@ -336,26 +338,44 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
                     const SizedBox(height: 12),
                     // 音乐上传区域
                     GestureDetector(
-                      onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('音乐上传待集成'),
-                            backgroundColor: AppColors.cardBg,
-                          ),
+                      onTap: () async {
+                        final result = await FilePicker.platform.pickFiles(
+                          type: FileType.custom,
+                          allowedExtensions: ['mp3', 'wav', 'm4a', 'ogg', 'flac'],
                         );
+                        if (result != null && result.files.isNotEmpty) {
+                          final file = result.files.first;
+                          final sizeMB = (file.size / 1024 / 1024);
+                          final sizeStr = sizeMB >= 1
+                              ? '${sizeMB.toStringAsFixed(1)} MB'
+                              : '${(file.size / 1024).toStringAsFixed(0)} KB';
+                          setState(() {
+                            _musicFilePath = file.path;
+                            _musicTitle = file.name;
+                            _musicFileSize = sizeStr;
+                          });
+                        }
                       },
                       child: Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: AppColors.bgSecondary,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.borderDefault),
+                          border: Border.all(
+                            color: _musicFilePath != null
+                                ? AppColors.borderActive
+                                : AppColors.borderDefault,
+                          ),
                         ),
                         child: Row(
                           children: [
-                            const Icon(
-                              Icons.music_note,
-                              color: AppColors.iconColorWeak,
+                            Icon(
+                              _musicFilePath != null
+                                  ? Icons.check_circle
+                                  : Icons.music_note,
+                              color: _musicFilePath != null
+                                  ? AppColors.auroraCyan
+                                  : AppColors.iconColorWeak,
                               size: 24,
                             ),
                             const SizedBox(width: 12),
@@ -365,7 +385,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
                                 children: [
                                   Text(
                                     _musicFilePath != null
-                                        ? '已选择音乐'
+                                        ? _musicTitle ?? '已选择音乐'
                                         : '添加背景音乐',
                                     style: TextStyle(
                                       color: _musicFilePath != null
@@ -374,9 +394,9 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
                                       fontSize: 14,
                                     ),
                                   ),
-                                  if (_musicTitle != null)
+                                  if (_musicFileSize != null)
                                     Text(
-                                      _musicTitle!,
+                                      _musicFileSize!,
                                       style: const TextStyle(
                                         color: AppColors.textSecondary,
                                         fontSize: 12,
@@ -385,11 +405,25 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
                                 ],
                               ),
                             ),
-                            const Icon(
-                              Icons.add,
-                              color: AppColors.textWeak,
-                              size: 20,
-                            ),
+                            if (_musicFilePath != null)
+                              GestureDetector(
+                                onTap: () => setState(() {
+                                  _musicFilePath = null;
+                                  _musicTitle = null;
+                                  _musicFileSize = null;
+                                }),
+                                child: const Icon(
+                                  Icons.close,
+                                  color: AppColors.textWeak,
+                                  size: 20,
+                                ),
+                              )
+                            else
+                              const Icon(
+                                Icons.add,
+                                color: AppColors.textWeak,
+                                size: 20,
+                              ),
                           ],
                         ),
                       ),
