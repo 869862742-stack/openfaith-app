@@ -321,11 +321,38 @@ class _PublishVideoScreenState extends State<PublishVideoScreen> {
                         child: _selectedVideoPath != null
                             ? Stack(
                                 children: [
-                                  Center(child: Icon(Icons.play_circle_fill, size: 48, color: AppColors.textSecondary)),
+                                  Center(
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.play_circle_fill, size: 48, color: AppColors.textSecondary),
+                                        const SizedBox(height: 12),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                                          child: Text(
+                                            _selectedVideoName ?? '',
+                                            style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
+                                            textAlign: TextAlign.center,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          _selectedVideoSize ?? '',
+                                          style: TextStyle(color: AppColors.textWeak, fontSize: 12),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                   Positioned(
                                     top: 8, right: 8,
                                     child: GestureDetector(
-                                      onTap: () => setState(() => _selectedVideoPath = null),
+                                      onTap: () => setState(() {
+                                        _selectedVideoPath = null;
+                                        _selectedVideoName = null;
+                                        _selectedVideoSize = null;
+                                      }),
                                       child: Container(
                                         width: 32, height: 32,
                                         decoration: BoxDecoration(
@@ -386,7 +413,15 @@ class _PublishVideoScreenState extends State<PublishVideoScreen> {
                         child: _coverImagePath != null
                             ? Stack(
                                 children: [
-                                  Center(child: Icon(Icons.image, size: 48, color: AppColors.textSecondary)),
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(11),
+                                    child: Image.file(
+                                      File(_coverImagePath!),
+                                      fit: BoxFit.cover,
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                    ),
+                                  ),
                                   Positioned(
                                     top: 8, right: 8,
                                     child: GestureDetector(
