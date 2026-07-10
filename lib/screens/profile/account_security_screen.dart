@@ -64,34 +64,93 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.bgColor,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.headerBg,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios,
-              color: Colors.white, size: 20),
+              color: AppColors.textPrimary, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text('账号安全',
-            style: TextStyle(color: Colors.white, fontSize: 18)),
+            style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 18,
+                fontWeight: FontWeight.bold)),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: AppColors.borderColor),
+        ),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          _buildSecurityBanner(),
+          const SizedBox(height: 24),
           _buildAccountInfoCard(),
-          const SizedBox(height: 24),
-          _buildSectionTitle('修改密码'),
-          const SizedBox(height: 8),
+          const SizedBox(height: 16),
           _buildPasswordChangeCard(),
-          const SizedBox(height: 24),
-          _buildSectionTitle('邮箱验证'),
-          const SizedBox(height: 8),
+          const SizedBox(height: 16),
           _buildEmailVerificationCard(),
-          const SizedBox(height: 24),
-          _buildSectionTitle('绑定手机'),
-          const SizedBox(height: 8),
+          const SizedBox(height: 16),
           _buildPhoneBindingCard(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSecurityBanner() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.hoverBg,
+            AppColors.hoverBgLight,
+          ],
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.shield_outlined,
+                  color: AppColors.auroraBlue, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                '安全保护已开启',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  foreground: Paint()
+                    ..shader = const LinearGradient(
+                      colors: [
+                        AppColors.auroraRed,
+                        AppColors.auroraOrange,
+                        AppColors.auroraYellow,
+                        AppColors.auroraGreen,
+                        AppColors.auroraCyan,
+                        AppColors.auroraBlue,
+                        AppColors.auroraPurple,
+                      ],
+                    ).createShader(const Rect.fromLTWH(0, 0, 200, 70)),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '您的账号正在受到 OpenFaith 加密盾的实时保护。建议定期修改密码并保持手机/邮箱可用。',
+            style: TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+            ),
+          ),
         ],
       ),
     );
@@ -107,7 +166,6 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
       decoration: BoxDecoration(
         color: AppColors.cardBg,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.rainbowEnd.withOpacity(0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -115,11 +173,11 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
           const Row(
             children: [
               Icon(Icons.shield_outlined,
-                  color: AppColors.rainbowEnd, size: 22),
+                  color: AppColors.textPrimary, size: 22),
               SizedBox(width: 8),
               Text('账号信息',
                   style: TextStyle(
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                       fontSize: 16,
                       fontWeight: FontWeight.w600)),
             ],
@@ -150,7 +208,7 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
           child: Text(value,
               textAlign: TextAlign.right,
               style: TextStyle(
-                  color: valueColor ?? Colors.white, fontSize: 14)),
+                  color: valueColor ?? AppColors.textPrimary, fontSize: 14)),
         ),
       ],
     );
@@ -207,25 +265,32 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : _changePassword,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.rainbowEnd,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  gradient: AppColors.auroraGradient,
                 ),
-                child: _isLoading
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white),
-                      )
-                    : const Text('发送重置链接',
-                        style: TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.w600)),
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _changePassword,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    foregroundColor: AppColors.textPrimary,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: AppColors.textPrimary),
+                        )
+                      : const Text('发送重置链接',
+                          style: TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.w600)),
+                ),
               ),
             ),
           ],
@@ -253,25 +318,25 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
           controller: controller,
           obscureText: obscure,
           validator: validator,
-          style: const TextStyle(color: Colors.white, fontSize: 15),
+          style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: const TextStyle(
-                color: AppColors.textMuted, fontSize: 14),
+                color: AppColors.textPlaceholder, fontSize: 14),
             filled: true,
             fillColor: AppColors.inputBg,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: AppColors.borderColor),
+              borderSide: const BorderSide(color: AppColors.borderColor),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: AppColors.borderColor),
+              borderSide: const BorderSide(color: AppColors.borderColor),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(
-                  color: AppColors.rainbowEnd, width: 2),
+                  color: AppColors.auroraBlue, width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -329,7 +394,7 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
               children: [
                 Text(isVerified ? '邮箱已验证' : '邮箱未验证',
                     style: const TextStyle(
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                         fontSize: 15,
                         fontWeight: FontWeight.w500)),
                 const SizedBox(height: 2),
@@ -357,7 +422,7 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
                 }
               },
               child: const Text('重新发送',
-                  style: TextStyle(color: AppColors.rainbowEnd)),
+                  style: TextStyle(color: AppColors.auroraBlue)),
             ),
         ],
       ),
@@ -389,7 +454,7 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
               children: [
                 const Text('绑定手机',
                     style: TextStyle(
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                         fontSize: 15,
                         fontWeight: FontWeight.w500)),
                 const SizedBox(height: 2),
@@ -405,19 +470,11 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
                   '绑定手机', '手机绑定功能即将上线，敬请期待！');
             },
             child: const Text('绑定',
-                style: TextStyle(color: AppColors.rainbowEnd)),
+                style: TextStyle(color: AppColors.auroraBlue)),
           ),
         ],
       ),
     );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Text(title,
-        style: const TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 13,
-            fontWeight: FontWeight.w500));
   }
 
   void _showInfoDialog(String title, String content) {
@@ -426,14 +483,14 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.cardBg,
         title:
-            Text(title, style: const TextStyle(color: Colors.white)),
+            Text(title, style: const TextStyle(color: AppColors.textPrimary)),
         content: Text(content,
             style: const TextStyle(color: AppColors.textSecondary)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('确定',
-                style: TextStyle(color: AppColors.rainbowEnd)),
+                style: TextStyle(color: AppColors.auroraBlue)),
           ),
         ],
       ),

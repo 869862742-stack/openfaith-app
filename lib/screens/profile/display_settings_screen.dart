@@ -52,46 +52,74 @@ class _DisplaySettingsScreenState extends State<DisplaySettingsScreen> {
 
   double _previewTitleSize() {
     switch (_fontSize) {
-      case 'small': return 14;
-      case 'large': return 18;
-      default: return 16;
+      case 'small':
+        return 14;
+      case 'large':
+        return 18;
+      default:
+        return 16;
     }
   }
 
   double _previewTextSize() {
     switch (_fontSize) {
-      case 'small': return 12;
-      case 'large': return 16;
-      default: return 14;
+      case 'small':
+        return 12;
+      case 'large':
+        return 16;
+      default:
+        return 14;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.bgColor,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.headerBg,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+          icon: const Icon(Icons.arrow_back_ios,
+              color: AppColors.textPrimary, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('显示设置', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+        title: const Text('显示设置',
+            style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 18,
+                fontWeight: FontWeight.bold)),
         actions: [
           if (_saving)
             const Padding(
               padding: EdgeInsets.only(right: 16),
-              child: Center(child: SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.textSecondary))),
+              child: Center(
+                child: SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
             ),
         ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: AppColors.borderColor),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('字体大小', style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
+            const Text('字体大小',
+                style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
             Row(
               children: _fontSizes.map((s) {
@@ -101,23 +129,40 @@ class _DisplaySettingsScreenState extends State<DisplaySettingsScreen> {
                     onTap: () => _setFontSize(s['id'] as String),
                     child: Container(
                       margin: const EdgeInsets.symmetric(horizontal: 4),
-                      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+                      padding: const EdgeInsets.all(1),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
-                        gradient: isSelected ? const LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A), Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD)],
-                        ) : null,
-                        color: isSelected ? null : Colors.white.withOpacity(0.04),
-                        border: isSelected ? null : Border.all(color: Colors.white.withOpacity(0.08)),
+                        gradient: isSelected
+                            ? AppColors.auroraGradient
+                            : null,
                       ),
-                      child: Column(
-                        children: [
-                          Text(s['label'] as String, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
-                          const SizedBox(height: 4),
-                          Text(s['desc'] as String, style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 10)),
-                        ],
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 14, horizontal: 8),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(11),
+                          color: isSelected
+                              ? AppColors.bgColor
+                              : AppColors.hoverBgLight,
+                          border: isSelected
+                              ? null
+                              : Border.all(
+                                  color: AppColors.borderColor),
+                        ),
+                        child: Column(
+                          children: [
+                            Text(s['label'] as String,
+                                style: const TextStyle(
+                                    color: AppColors.textPrimary,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500)),
+                            const SizedBox(height: 4),
+                            Text(s['desc'] as String,
+                                style: const TextStyle(
+                                    color: AppColors.textWeak,
+                                    fontSize: 10)),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -125,68 +170,99 @@ class _DisplaySettingsScreenState extends State<DisplaySettingsScreen> {
               }).toList(),
             ),
             const SizedBox(height: 32),
+            // Preview card with gradient border
             Container(
               padding: const EdgeInsets.all(1),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A), Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD)],
-                ),
+                gradient: AppColors.auroraGradientWithOpacity(0.6),
               ),
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(11),
-                  color: AppColors.background,
+                  color: AppColors.bgColor,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Row(
                       children: [
-                        Icon(Icons.text_fields, color: Colors.white, size: 16),
+                        Icon(Icons.text_fields,
+                            color: AppColors.textPrimary, size: 16),
                         SizedBox(width: 8),
-                        Text('预览效果', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
+                        Text('预览效果',
+                            style: TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500)),
                       ],
                     ),
                     const SizedBox(height: 12),
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.04),
+                        color: AppColors.hoverBgLight,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.white.withOpacity(0.08)),
+                        border: Border.all(color: AppColors.borderColor),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('预览标题', style: TextStyle(color: Colors.white, fontSize: _previewTitleSize(), fontWeight: FontWeight.bold)),
+                          Text('预览标题',
+                              style: TextStyle(
+                                  color: AppColors.textPrimary,
+                                  fontSize: _previewTitleSize(),
+                                  fontWeight: FontWeight.bold)),
                           const SizedBox(height: 8),
-                          Text('这是一段预览文本，用于展示当前字体大小效果。OpenFaith - 探索灵性世界。', style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: _previewTextSize(), height: 1.5)),
+                          Text(
+                            '这是一段预览文本，用于展示当前字体大小效果。OpenFaith - 探索灵性世界。',
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: _previewTextSize(),
+                              height: 1.5,
+                            ),
+                          ),
                           const SizedBox(height: 12),
                           Row(
                             children: [
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                padding: const EdgeInsets.all(1),
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(20),
-                                  gradient: const LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,colors: [Color(0xFF3A86FF), Color(0xFF9D4EDD)]),
+                                  borderRadius:
+                                      BorderRadius.circular(20),
+                                  gradient: AppColors.auroraGradient,
                                 ),
-                                child: const Text('确认', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500)),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    borderRadius:
+                                        BorderRadius.circular(19),
+                                    color: AppColors.bgColor,
+                                  ),
+                                  child: const Text('确认',
+                                      style: TextStyle(
+                                          color: AppColors.textPrimary,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w500)),
+                                ),
                               ),
                               const SizedBox(width: 8),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 6),
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(20),
-                                  color: Colors.white.withOpacity(0.05),
-                                  border: Border.all(color: Colors.white.withOpacity(0.1)),
+                                  borderRadius:
+                                      BorderRadius.circular(20),
+                                  color: AppColors.inputBg,
+                                  border: Border.all(
+                                      color: AppColors.borderColor),
                                 ),
-                                child: const Text('取消', style: TextStyle(color: Colors.white54, fontSize: 12)),
+                                child: Text('取消',
+                                    style: TextStyle(
+                                        color: AppColors.textWeak,
+                                        fontSize: 12)),
                               ),
                             ],
                           ),
