@@ -381,7 +381,6 @@ void main() {
                       _buildSettingsCard(Icons.info, '关于', '版本 1.0.0'),
                     ],
                   ),
-                ),
               ),
             ),
           ),
