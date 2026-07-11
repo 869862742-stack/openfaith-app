@@ -153,4 +153,6 @@ const Map<String, String> zhStrings = {
   'learn_no_content': '暂无内容',
   'calendar_year': '年',
   'calendar_month': '月',
+  'calendar_weekdays': '["日","一","二","三","四","五","六"]',
+  'calendar_months': '["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"]',
 };

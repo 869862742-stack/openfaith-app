@@ -153,4 +153,6 @@ const Map<String, String> enStrings = {
   'learn_no_content': 'No content',
   'calendar_year': 'Year',
   'calendar_month': 'Month',
+  'calendar_weekdays': '["Su","Mo","Tu","We","Th","Fr","Sa"]',
+  'calendar_months': '["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]',
 };

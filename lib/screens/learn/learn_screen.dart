@@ -1018,8 +1018,8 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
     final month = _currentDate.month;
     final firstDay = DateTime(year, month, 1).weekday % 7;
     final daysInMonth = DateTime(year, month + 1, 0).day;
-    const wk = ['Su','Mo','Tu','We','Th','Fr','Sa'];
-    const mn = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    final wk = (jsonDecode(context.tr('calendar_weekdays')) as List).cast<String>();
+    final mn = (jsonDecode(context.tr('calendar_months')) as List).cast<String>();
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -1433,7 +1433,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
 
   // ========== MONTH PICKER ==========
   void _showMonthPicker() {
-    const mn = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    final mn = (jsonDecode(context.tr('calendar_months')) as List).cast<String>();
     showDialog(context: context, builder: (ctx) => Dialog(
       backgroundColor: AppColors.cardBg,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
