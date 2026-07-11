@@ -334,8 +334,8 @@ void main() {
 }
 
 Widget _buildSettings() {
-  return AnimatedStarfield(child: Scaffold(
-    backgroundColor: Colors.transparent,
+  return Scaffold(
+    backgroundColor: AppColors.bgColor,
     body: Column(children: [
       _buildHeader('设置'),
       Expanded(child: ListView(padding: const EdgeInsets.all(16), children: [
@@ -356,7 +356,7 @@ Widget _buildSettings() {
         _buildSettingsCard(Icons.logout, '退出登录', destructive: true),
       ])),
     ]),
-  ));
+  );
 }
 
 Widget _buildSettingsProfile() {
