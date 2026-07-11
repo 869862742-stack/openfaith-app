@@ -8,30 +8,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Flutter 环境
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.44.5'
       - run: flutter pub get
-      
-      # 构建 Flutter Web（HTML 渲染器）
-      - run: flutter build web --release --web-renderer=html
+      - run: flutter build web --release --web-renderer=canvaskit
 
-      # 安装 Chrome + Puppeteer
       - run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
           wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
           sudo dpkg -i google-chrome-stable_current_amd64.deb || sudo apt-get install -f -y
-          google-chrome-stable --version
-          npm install -g puppeteer
+          npm install puppeteer
 
-      # 启动 Flutter Web 服务器
       - name: Start Flutter Web server
         run: |
           cd build/web
           python3 -m http.server 8080 &
           echo "FLUTTER_PID=$!" >> $GITHUB_ENV
 
-      # 等待服务器就绪
       - name: Wait for server
         run: |
           for i in $(seq 1 30); do
@@ -39,18 +34,25 @@ jobs:
             sleep 1
           done
 
-      # 用 Puppeteer 截图
-      - name: Take screenshots with Puppeteer
+      - name: Take screenshots
         run: |
           mkdir -p screenshots/flutter screenshots/web
 
+          # 启动 xvfb 虚拟显示器
+          Xvfb :99 -screen 0 1920x1080x24 &
+          export DISPLAY=:99
+          sleep 2
+
           cat > screenshot.js << 'SCRIPT'
           const puppeteer = require('puppeteer');
-          
+          const fs = require('fs');
+
           (async () => {
+            // 非 headless 模式，使用 xvfb 虚拟显示器
             const browser = await puppeteer.launch({
-              headless: 'new',
-              args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
+              headless: false,  // 关键：非 headless，让 CanvasKit/WebGL 正常工作
+              executablePath: '/usr/bin/google-chrome-stable',
+              args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
             });
 
             const viewport = { width: 375, height: 812 };
@@ -70,11 +72,11 @@ jobs:
               const page = await browser.newPage();
               await page.setViewport(viewport);
               await page.goto(p.url, { waitUntil: 'networkidle0', timeout: 30000 });
-              await new Promise(r => setTimeout(r, 5000));
+              // Flutter Web 需要额外时间初始化 + 渲染
+              await new Promise(r => setTimeout(r, 8000));
               await page.screenshot({ path: `screenshots/flutter/${p.name}.png`, fullPage: false });
-              const fs = require('fs');
               const stats = fs.statSync(`screenshots/flutter/${p.name}.png`);
-              console.log(`  -> saved (${p.name}.png, ${stats.size} bytes)`);
+              console.log(`  -> ${p.name}.png = ${stats.size} bytes`);
               await page.close();
             }
 
@@ -95,23 +97,23 @@ jobs:
               await page.goto(p.url, { waitUntil: 'networkidle0', timeout: 30000 });
               await new Promise(r => setTimeout(r, 3000));
               await page.screenshot({ path: `screenshots/web/${p.name}.png`, fullPage: false });
-              const fs = require('fs');
               const stats = fs.statSync(`screenshots/web/${p.name}.png`);
-              console.log(`  -> saved (${p.name}.png, ${stats.size} bytes)`);
+              console.log(`  -> ${p.name}.png = ${stats.size} bytes`);
               await page.close();
             }
 
             await browser.close();
             console.log('All screenshots done!');
-          })();
+          })().catch(err => {
+            console.error('Error:', err.message);
+            process.exit(1);
+          });
           SCRIPT
 
           node screenshot.js
-          
           echo "=== File sizes ==="
           ls -la screenshots/flutter/ screenshots/web/
 
-      # 上传截图
       - name: Upload screenshots
         uses: actions/upload-artifact@v4
         with:
