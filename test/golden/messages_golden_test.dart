@@ -379,13 +379,13 @@ Widget _buildFriendRequest(String name, String msg, String status) {
       const SizedBox(height: 2),
       Text(msg, style: const TextStyle(color: AppColors.textWeak, fontSize: 12)),
     ])),
-    if (status == 'add') Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), decoration: BoxDecoration(gradient: AppColors.auroraGradient, borderRadius: BorderRadius.circular(16)), child: const Text('接受', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500))),
+    if (status == 'add') Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), decoration: BoxDecoration(gradient: AppColors.auroraGradient, borderRadius: BorderRadius.circular(16)), child: const Text('接受', style: TextStyle(color: Colors.white, fontSize: 12))),
     if (status == 'pending') Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), decoration: BoxDecoration(color: AppColors.inputBg, borderRadius: BorderRadius.circular(16)), child: const Text('已发送', style: TextStyle(color: AppColors.textSecondary, fontSize: 12))),
   ]));
 }
 
 Widget _buildFriendItem(String name, String faith, String status, String letter, List<Color> gradient) {
-  return Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: AppColors.cardBg, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.borderColor, width: 0.5)), child: Row(children: [
+  return Padding(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6), child: Row(children: [
     Container(width: 44, height: 44, decoration: BoxDecoration(shape: BoxShape.circle, gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: gradient)), child: Center(child: Text(letter, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)))),
     const SizedBox(width: 12),
     Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -398,8 +398,8 @@ Widget _buildFriendItem(String name, String faith, String status, String letter,
 }
 
 Widget _buildGroupItem(String name, String members, String status, String letter, List<Color> gradient) {
-  return Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: AppColors.cardBg, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.borderColor, width: 0.5)), child: Row(children: [
-    Container(width: 48, height: 48, decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: gradient)), child: Center(child: Text(letter, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)))),
+  return Padding(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6), child: Row(children: [
+    Container(width: 44, height: 44, decoration: BoxDecoration(shape: BoxShape.circle, gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: gradient)), child: Center(child: Text(letter, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)))),
     const SizedBox(width: 12),
     Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text(name, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600)),
@@ -411,14 +411,14 @@ Widget _buildGroupItem(String name, String members, String status, String letter
 }
 
 Widget _buildRoomCard(String name, String info, IconData icon) {
-  return GlassCard(child: Padding(padding: const EdgeInsets.all(16), child: Row(children: [
-    Container(width: 48, height: 48, decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: AppColors.auroraGradientWithOpacity(0.3)), child: Icon(icon, color: Colors.white, size: 24)),
+  return GlassCard(child: Padding(padding: const EdgeInsets.all(14), child: Row(children: [
+    Container(width: 44, height: 44, decoration: BoxDecoration(shape: BoxShape.circle, gradient: AppColors.auroraGradientWithOpacity(0.3)), child: Icon(icon, color: Colors.white, size: 22)),
     const SizedBox(width: 12),
     Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text(name, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600)),
-      const SizedBox(height: 4),
-      Text(info, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+      const SizedBox(height: 2),
+      Text(info, style: const TextStyle(color: AppColors.textWeak, fontSize: 12)),
     ])),
-    Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), decoration: BoxDecoration(gradient: AppColors.auroraGradient, borderRadius: BorderRadius.circular(16)), child: const Text('加入', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500))),
+    const Icon(Icons.chevron_right, color: AppColors.textWeak, size: 20),
   ])));
 }

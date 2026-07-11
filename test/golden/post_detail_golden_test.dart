@@ -289,49 +289,39 @@ Widget _buildPostDetail() {
     body: Column(children: [
       _buildHeader('帖子详情'),
       Expanded(child: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        // Author
         Row(children: [
-          Container(width: 44, height: 44, decoration: const BoxDecoration(shape: BoxShape.circle, gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [AppColors.auroraRed, AppColors.auroraOrange])), child: const Center(child: Text('Z', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)))),
+          Container(width: 44, height: 44, decoration: const BoxDecoration(shape: BoxShape.circle, gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [AppColors.auroraBlue, AppColors.auroraPurple])), child: const Center(child: Text('张', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)))),
           const SizedBox(width: 12),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             const Text('张三', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
-            const SizedBox(height: 2),
-            Row(children: [
-              Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1), decoration: BoxDecoration(gradient: AppColors.auroraGradientWithOpacity(0.3), borderRadius: BorderRadius.circular(6)), child: const Text('基督教', style: TextStyle(color: Colors.white, fontSize: 11))),
-              const SizedBox(width: 8),
-              const Text('2小时前', style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
-            ]),
-          ])),
-          Container(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6), decoration: BoxDecoration(gradient: AppColors.auroraGradient, borderRadius: BorderRadius.circular(16)), child: const Text('关注', style: TextStyle(color: Colors.white, fontSize: 13))),
+            const Text('2小时前', style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
+          ]),
         ]),
         const SizedBox(height: 20),
-        // Content
-        const Text('今天读了一段很有启发的经文，分享给大家思考。\n\n"耶和华是我的牧者，我必不至缺乏。他使我躺卧在青草地上，领我在可安歇的水边。" —— 诗篇 23:1-2\n\n信仰的力量在于内心的平静与坚定。无论遇到什么困难，都要相信一切都会好起来的。', style: TextStyle(color: Colors.white, fontSize: 15, height: 1.6)),
+        const Text('今天读了一段很有启发的经文，分享给大家思考。\n\n"耶和华是我的牧者，我必不至缺乏。"', style: TextStyle(color: AppColors.textPrimary, fontSize: 15, height: 1.6)),
         const SizedBox(height: 20),
-        // Actions
-        Container(padding: const EdgeInsets.symmetric(vertical: 12), decoration: BoxDecoration(border: Border(top: BorderSide(color: AppColors.borderColor, width: 0.5), bottom: BorderSide(color: AppColors.borderColor, width: 0.5))), child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
-          Row(children: [const Icon(Icons.favorite, color: AppColors.auroraRed, size: 20), const SizedBox(width: 6), const Text('42', style: TextStyle(color: AppColors.auroraRed, fontSize: 14))]),
-          Row(children: [const Icon(Icons.chat_bubble_outline, color: AppColors.textSecondary, size: 20), const SizedBox(width: 6), const Text('8', style: TextStyle(color: AppColors.textSecondary, fontSize: 14))]),
-          Row(children: [const Icon(Icons.bookmark_border, color: AppColors.textSecondary, size: 20), const SizedBox(width: 6), const Text('收藏', style: TextStyle(color: AppColors.textSecondary, fontSize: 14))]),
-          Row(children: [const Icon(Icons.share_outlined, color: AppColors.textSecondary, size: 20), const SizedBox(width: 6), const Text('分享', style: TextStyle(color: AppColors.textSecondary, fontSize: 14))]),
+        Container(padding: const EdgeInsets.symmetric(vertical: 12), decoration: BoxDecoration(border: Border(top: BorderSide(color: AppColors.borderColor, width: 0.5))), child: Row(children: [
+          const Icon(Icons.favorite, color: AppColors.auroraRed, size: 20),
+          const SizedBox(width: 6),
+          const Text('24', style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
+          const SizedBox(width: 20),
+          const Icon(Icons.chat_bubble_outline, color: AppColors.textSecondary, size: 20),
+          const SizedBox(width: 6),
+          const Text('8', style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
         ])),
         const SizedBox(height: 20),
-        // Comments
         const Text('8条评论', style: TextStyle(color: AppColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w600)),
         const SizedBox(height: 16),
         _commentItem('李', [AppColors.auroraBlue, AppColors.auroraPurple], '李明', '30分钟前', '很有感触，感谢分享！'),
         const SizedBox(height: 12),
         _commentItem('W', [AppColors.auroraGreen, AppColors.auroraCyan], '王芳', '1小时前', '阿门，这段话给我很大的安慰。'),
-        const SizedBox(height: 12),
-        _commentItem('C', [AppColors.auroraYellow, AppColors.auroraOrange], '陈伟', '2小时前', '每天读一遍，内心越来越平静。推荐大家也试试。'),
       ]))),
-      // Comment input
       Container(decoration: BoxDecoration(color: AppColors.headerBg, border: Border(top: BorderSide(color: AppColors.borderColor, width: 0.5))), padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), child: SafeArea(top: false, child: Row(children: [
         Expanded(child: Container(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10), decoration: BoxDecoration(color: AppColors.inputBg, borderRadius: BorderRadius.circular(20)), child: const Text('写评论...', style: TextStyle(color: AppColors.textPlaceholder, fontSize: 14)))),
         const SizedBox(width: 8),
         Container(width: 32, height: 32, decoration: BoxDecoration(gradient: AppColors.auroraGradient, borderRadius: BorderRadius.circular(16)), child: const Icon(Icons.send, color: Colors.white, size: 16)),
-      ])),
-    ])),
+      ]))),
+    ]),
   );
 }
 

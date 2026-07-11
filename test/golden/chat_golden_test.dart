@@ -287,58 +287,33 @@ Widget _buildChatScreen() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
     body: Column(children: [
-      // Chat header
-      Container(
-        decoration: BoxDecoration(color: AppColors.headerBg, border: Border(bottom: BorderSide(color: AppColors.borderColor, width: 0.5))),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: SafeArea(bottom: false, child: Row(children: [
-          const Icon(Icons.arrow_back_ios, color: AppColors.textPrimary, size: 20),
-          const SizedBox(width: 12),
-          Container(width: 36, height: 36, decoration: const BoxDecoration(shape: BoxShape.circle, gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [AppColors.auroraRed, AppColors.auroraOrange])), child: const Center(child: Text('Z', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)))),
-          const SizedBox(width: 10),
-          const Expanded(child: Text('张三', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600))),
-          const Icon(Icons.videocam_outlined, color: AppColors.textSecondary, size: 22),
-          const SizedBox(width: 16),
-          const Icon(Icons.more_horiz, color: AppColors.textSecondary, size: 22),
+      Container(decoration: BoxDecoration(color: AppColors.headerBg, border: Border(bottom: BorderSide(color: AppColors.borderColor, width: 0.5))), child: SafeArea(bottom: false, child: Padding(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), child: Row(children: [
+        const CircleAvatar(radius: 18, backgroundColor: AppColors.inputBg, child: Icon(Icons.person, color: Colors.white, size: 20)),
+        const SizedBox(width: 12),
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const Text('张三', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+          const Text('在线', style: TextStyle(color: AppColors.auroraGreen, fontSize: 12)),
         ])),
-      ),
-      // Messages
-      Expanded(child: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(children: [
-        // Date divider
-        Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4), decoration: BoxDecoration(color: AppColors.inputBg, borderRadius: BorderRadius.circular(10)), child: const Text('今天', style: TextStyle(color: AppColors.textWeak, fontSize: 12))),
-        const SizedBox(height: 16),
-        // Other message
-        Align(alignment: Alignment.centerLeft, child: Row(crossAxisAlignment: CrossAxisAlignment.end, mainAxisSize: MainAxisSize.min, children: [
-          Container(width: 32, height: 32, decoration: const BoxDecoration(shape: BoxShape.circle, gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [AppColors.auroraRed, AppColors.auroraOrange])), child: const Center(child: Text('Z', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)))),
-          const SizedBox(width: 8),
-          Container(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10), decoration: BoxDecoration(color: AppColors.otherMessage, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.borderColor, width: 0.5)), child: const Text('你好！今天的祷告很有力量，感谢分享 🙏', style: TextStyle(color: Colors.white, fontSize: 14, height: 1.4))),
-        ])),
+        const Icon(Icons.videocam, color: AppColors.textSecondary, size: 22),
+        const SizedBox(width: 16),
+        const Icon(Icons.phone, color: AppColors.textSecondary, size: 22),
+      ])))),
+      Expanded(child: ListView(padding: const EdgeInsets.all(16), children: [
+        _chatBubble('你好，最近灵修怎么样？', false, '14:30'),
         const SizedBox(height: 12),
-        // My message
-        Align(alignment: Alignment.centerRight, child: Container(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10), constraints: const BoxConstraints(maxWidth: 260), decoration: BoxDecoration(color: AppColors.myMessage, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.borderColor, width: 0.5)), child: const Text('阿弥陀佛，一起共修吧！明天早上7点有个冥想房间', style: TextStyle(color: Colors.white, fontSize: 14, height: 1.4))),
-        ),
+        _chatBubble('挺好的，每天都在坚持读经。你呢？', true, '14:32'),
         const SizedBox(height: 12),
-        // Other message with image placeholder
-        Align(alignment: Alignment.centerLeft, child: Row(crossAxisAlignment: CrossAxisAlignment.end, mainAxisSize: MainAxisSize.min, children: [
-          Container(width: 32, height: 32, decoration: const BoxDecoration(shape: BoxShape.circle, gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [AppColors.auroraRed, AppColors.auroraOrange])), child: const Center(child: Text('Z', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)))),
-          const SizedBox(width: 8),
-          Container(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10), decoration: BoxDecoration(color: AppColors.otherMessage, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.borderColor, width: 0.5)), child: const Text('好的，我已经加入了 👍', style: TextStyle(color: Colors.white, fontSize: 14, height: 1.4))),
-        ])),
+        _chatBubble('感谢主！一起加油', false, '14:33'),
+      ])),
+      Container(decoration: BoxDecoration(color: AppColors.headerBg, border: Border(top: BorderSide(color: AppColors.borderColor, width: 0.5))), padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), child: SafeArea(top: false, child: Row(children: [
+        const Icon(Icons.add_circle_outline, color: AppColors.textSecondary, size: 24),
+        const SizedBox(width: 8),
+        Expanded(child: Container(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10), decoration: BoxDecoration(color: AppColors.inputBg, borderRadius: BorderRadius.circular(20)), child: const Text('输入消息...', style: TextStyle(color: AppColors.textPlaceholder, fontSize: 14)))),
+        const SizedBox(width: 8),
+        const Icon(Icons.emoji_emotions_outlined, color: AppColors.textSecondary, size: 24),
+        const SizedBox(width: 8),
+        Container(width: 32, height: 32, decoration: BoxDecoration(gradient: AppColors.auroraGradient, borderRadius: BorderRadius.circular(16)), child: const Icon(Icons.send, color: Colors.white, size: 16)),
       ]))),
-      // Input bar
-      Container(
-        decoration: BoxDecoration(color: AppColors.headerBg, border: Border(top: BorderSide(color: AppColors.borderColor, width: 0.5))),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        child: SafeArea(top: false, child: Row(children: [
-          const Icon(Icons.add_circle_outline, color: AppColors.textSecondary, size: 24),
-          const SizedBox(width: 8),
-          Expanded(child: Container(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10), decoration: BoxDecoration(color: AppColors.inputBg, borderRadius: BorderRadius.circular(20)), child: const Text('输入消息...', style: TextStyle(color: AppColors.textPlaceholder, fontSize: 14)))),
-          const SizedBox(width: 8),
-          const Icon(Icons.emoji_emotions_outlined, color: AppColors.textSecondary, size: 24),
-          const SizedBox(width: 8),
-          Container(width: 32, height: 32, decoration: BoxDecoration(gradient: AppColors.auroraGradient, borderRadius: BorderRadius.circular(16)), child: const Icon(Icons.send, color: Colors.white, size: 16)),
-        ]),
-      ),
-    ])),
+    ]),
   );
 }

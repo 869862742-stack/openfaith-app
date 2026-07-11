@@ -372,13 +372,12 @@ Widget _buildBookItem(String title, String religion, String desc) {
       Text(title, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600)),
       const SizedBox(height: 2),
       Text('$religion · $desc', style: const TextStyle(color: AppColors.textWeak, fontSize: 12)),
-    ]),
+    ])),
     const Icon(Icons.chevron_right, color: AppColors.textWeak, size: 20),
   ])));
 }
 
 Widget _buildLearnCalendar() {
-  final now = DateTime(2026, 7, 11);
   return Scaffold(
     backgroundColor: AppColors.bgColor,
     body: Column(children: [
@@ -386,17 +385,15 @@ Widget _buildLearnCalendar() {
       _buildTabBar(['宗教', '书库', '日历'], 2),
       Expanded(child: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(children: [
         Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: AppColors.cardBg, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.borderColor, width: 0.5)), child: Column(children: [
-          const Row(children: [Icon(Icons.chevron_left, color: AppColors.textSecondary), Expanded(child: Center(child: Text('2026年7月', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)))), Icon(Icons.chevron_right, color: AppColors.textSecondary)]),
+          const Row(children: [
+            Icon(Icons.chevron_left, color: AppColors.textSecondary),
+            Expanded(child: Center(child: Text('2026年7月', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)))),
+            Icon(Icons.chevron_right, color: AppColors.textSecondary),
+          ]),
           const SizedBox(height: 16),
           Row(children: ['日', '一', '二', '三', '四', '五', '六'].map((d) => Expanded(child: Center(child: Text(d, style: const TextStyle(color: AppColors.textWeak, fontSize: 12))))).toList()),
-          const SizedBox(height: 8),
-          ...List.generate(5, (week) => Row(children: List.generate(7, (day) {
-            final dayNum = week * 7 + day - 2;
-            final isValid = dayNum >= 1 && dayNum <= 31;
-            final isToday = isValid && dayNum == 11;
-            final isSelected = isValid && dayNum == 15;
-            return Expanded(child: Container(height: 36, decoration: BoxDecoration(shape: isValid ? BoxShape.circle : BoxShape.rectangle, color: isToday ? AppColors.auroraBlue.withOpacity(0.3) : isSelected ? AppColors.inputBg : null, border: isToday ? Border.all(color: AppColors.auroraBlue, width: 1.5) : null), child: Center(child: Text(isValid ? '$dayNum' : '', style: TextStyle(color: isToday ? Colors.white : isValid ? AppColors.textSecondary : AppColors.textPlaceholder, fontSize: 13, fontWeight: isToday ? FontWeight.bold : FontWeight.normal)))));
-          }))),
+          const SizedBox(height: 12),
+          const Text('日历内容区域', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
         ])),
         const SizedBox(height: 20),
         const Text('今日灵修', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
@@ -406,7 +403,7 @@ Widget _buildLearnCalendar() {
           const SizedBox(height: 8),
           const Text('耶和华是我的牧者，我必不至缺乏。他使我躺卧在青草地上，领我在可安歇的水边。', style: TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.5)),
         ]))),
-      ])))),
+      ]))),
     ]),
     bottomNavigationBar: _buildBottomNav(1),
   );
