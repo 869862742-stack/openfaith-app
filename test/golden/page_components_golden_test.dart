@@ -365,21 +365,20 @@ void main() {
             body: Center(
               child: SizedBox(
                 width: 360,
-                child: GlassCard(
-                  child: Column(
+                child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      _buildSettingsItem(Icons.person, '个人资料', '编辑头像、昵称等'),
+                      _buildSettingsCard(Icons.person, '个人资料', '编辑头像、昵称等'),
                       const SizedBox(height: 4),
-                      _buildSettingsItem(Icons.security, '账号安全', '密码、登录设备'),
+                      _buildSettingsCard(Icons.security, '账号安全', '密码、登录设备'),
                       const SizedBox(height: 4),
-                      _buildSettingsItem(Icons.notifications, '通知设置', '推送、消息提醒'),
+                      _buildSettingsCard(Icons.notifications, '通知设置', '推送、消息提醒'),
                       const SizedBox(height: 4),
-                      _buildSettingsItem(Icons.palette, '显示设置', '主题、字体大小'),
+                      _buildSettingsCard(Icons.palette, '显示设置', '主题、字体大小'),
                       const SizedBox(height: 4),
-                      _buildSettingsItem(Icons.language, '语言', '简体中文'),
+                      _buildSettingsCard(Icons.language, '语言', '简体中文'),
                       const SizedBox(height: 4),
-                      _buildSettingsItem(Icons.info, '关于', '版本 1.0.0'),
+                      _buildSettingsCard(Icons.info, '关于', '版本 1.0.0'),
                     ],
                   ),
                 ),
@@ -548,6 +547,33 @@ Widget _buildSettingsItem(IconData icon, String title, String subtitle) {
               Text(title, style: const TextStyle(color: Colors.white, fontSize: 15)),
               const SizedBox(height: 2),
               Text(subtitle, style: const TextStyle(color: AppColors.textWeak, fontSize: 12)),
+            ],
+          ),
+        ),
+        const Icon(Icons.chevron_right, color: AppColors.textWeak, size: 20),
+      ],
+    ),
+  );
+}
+
+Widget _buildSettingsCard(IconData icon, String title, String subtitle) {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+    decoration: BoxDecoration(
+      color: AppColors.inputBg,
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Row(
+      children: [
+        Icon(icon, color: AppColors.textSecondary, size: 22),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: const TextStyle(color: Colors.white, fontSize: 15)),
+              const SizedBox(height: 2),
+              Text(subtitle, style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
             ],
           ),
         ),

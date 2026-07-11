@@ -520,12 +520,28 @@ Widget _buildSettingsPreferences() {
 }
 
 Widget _tagChip(String label, bool selected, {bool isBlock = false}) {
+  if (isBlock) {
+    return Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), decoration: BoxDecoration(
+      color: AppColors.error.withOpacity(0.15),
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: AppColors.error.withOpacity(0.3), width: 0.5),
+    ), child: Text(label, style: TextStyle(color: AppColors.error, fontSize: 13)));
+  }
+  if (selected) {
+    return Container(
+      padding: const EdgeInsets.all(1),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), gradient: AppColors.auroraGradientWithOpacity(0.6)),
+      child: Container(padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5), decoration: BoxDecoration(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(15),
+      ), child: Text(label, style: const TextStyle(color: Colors.white, fontSize: 13))),
+    );
+  }
   return Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), decoration: BoxDecoration(
-    gradient: selected && !isBlock ? AppColors.auroraGradientWithOpacity(0.3) : null,
-    color: selected && !isBlock ? null : isBlock ? AppColors.error.withOpacity(0.15) : AppColors.inputBg,
+    color: AppColors.inputBg,
     borderRadius: BorderRadius.circular(16),
-    border: selected ? null : Border.all(color: isBlock ? AppColors.error.withOpacity(0.3) : AppColors.borderColor, width: 0.5),
-  ), child: Text(label, style: TextStyle(color: selected && !isBlock ? Colors.white : isBlock ? AppColors.error : AppColors.textSecondary, fontSize: 13)));
+    border: Border.all(color: AppColors.borderColor, width: 0.5),
+  ), child: Text(label, style: TextStyle(color: AppColors.textSecondary, fontSize: 13)));
 }
 
 Widget _buildSettingsAbout() {
