@@ -8,7 +8,7 @@ void main() {
     await tester.pumpWidget(const MaterialApp(home: Scaffold(
       backgroundColor: AppColors.bgColor,
       body: SafeArea(child: Text('Home')),
-    ))));
+    )));
     await expectLater(find.byType(Scaffold), matchesGoldenFile('goldens/page_home.png'));
   });
 }

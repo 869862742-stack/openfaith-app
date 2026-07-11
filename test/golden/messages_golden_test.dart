@@ -7,7 +7,7 @@ void main() {
     await tester.pumpWidget(const MaterialApp(home: Scaffold(
       backgroundColor: AppColors.bgColor,
       body: SafeArea(child: Center(child: Text('消息', style: TextStyle(color: Colors.white, fontSize: 24)))),
-    ))));
+    )));
     await expectLater(find.byType(Scaffold), matchesGoldenFile('goldens/page_messages.png'));
   });
 
@@ -15,7 +15,7 @@ void main() {
     await tester.pumpWidget(const MaterialApp(home: Scaffold(
       backgroundColor: AppColors.bgColor,
       body: SafeArea(child: Center(child: Text('聊天', style: TextStyle(color: Colors.white, fontSize: 24)))),
-    ))));
+    )));
     await expectLater(find.byType(Scaffold), matchesGoldenFile('goldens/page_chat.png'));
   });
 }

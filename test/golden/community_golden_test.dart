@@ -7,7 +7,7 @@ void main() {
     await tester.pumpWidget(const MaterialApp(home: Scaffold(
       backgroundColor: AppColors.bgColor,
       body: SafeArea(child: Center(child: Text('社区公约', style: TextStyle(color: Colors.white, fontSize: 24)))),
-    ))));
+    )));
     await expectLater(find.byType(Scaffold), matchesGoldenFile('goldens/page_community_rules.png'));
   });
 
@@ -15,7 +15,7 @@ void main() {
     await tester.pumpWidget(const MaterialApp(home: Scaffold(
       backgroundColor: AppColors.bgColor,
       body: SafeArea(child: Center(child: Text('意见反馈', style: TextStyle(color: Colors.white, fontSize: 24)))),
-    ))));
+    )));
     await expectLater(find.byType(Scaffold), matchesGoldenFile('goldens/page_feedback.png'));
   });
 }
