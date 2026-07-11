@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/auth_service.dart';
 import 'heating_records_screen.dart';
@@ -18,6 +19,41 @@ import 'widgets/level_benefits_dialog.dart';
 // 网页版 Profile.tsx 精确还原
 // 所有颜色引用 AppColors，所有尺寸从网页版 CSS 提取
 // ═══════════════════════════════════════════════════════
+
+
+// 网站静态资源基础URL（与网页版 defaultImages.ts 对齐）
+const _kWebAssetsBase = 'https://openfaithhub.com';
+const _kAvatarNames = ['red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'purple',
+  'rose', 'tangerine', 'gold', 'lime', 'aqua', 'sky', 'violet'];
+const _kBgNames = ['default', 'deep', 'indigo', 'violet', 'ocean'];
+
+/// 根据用户ID生成确定性的默认头像URL（与网页版 getDefaultAvatarUrl 一致）
+String _getDefaultAvatarUrl(String seed) {
+  if (seed.isEmpty) seed = 'default';
+  int hash = 0;
+  for (int i = 0; i < seed.length; i++) {
+    hash = seed.codeUnitAt(i) + ((hash << 5) - hash);
+  }
+  final idx = hash.abs() % _kAvatarNames.length;
+  return '$_kWebAssetsBase/images/avatars/default-${_kAvatarNames[idx]}.svg';
+}
+
+/// 解析头像URL：有自定义返回自定义，否则返回默认（与网页版 resolveAvatarUrl 一致）
+String _resolveAvatarUrl(String? avatarUrl, String seed) {
+  if (avatarUrl != null && avatarUrl.trim().isNotEmpty) return avatarUrl;
+  return _getDefaultAvatarUrl(seed);
+}
+
+/// 根据用户ID生成确定性的默认背景URL
+String _getDefaultBackgroundUrl(String seed) {
+  if (seed.isEmpty) seed = 'default';
+  int hash = 0;
+  for (int i = 0; i < seed.length; i++) {
+    hash = seed.codeUnitAt(i) + ((hash << 5) - hash);
+  }
+  final idx = hash.abs() % _kBgNames.length;
+  return '$_kWebAssetsBase/images/backgrounds/default-${_kBgNames[idx]}.svg';
+}
 
 /// 头像颜色映射（与网页版 AVATAR_COLOR_MAP 一致）
 const Map<String, Color> _avatarColorMap = {
@@ -415,10 +451,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ? _profile!['nickname'] as String
         : (_profile?['username'] as String?) ?? '用户';
     final username = _profile?['username'] as String? ?? '';
-    final avatarUrl = _profile?['avatar_url'] as String?;
+    final userIdForAvatar = _userId ?? 'default';
+    final avatarUrl = _resolveAvatarUrl(_profile?['avatar_url'] as String?, userIdForAvatar);
     final bio = _profile?['bio'] as String? ?? '';
     final faithTag = _profile?['faith_tag'] as String? ?? '寻求者';
-    final backgroundUrl = _profile?['background_url'] as String?;
+    final rawBgUrl = _profile?['background_url'] as String?;
+    final backgroundUrl = (rawBgUrl != null && rawBgUrl.trim().isNotEmpty) ? rawBgUrl : _getDefaultBackgroundUrl(_userId ?? 'default');
 
     return Scaffold(
       backgroundColor: AppColors.bgColor,
@@ -465,14 +503,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               // 背景图 or 星空背景
               Positioned.fill(
                 child: backgroundUrl != null && backgroundUrl.isNotEmpty
-                    ? CachedNetworkImage(
-                        imageUrl: backgroundUrl,
+                    ? _buildNetworkImage(
+                        backgroundUrl,
                         fit: BoxFit.cover,
-                        placeholder: (_, __) => Container(
-                          color: AppColors.bgColor,
-                          child: const CustomPaint(painter: _StarfieldPainter(), size: Size.infinite),
-                        ),
-                        errorWidget: (_, __, ___) => Container(
+                        placeholder: Container(
                           color: AppColors.bgColor,
                           child: const CustomPaint(painter: _StarfieldPainter(), size: Size.infinite),
                         ),
@@ -758,6 +792,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // ═══════════════════════════════════════════════════════
   // Avatar（网页版: w-24 h-24 rounded-full + 彩色渐变边框）
   // ═══════════════════════════════════════════════════════
+
+  /// 智能图片加载：SVG 用 SvgPicture.network，其他用 CachedNetworkImage
+  Widget _buildNetworkImage(String url, {double? width, double? height, BoxFit fit = BoxFit.cover, Widget? placeholder, Widget? errorWidget}) {
+    final isSvg = url.toLowerCase().endsWith('.svg');
+    if (isSvg) {
+      return SvgPicture.network(
+        url,
+        width: width,
+        height: height,
+        fit: fit,
+        placeholderBuilder: placeholder != null ? (_) => placeholder : null,
+      );
+    }
+    return CachedNetworkImage(
+      imageUrl: url,
+      width: width,
+      height: height,
+      fit: fit,
+      placeholder: placeholder != null ? (_, __) => placeholder : null,
+      errorWidget: errorWidget != null ? (_, __, ___) => errorWidget : (placeholder != null ? (_, __, ___) => placeholder : null),
+    );
+  }
+
   Widget _buildAvatar(String? avatarUrl) {
     return GestureDetector(
       onTap: () {
@@ -797,11 +854,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           child: ClipOval(
             child: avatarUrl != null && avatarUrl.isNotEmpty
-                ? CachedNetworkImage(
-                    imageUrl: avatarUrl,
+                ? _buildNetworkImage(
+                    avatarUrl,
+                    width: 90, height: 90,
                     fit: BoxFit.cover,
-                    placeholder: (_, __) => _avatarPlaceholder(),
-                    errorWidget: (_, __, ___) => _avatarPlaceholder(),
+                    placeholder: _avatarPlaceholder(),
                   )
                 : _avatarPlaceholder(),
           ),

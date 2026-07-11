@@ -223,19 +223,12 @@ class _SidebarState extends State<Sidebar>
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            ShaderMask(
-                              shaderCallback: (bounds) => const LinearGradient(
-                                colors: AppColors.rainbowColors,
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ).createShader(bounds),
-                              child: const Text(
-                                'OpenFaith',
-                                style: TextStyle(
-                                  color: AppColors.textPrimary,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                            const Text(
+                              'OpenFaith',
+                              style: TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                             GestureDetector(
@@ -406,28 +399,14 @@ class _SidebarState extends State<Sidebar>
             ),
             child: Row(
               children: [
-                ShaderMask(
-                  shaderCallback: (bounds) => const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: AppColors.rainbowColors,
-                  ).createShader(bounds),
-                  child: Icon(item.icon, color: AppColors.textPrimary, size: 20),
-                ),
+                Icon(item.icon, color: AppColors.textSecondary, size: 20),
                 const SizedBox(width: 16),
-                ShaderMask(
-                  shaderCallback: (bounds) => const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: AppColors.rainbowColors,
-                  ).createShader(bounds),
-                  child: Text(
-                    item.label,
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                    ),
+                Text(
+                  item.label,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 const Spacer(),
