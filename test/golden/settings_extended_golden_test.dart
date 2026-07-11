@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:openfaith_app/theme/app_colors.dart';
 import 'package:openfaith_app/widgets/glass_card.dart';
 import 'package:openfaith_app/widgets/aurora_button.dart';
+import 'package:openfaith_app/widgets/animated_starfield.dart';
 
 
 /// Settings Extended Pages Golden Tests
@@ -333,8 +334,8 @@ void main() {
 }
 
 Widget _buildSettings() {
-  return Scaffold(
-    backgroundColor: AppColors.bgColor,
+  return AnimatedStarfield(child: Scaffold(
+    backgroundColor: Colors.transparent,
     body: Column(children: [
       _buildHeader('设置'),
       Expanded(child: ListView(padding: const EdgeInsets.all(16), children: [
@@ -355,7 +356,7 @@ Widget _buildSettings() {
         _buildSettingsCard(Icons.logout, '退出登录', destructive: true),
       ])),
     ]),
-  );
+  ));
 }
 
 Widget _buildSettingsProfile() {
