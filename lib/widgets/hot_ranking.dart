@@ -80,13 +80,18 @@ class _HotRankingState extends State<HotRanking> {
     try {
       final res = await _supabase
           .from('posts')
-          .select('id,title,views_count,heat_count,comments_count,shares_count,favorites_count,created_at')
+          .select('id,title,tags,views_count,heat_count,comments_count,shares_count,favorites_count,created_at')
           .eq('status', 'published')
-          .neq('is_group_chat', true)
           .order('heat_count', ascending: false)
-          .limit(20);
+          .limit(30);
       if (res.isNotEmpty) {
-        final withHot = res.map((p) => {...p, 'hotValue': _calcHotValue(p)}).toList();
+        // 客户端过滤群聊（对齐网页版 isGroupChat 逻辑）
+        final notesOnly = res.where((p) {
+          final tags = p['tags'];
+          if (tags is List) return !tags.contains('__group_chat__');
+          return true;
+        }).toList();
+        final withHot = notesOnly.map((p) => {...p, 'hotValue': _calcHotValue(p)}).toList();
         withHot.sort((a, b) => (b['hotValue'] as double).compareTo(a['hotValue'] as double));
         final top10 = withHot.where((p) => (p['hotValue'] as double) > 0).take(10).toList();
         if (!mounted) return;
@@ -119,9 +124,8 @@ class _HotRankingState extends State<HotRanking> {
 
       var baseQuery = _supabase
           .from('posts')
-          .select('id,title,views_count,heat_count,comments_count,shares_count,favorites_count,created_at')
-          .eq('status', 'published')
-          .neq('is_group_chat', true);
+          .select('id,title,tags,views_count,heat_count,comments_count,shares_count,favorites_count,created_at')
+          .eq('status', 'published');
 
       if (startDate != null) {
         baseQuery = baseQuery.gte('created_at', startDate.toIso8601String());
@@ -129,9 +133,15 @@ class _HotRankingState extends State<HotRanking> {
 
       final res = await baseQuery
           .order('heat_count', ascending: false)
-          .limit(50);
+          .limit(60);
       if (res.isNotEmpty) {
-        final withHot = res.map((p) => {...p, 'hotValue': _calcHotValue(p)}).toList();
+        // 客户端过滤群聊（对齐网页版 isGroupChat 逻辑）
+        final notesOnly = res.where((p) {
+          final tags = p['tags'];
+          if (tags is List) return !tags.contains('__group_chat__');
+          return true;
+        }).toList();
+        final withHot = notesOnly.map((p) => {...p, 'hotValue': _calcHotValue(p)}).toList();
         withHot.sort((a, b) => (b['hotValue'] as double).compareTo(a['hotValue'] as double));
         if (!mounted) return;
         setState(() => _hotPosts = withHot.cast<Map<String, dynamic>>());
