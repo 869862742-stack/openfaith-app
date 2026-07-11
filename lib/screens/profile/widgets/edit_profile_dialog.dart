@@ -456,17 +456,21 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                         onTap: _isSaving ? null : _handleSave,
                         child: Container(
                           width: double.infinity, height: 48, alignment: Alignment.center,
+                          padding: const EdgeInsets.all(1),
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            gradient: _isSaving ? null : const LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [AppColors.auroraRed, AppColors.auroraPurple]),
-                            color: _isSaving ? AppColors.textMuted : null,
+                            borderRadius: BorderRadius.circular(13),
+                            gradient: _isSaving ? null : AppColors.auroraGradient,
                           ),
-                          child: _isSaving
-                              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.textPrimary))
-                              : const Text('保存修改', style: TextStyle(color: AppColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w600)),
+                          child: Container(
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              color: _isSaving ? AppColors.textMuted : AppColors.bgColor,
+                            ),
+                            child: _isSaving
+                                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.textPrimary))
+                                : const Text('保存修改', style: TextStyle(color: AppColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w600)),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -531,6 +535,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
         onTap: () => onChanged(!value),
         child: Container(
           width: 48, height: 26,
+          padding: value ? const EdgeInsets.all(1.5) : EdgeInsets.zero,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(13),
             gradient: value ? AppColors.auroraGradient : null,
@@ -538,6 +543,16 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
             border: value ? null : Border.all(color: AppColors.borderColor),
           ),
           child: Stack(children: [
+            // 背景层：开启时为内部实色
+            if (value)
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(11.5),
+                    color: AppColors.bgColor,
+                  ),
+                ),
+              ),
             AnimatedPositioned(
               duration: const Duration(milliseconds: 200),
               left: value ? 24 : 2, top: 2,
@@ -563,24 +578,32 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
         onTap: () => setState(() => _editGender = value),
         child: Container(
           height: 40,
+          padding: isSelected ? const EdgeInsets.all(1) : EdgeInsets.zero,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(isSelected ? 11 : 10),
             gradient: isSelected ? AppColors.auroraGradient : null,
             color: isSelected ? null : AppColors.background,
             border: isSelected ? null : Border.all(color: AppColors.borderColor),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 16, color: isSelected ? AppColors.textPrimary : AppColors.textSecondary),
-              const SizedBox(width: 4),
-              Text(label, style: TextStyle(
-                color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
-                fontSize: 13,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-              )),
-            ],
-          ),
+          child: isSelected ? Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              color: AppColors.background,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 16, color: AppColors.textPrimary),
+                const SizedBox(width: 4),
+                Text(label, style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                )),
+              ],
+            ),
+          ) : null,
+
         ),
       ),
     );

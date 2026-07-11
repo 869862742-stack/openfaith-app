@@ -171,12 +171,19 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
     return GestureDetector(
       onTap: onPressed,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.all(1),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(13),
           gradient: AppColors.auroraGradient,
         ),
-        child: Center(child: child),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 19),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            color: AppColors.bgColor,
+          ),
+          child: Center(child: child),
+        ),
       ),
     );
   }
@@ -561,18 +568,25 @@ class _GreetingDialog extends StatelessWidget {
               onTap: onSend,
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                padding: const EdgeInsets.all(1),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(13),
                   gradient: AppColors.auroraGradient,
                 ),
-                child: const Center(
-                  child: Text(
-                    '发送好友请求',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 13),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    color: AppColors.bgColor,
+                  ),
+                  child: const Center(
+                    child: Text(
+                      '发送好友请求',
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),

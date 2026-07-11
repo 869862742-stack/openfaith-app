@@ -179,7 +179,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     try {
-      // ── SWR cache layer for user profile ──
+      // ── 强制清除旧缓存，确保 avatar_url/background_url 等字段是最新的 ──
+      await ApiCache.instance.invalidate('profile:$userId');
+
+      // ── SWR cache layer for user profile ─
       final response = await ApiCache.instance.staleWhileRevalidate<Map<String, dynamic>>(
         'profile:$userId',
         () async {
@@ -667,12 +670,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     );
                                   },
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                    padding: const EdgeInsets.all(1),
                                     decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(12),
+                                      borderRadius: BorderRadius.circular(13),
                                       gradient: AppColors.auroraGradient,
                                     ),
-                                    child: const Text('复制链接', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 23, vertical: 11),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(12),
+                                        color: AppColors.bgColor,
+                                      ),
+                                      child: const Text('复制链接', style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold)),
+                                    ),
                                   ),
                                 ),
                               ],
@@ -803,6 +813,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         height: height,
         fit: fit,
         placeholderBuilder: placeholder != null ? (_) => placeholder : null,
+        errorBuilder: errorWidget != null ? (_, __, ___) => errorWidget! : (placeholder != null ? (_, __, ___) => placeholder : const SizedBox.shrink()),
       );
     }
     return CachedNetworkImage(
@@ -811,7 +822,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       height: height,
       fit: fit,
       placeholder: placeholder != null ? (_, __) => placeholder : null,
-      errorWidget: errorWidget != null ? (_, __, ___) => errorWidget : (placeholder != null ? (_, __, ___) => placeholder : null),
+      errorWidget: errorWidget != null ? (_, __, ___) => errorWidget : (placeholder != null ? (_, __, ___) => placeholder : const SizedBox.shrink()),
     );
   }
 
@@ -1566,17 +1577,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Container(
                   width: double.infinity,
                   height: 48,
+                  padding: const EdgeInsets.all(1),
                   decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(13),
                     gradient: AppColors.auroraGradient,
-                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Center(
-                    child: Text(
-                      _isSaving ? '保存中...' : '保存修改',
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      color: AppColors.bgColor,
+                    ),
+                    child: Center(
+                      child: Text(
+                        _isSaving ? '保存中...' : '保存修改',
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
                   ),

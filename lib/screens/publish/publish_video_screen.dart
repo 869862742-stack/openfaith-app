@@ -134,26 +134,33 @@ class _PublishVideoScreenState extends State<PublishVideoScreen> {
                                 }
                               });
                             },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                              decoration: isSelected
-                                  ? BoxDecoration(
+                            child: isSelected
+                              ? Container(
+                                  padding: const EdgeInsets.all(1),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(21),
+                                    gradient: AppColors.auroraGradient,
+                                  ),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 9),
+                                    decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(20),
-                                      gradient: AppColors.auroraGradient,
-                                    )
-                                  : BoxDecoration(
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(color: AppColors.borderDefault),
-                                      color: AppColors.cardBg,
+                                      color: AppColors.bgColor,
                                     ),
-                              child: Text(
-                                '#$tag',
-                                style: TextStyle(
-                                  color: isSelected ? Colors.white : AppColors.textSecondary,
-                                  fontSize: 14,
+                                    child: Text('#$tag',
+                                      style: const TextStyle(color: AppColors.textPrimary, fontSize: 14)),
+                                  ),
+                                )
+                              : Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(color: AppColors.borderDefault),
+                                    color: AppColors.cardBg,
+                                  ),
+                                  child: Text('#$tag',
+                                    style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
                                 ),
-                              ),
-                            ),
                           );
                         }).toList(),
                       ),
@@ -178,9 +185,22 @@ class _PublishVideoScreenState extends State<PublishVideoScreen> {
                       child: Ink(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
-                          gradient: AppColors.auroraGradient,
+                          color: AppColors.bgColor,
                         ),
-                        child: const Center(child: Text('确认', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold))),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(11),
+                            gradient: AppColors.auroraGradient,
+                          ),
+                          padding: const EdgeInsets.all(1.5),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(9.5),
+                              color: AppColors.bgColor,
+                            ),
+                            child: const Center(child: Text('确认', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold))),
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -249,20 +269,27 @@ class _PublishVideoScreenState extends State<PublishVideoScreen> {
                     GestureDetector(
                       onTap: _publishing ? null : _publish,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                        padding: const EdgeInsets.all(1),
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(17),
                           gradient: AppColors.auroraGradient,
                         ),
-                        child: _publishing
-                            ? const SizedBox(
-                                width: 16, height: 16,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.textPrimary))
-                            : const Text('发布',
-                                style: TextStyle(
-                                    color: AppColors.textPrimary,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600)),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            color: AppColors.bgColor,
+                          ),
+                          child: _publishing
+                              ? const SizedBox(
+                                  width: 16, height: 16,
+                                  child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.textPrimary))
+                              : const Text('发布',
+                                  style: TextStyle(
+                                      color: AppColors.textPrimary,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600)),
+                        ),
                       ),
                     ),
                   ],

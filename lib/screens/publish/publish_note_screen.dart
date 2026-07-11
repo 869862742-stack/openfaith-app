@@ -421,12 +421,29 @@ class _PublishNoteScreenState extends State<PublishNoteScreen> {
                       child: Ink(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
-                          gradient: AppColors.auroraGradient,
+                          color: AppColors.bgColor,
+                          border: Border.all(
+                            width: 1.5,
+                            color: Colors.transparent,
+                          ),
                         ),
-                        child: Center(
-                          child: Text(
-                            tempSelected.isNotEmpty ? '确定 (${tempSelected.length})' : '确定',
-                            style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(11),
+                            gradient: AppColors.auroraGradient,
+                          ),
+                          padding: const EdgeInsets.all(1.5),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(9.5),
+                              color: AppColors.bgColor,
+                            ),
+                            child: Center(
+                              child: Text(
+                                tempSelected.isNotEmpty ? '确定 (${tempSelected.length})' : '确定',
+                                style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                            ),
                           ),
                         ),
                       ),

@@ -243,12 +243,19 @@ class _AddGroupScreenState extends State<AddGroupScreen> {
     return GestureDetector(
       onTap: onPressed,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.all(1),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(13),
           gradient: AppColors.auroraGradient,
         ),
-        child: Center(child: child),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 19),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            color: AppColors.bgColor,
+          ),
+          child: Center(child: child),
+        ),
       ),
     );
   }
@@ -572,18 +579,25 @@ class _AddGroupScreenState extends State<AddGroupScreen> {
           onTap: _createGroup,
           child: Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 14),
+            padding: const EdgeInsets.all(1),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(13),
               gradient: AppColors.auroraGradient,
             ),
-            child: const Center(
-              child: Text(
-                '提交申请',
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 13),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: AppColors.bgColor,
+              ),
+              child: const Center(
+                child: Text(
+                  '提交申请',
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),
