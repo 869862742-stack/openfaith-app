@@ -15,7 +15,7 @@ jobs:
       - run: flutter pub get
       
       # 构建 Flutter Web（HTML 渲染器，headless 截图可靠）
-      - run: flutter build web --release --web-renderer=html
+      - run: flutter build web --release
 
       # 安装 Chrome
       - run: |
@@ -65,9 +65,12 @@ jobs:
             sleep 2
           done
 
-      # 截取网页版（需要登录的页面先跳过）
+      # 截取网页版（先输入访问密码）
       - name: Take Web screenshots
         run: |
+          # First, get auth cookie by posting password
+          COOKIE_JAR=/tmp/cookies.txt
+          
           WEB_PAGES=(
             "https://openfaithhub.com"
             "https://openfaithhub.com/auth/login"
