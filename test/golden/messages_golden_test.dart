@@ -366,8 +366,8 @@ Widget _buildMessageItem(String name, String lastMsg, String time, String letter
       Row(children: [Expanded(child: Text(name, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600))), Text(time, style: const TextStyle(color: AppColors.textWeak, fontSize: 12))]),
       const SizedBox(height: 4),
       Text(lastMsg, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
-    ])),
-  ]));
+    ]),
+  ])));
 }
 
 Widget _buildFriendRequest(String name, String msg, String status) {
@@ -378,10 +378,10 @@ Widget _buildFriendRequest(String name, String msg, String status) {
       Text(name, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
       const SizedBox(height: 2),
       Text(msg, style: const TextStyle(color: AppColors.textWeak, fontSize: 12)),
-    ])),
+    ]),
     if (status == 'add') Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), decoration: BoxDecoration(gradient: AppColors.auroraGradient, borderRadius: BorderRadius.circular(16)), child: const Text('接受', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500))),
     if (status == 'pending') Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), decoration: BoxDecoration(color: AppColors.inputBg, borderRadius: BorderRadius.circular(16)), child: const Text('已发送', style: TextStyle(color: AppColors.textSecondary, fontSize: 12))),
-  ]));
+  ])));
 }
 
 Widget _buildFriendItem(String name, String faith, String status, String letter, List<Color> gradient) {
@@ -392,9 +392,9 @@ Widget _buildFriendItem(String name, String faith, String status, String letter,
       Text(name, style: const TextStyle(color: Colors.white, fontSize: 15)),
       const SizedBox(height: 2),
       Text('$faith · $status', style: const TextStyle(color: AppColors.textWeak, fontSize: 12)),
-    ])),
+    ]),
     const Icon(Icons.chat_bubble_outline, color: AppColors.textSecondary, size: 20),
-  ]));
+  ])));
 }
 
 Widget _buildGroupItem(String name, String members, String status, String letter, List<Color> gradient) {
@@ -405,9 +405,9 @@ Widget _buildGroupItem(String name, String members, String status, String letter
       Text(name, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600)),
       const SizedBox(height: 4),
       Text('$members · $status', style: const TextStyle(color: AppColors.textWeak, fontSize: 12)),
-    ])),
+    ]),
     const Icon(Icons.chevron_right, color: AppColors.textWeak, size: 20),
-  ]));
+  ])));
 }
 
 Widget _buildRoomCard(String name, String info, IconData icon) {

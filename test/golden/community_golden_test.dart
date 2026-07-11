@@ -319,8 +319,8 @@ Widget _buildCommunityRules() {
         ])))))),
         const SizedBox(height: 16),
         Center(child: Container(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), decoration: BoxDecoration(color: AppColors.hoverBgLight, borderRadius: BorderRadius.circular(20)), child: const Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.favorite, color: AppColors.auroraRed, size: 14), SizedBox(width: 6), Text('共建和谐社区', style: TextStyle(color: AppColors.textSecondary, fontSize: 12))]))),
-      ]))),
-    ]),
+      ])),
+    ]);
   );
 }
 
@@ -353,7 +353,7 @@ Widget _buildFeedback() {
         _buildInput('邮箱或手机号', Icons.contact_mail_outlined),
         const SizedBox(height: 32),
         Container(width: double.infinity, height: 48, decoration: BoxDecoration(gradient: AppColors.auroraGradient, borderRadius: BorderRadius.circular(12)), child: const Center(child: Text('提交反馈', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)))),
-      ]))),
+      ])),
     ]),
   );
 }

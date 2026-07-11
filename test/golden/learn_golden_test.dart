@@ -372,7 +372,7 @@ Widget _buildBookItem(String title, String religion, String desc) {
       Text(title, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600)),
       const SizedBox(height: 2),
       Text('$religion · $desc', style: const TextStyle(color: AppColors.textWeak, fontSize: 12)),
-    ])),
+    ]),
     const Icon(Icons.chevron_right, color: AppColors.textWeak, size: 20),
   ])));
 }

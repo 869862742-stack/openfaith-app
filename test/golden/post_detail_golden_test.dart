@@ -331,7 +331,7 @@ Widget _buildPostDetail() {
         const SizedBox(width: 8),
         Container(width: 32, height: 32, decoration: BoxDecoration(gradient: AppColors.auroraGradient, borderRadius: BorderRadius.circular(16)), child: const Icon(Icons.send, color: Colors.white, size: 16)),
       ]))),
-    ]),
+    ])),
   );
 }
 
