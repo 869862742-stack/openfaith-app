@@ -478,18 +478,38 @@ Widget _buildSettingsLanguage() {
     backgroundColor: AppColors.bgColor,
     body: Column(children: [
       _buildHeader('语言设置'),
-      Expanded(child: ListView(padding: const EdgeInsets.all(16), children: langs.map((l) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), margin: const EdgeInsets.only(bottom: 4),
-        decoration: BoxDecoration(color: AppColors.cardBg, borderRadius: BorderRadius.circular(12), border: Border.all(color: l[3] as bool ? AppColors.auroraBlue : AppColors.borderColor, width: l[3] as bool ? 1.5 : 0.5)),
-        child: Row(children: [
-          Text(l[0] as String, style: const TextStyle(fontSize: 20)),
-          const SizedBox(width: 12),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(l[1] as String, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500)),
-            Text(l[2] as String, style: const TextStyle(color: AppColors.textWeak, fontSize: 12)),
-          ])),
-          if (l[3] as bool) const Icon(Icons.check, color: AppColors.auroraBlue, size: 20),
-        ]),
+      Expanded(child: ListView(padding: const EdgeInsets.all(16), children: langs.map((l) => Padding(
+        padding: const EdgeInsets.only(bottom: 4),
+        child: l[3] as bool
+          ? Container(
+              padding: const EdgeInsets.all(1),
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: AppColors.auroraGradientWithOpacity(0.6)),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(color: AppColors.cardBg, borderRadius: BorderRadius.circular(11)),
+                child: Row(children: [
+                  Text(l[0] as String, style: const TextStyle(fontSize: 20)),
+                  const SizedBox(width: 12),
+                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text(l[1] as String, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500)),
+                    Text(l[2] as String, style: const TextStyle(color: AppColors.textWeak, fontSize: 12)),
+                  ])),
+                  const Icon(Icons.check, color: Colors.white, size: 20),
+                ]),
+              ),
+            )
+          : Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(color: AppColors.cardBg, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.borderColor, width: 0.5)),
+              child: Row(children: [
+                Text(l[0] as String, style: const TextStyle(fontSize: 20)),
+                const SizedBox(width: 12),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(l[1] as String, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500)),
+                  Text(l[2] as String, style: const TextStyle(color: AppColors.textWeak, fontSize: 12)),
+                ])),
+              ]),
+            ),
       )).toList())),
     ]),
   );
