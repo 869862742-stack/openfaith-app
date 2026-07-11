@@ -57,6 +57,23 @@ LinearGradient _diagonalGradient(Size size) {
   return LinearGradient(colors: _rainbowColors, transform: GradientRotation(0.785398));
 }
 
+/// 宗教名称 → 专属 Emoji 图标映射（对齐网页版）
+String _religionEmoji(String name) {
+  const map = {
+    '基督教': '\u271d\ufe0f', '伊斯兰教': '\u262a\ufe0f', '犹太教': '\u2721\ufe0f', '佛教': '\u2638\ufe0f',
+    '天主教': '\u271d\ufe0f', '印度教': '\ud83d\udd49\ufe0f', '道教': '\u262f\ufe0f', '锡克教': '\ud83e\udeaf',
+    '巴哈伊教': '\u2b50', '摩门教': '\ud83d\udc7c', '诺斯替宗教': '\ud83d\udc0d', '神道教': '\u26e9\ufe0f',
+    '耆那教': '\ud83e\udd1a', '德鲁兹教': '\u2b50', '约鲁巴宗教': '\ud83e\udd41', '伏都教': '\ud83d\udc80',
+    '雅兹迪教': '\ud83c\udf1e', '曼达安教': '\ud83c\udf0a', '琐罗亚斯德教': '\ud83d\udd25', '天理教': '\ud83c\udf38',
+    '毛利宗教': '\ud83c\udf3f', '高台教': '\ud83d\udc41\ufe0f', '新兴宗教': '\u2728', '其他': '\ud83d\udcff',
+  };
+  if (map.containsKey(name)) return map[name]!;
+  for (final entry in map.entries) {
+    if (name.contains(entry.key) || entry.key.contains(name)) return entry.value;
+  }
+  return '\ud83d\udcff';
+}
+
 class LearnScreen extends StatefulWidget {
   const LearnScreen({super.key});
   @override
@@ -361,11 +378,8 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(children: [
-                    // 8px rainbow gradient dot
-                    Container(width: 8, height: 8, decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: AppColors.auroraGradient,
-                    )),
+                    // 宗教专属 Emoji 图标（对齐网页版）
+                    Text(_religionEmoji(r.name), style: const TextStyle(fontSize: 20)),
                     const SizedBox(width: 8),
                     Expanded(child: Text(r.name,
                       style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500),
@@ -880,14 +894,21 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
         onTap: _showContributionDialog,
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 10),
+          padding: const EdgeInsets.all(1),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             gradient: AppColors.auroraGradient,
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 9),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(11),
+              color: AppColors.bgColor,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
               Icon(Icons.volunteer_activism, color: Colors.white, size: 16),
               const SizedBox(width: 6),
               const Text(
@@ -899,6 +920,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
                 ),
               ),
             ],
+            ),
           ),
         ),
       ),
