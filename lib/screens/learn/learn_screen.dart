@@ -57,21 +57,47 @@ LinearGradient _diagonalGradient(Size size) {
   return LinearGradient(colors: _rainbowColors, transform: GradientRotation(0.785398));
 }
 
-/// 宗教名称 → 专属 Emoji 图标映射（对齐网页版）
-String _religionEmoji(String name) {
-  const map = {
-    '基督教': '\u271d\ufe0f', '伊斯兰教': '\u262a\ufe0f', '犹太教': '\u2721\ufe0f', '佛教': '\u2638\ufe0f',
-    '天主教': '\u271d\ufe0f', '印度教': '\ud83d\udd49\ufe0f', '道教': '\u262f\ufe0f', '锡克教': '\ud83e\udeaf',
-    '巴哈伊教': '\u2b50', '摩门教': '\ud83d\udc7c', '诺斯替宗教': '\ud83d\udc0d', '神道教': '\u26e9\ufe0f',
-    '耆那教': '\ud83e\udd1a', '德鲁兹教': '\u2b50', '约鲁巴宗教': '\ud83e\udd41', '伏都教': '\ud83d\udc80',
-    '雅兹迪教': '\ud83c\udf1e', '曼达安教': '\ud83c\udf0a', '琐罗亚斯德教': '\ud83d\udd25', '天理教': '\ud83c\udf38',
-    '毛利宗教': '\ud83c\udf3f', '高台教': '\ud83d\udc41\ufe0f', '新兴宗教': '\u2728', '其他': '\ud83d\udcff',
+/// 宗教名称 → 彩色 Material Icon 图标（对齐网页版彩色图标风格）
+Widget _religionIcon(String name) {
+  // (icon, color) 映射
+  const Map<String, (IconData, Color)> iconMap = {
+    '基督教': (Icons.church, Color(0xFFFFD700)),
+    '天主教': (Icons.church, Color(0xFFFFD700)),
+    '伊斯兰教': (Icons.mosque, Color(0xFF4FC3F7)),
+    '犹太教': (Icons.synagogue, Color(0xFF64B5F6)),
+    '佛教': (Icons.self_improvement, Color(0xFFFFB300)),
+    '印度教': (Icons.temple_buddhist, Color(0xFFEF5350)),
+    '道教': (Icons.balance, Color(0xFF66BB6A)),
+    '锡克教': (Icons.temple_hindu, Color(0xFFAB47BC)),
+    '神道教': (Icons.temple_buddhist, Color(0xFFE57373)),
+    '巴哈伊教': (Icons.star, Color(0xFFFFD54F)),
+    '琐罗亚斯德教': (Icons.local_fire_department, Color(0xFFFF7043)),
+    '天理教': (Icons.flutter_dash, Color(0xFFF48FB1)),
+    '毛利宗教': (Icons.park, Color(0xFF81C784)),
+    '高台教': (Icons.visibility, Color(0xFFB0BEC5)),
+    '新兴宗教': (Icons.auto_awesome, Color(0xFFCE93D8)),
   };
-  if (map.containsKey(name)) return map[name]!;
-  for (final entry in map.entries) {
-    if (name.contains(entry.key) || entry.key.contains(name)) return entry.value;
+  
+  // 精确匹配
+  if (iconMap.containsKey(name)) {
+    final (icon, color) = iconMap[name]!;
+    return Icon(icon, color: color, size: 22);
   }
-  return '\ud83d\udcff';
+  // 模糊匹配
+  for (final entry in iconMap.entries) {
+    if (name.contains(entry.key) || entry.key.contains(name)) {
+      final (icon, color) = entry.value;
+      return Icon(icon, color: color, size: 22);
+    }
+  }
+  // 兜底：彩色圆点
+  return Container(
+    width: 14, height: 14,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      gradient: AppColors.auroraGradient,
+    ),
+  );
 }
 
 class LearnScreen extends StatefulWidget {
@@ -293,9 +319,9 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
               labelPadding: EdgeInsets.zero,
               tabAlignment: TabAlignment.fill,
               tabs: [
-                _buildTab('Religions', Icons.menu_book, 0),
-                _buildTab('Library', Icons.library_books, 1),
-                _buildTab('Calendar', Icons.calendar_today, 2),
+                _buildTab(context.tr('learn_tab_encyclopedia'), Icons.menu_book, 0),
+                _buildTab(context.tr('learn_tab_library'), Icons.library_books, 1),
+                _buildTab(context.tr('learn_tab_calendar'), Icons.calendar_today, 2),
               ],
             ),
           ),
@@ -379,7 +405,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
                 children: [
                   Row(children: [
                     // 宗教专属 Emoji 图标（对齐网页版）
-                    Text(_religionEmoji(r.name), style: const TextStyle(fontSize: 20)),
+                    _religionIcon(r.name),
                     const SizedBox(width: 8),
                     Expanded(child: Text(r.name,
                       style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500),
