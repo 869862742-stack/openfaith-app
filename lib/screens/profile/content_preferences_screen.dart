@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../theme/colors.dart';
+import '../../theme/app_colors.dart';
 
 class ContentPreferencesScreen extends StatefulWidget {
   const ContentPreferencesScreen({super.key});
@@ -363,23 +364,31 @@ class _ContentPreferencesScreenState extends State<ContentPreferencesScreen> {
     required Color textColor,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      // 外层：彩虹渐变边框
+      padding: const EdgeInsets.all(1),
       decoration: BoxDecoration(
-        color: color,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: borderColor, width: 0.5),
+        gradient: AppColors.auroraGradientWithOpacity(0.6),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(label,
-              style: TextStyle(color: textColor, fontSize: 12)),
-          const SizedBox(width: 4),
-          GestureDetector(
-            onTap: onRemove,
-            child: Icon(Icons.close, color: textColor, size: 12),
-          ),
-        ],
+      child: Container(
+        // 内层：透明背景
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(19),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(label,
+                style: TextStyle(color: textColor, fontSize: 12)),
+            const SizedBox(width: 4),
+            GestureDetector(
+              onTap: onRemove,
+              child: Icon(Icons.close, color: textColor, size: 12),
+            ),
+          ],
+        ),
       ),
     );
   }

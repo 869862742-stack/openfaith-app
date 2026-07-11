@@ -118,16 +118,10 @@ void main() {
                           ),
                         ),
                         const SizedBox(height: 24),
-                        Container(
+                        AuroraButton(
+                          text: '登录',
                           width: double.infinity,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            gradient: AppColors.auroraGradient,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Center(
-                            child: Text('登录', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
-                          ),
+                          borderRadius: 12,
                         ),
                       ],
                     ),
