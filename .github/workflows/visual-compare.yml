@@ -14,14 +14,15 @@ jobs:
           flutter-version: '3.44.5'
       - run: flutter pub get
       
-      # 构建 Flutter Web（HTML 渲染器，headless 截图可靠）
-      - run: flutter build web --release
+      # 构建 Flutter Web（HTML 渲染器）
+      - run: flutter build web --release --web-renderer=html
 
-      # 安装 Chrome
+      # 安装 Chrome + Puppeteer
       - run: |
           wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
           sudo dpkg -i google-chrome-stable_current_amd64.deb || sudo apt-get install -f -y
           google-chrome-stable --version
+          npm install -g puppeteer
 
       # 启动 Flutter Web 服务器
       - name: Start Flutter Web server
@@ -30,75 +31,85 @@ jobs:
           python3 -m http.server 8080 &
           echo "FLUTTER_PID=$!" >> $GITHUB_ENV
 
-      # 截图脚本
-      - name: Take screenshots
+      # 等待服务器就绪
+      - name: Wait for server
         run: |
-          mkdir -p screenshots/flutter screenshots/web
-          
-          PAGES=(
-            "/#/"
-            "/#/auth/login"
-            "/#/auth/register"
-            "/#/discover"
-            "/#/messages"
-            "/#/learning"
-            "/#/profile"
-          )
-          NAMES=(
-            "home"
-            "login"
-            "register"
-            "discover"
-            "messages"
-            "learning"
-            "profile"
-          )
-          
-          # 截取 Flutter Web
-          for i in "${!PAGES[@]}"; do
-            echo "Capturing Flutter: ${NAMES[$i]}"
-            timeout 30 google-chrome-stable --headless=new --no-sandbox --disable-gpu \
-              --screenshot=screenshots/flutter/${NAMES[$i]}.png \
-              --window-size=375,812 \
-              --virtual-time-budget=30000 \
-              "http://localhost:8080/${PAGES[$i]}" 2>/dev/null || true
-            sleep 2
+          for i in $(seq 1 30); do
+            curl -s http://localhost:8080/ > /dev/null && echo "Server ready" && break
+            sleep 1
           done
 
-      # 截取网页版（先输入访问密码）
-      - name: Take Web screenshots
+      # 用 Puppeteer 截图
+      - name: Take screenshots with Puppeteer
         run: |
-          # First, get auth cookie by posting password
-          COOKIE_JAR=/tmp/cookies.txt
+          mkdir -p screenshots/flutter screenshots/web
+
+          cat > screenshot.js << 'SCRIPT'
+          const puppeteer = require('puppeteer');
           
-          WEB_PAGES=(
-            "https://openfaithhub.com"
-            "https://openfaithhub.com/auth/login"
-            "https://openfaithhub.com/auth/register"
-            "https://openfaithhub.com/discover"
-            "https://openfaithhub.com/messages"
-            "https://openfaithhub.com/learning"
-            "https://openfaithhub.com/profile"
-          )
-          WEB_NAMES=(
-            "home"
-            "login"
-            "register"
-            "discover"
-            "messages"
-            "learning"
-            "profile"
-          )
+          (async () => {
+            const browser = await puppeteer.launch({
+              headless: 'new',
+              args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
+            });
+
+            const viewport = { width: 375, height: 812 };
+
+            const flutterPages = [
+              { url: 'http://localhost:8080/#/', name: 'home' },
+              { url: 'http://localhost:8080/#/auth/login', name: 'login' },
+              { url: 'http://localhost:8080/#/auth/register', name: 'register' },
+              { url: 'http://localhost:8080/#/discover', name: 'discover' },
+              { url: 'http://localhost:8080/#/messages', name: 'messages' },
+              { url: 'http://localhost:8080/#/learning', name: 'learning' },
+              { url: 'http://localhost:8080/#/profile', name: 'profile' },
+            ];
+
+            for (const p of flutterPages) {
+              console.log(`Flutter: ${p.name}...`);
+              const page = await browser.newPage();
+              await page.setViewport(viewport);
+              await page.goto(p.url, { waitUntil: 'networkidle0', timeout: 30000 });
+              await new Promise(r => setTimeout(r, 5000));
+              await page.screenshot({ path: `screenshots/flutter/${p.name}.png`, fullPage: false });
+              const fs = require('fs');
+              const stats = fs.statSync(`screenshots/flutter/${p.name}.png`);
+              console.log(`  -> saved (${p.name}.png, ${stats.size} bytes)`);
+              await page.close();
+            }
+
+            const webPages = [
+              { url: 'https://openfaithhub.com', name: 'home' },
+              { url: 'https://openfaithhub.com/auth/login', name: 'login' },
+              { url: 'https://openfaithhub.com/auth/register', name: 'register' },
+              { url: 'https://openfaithhub.com/discover', name: 'discover' },
+              { url: 'https://openfaithhub.com/messages', name: 'messages' },
+              { url: 'https://openfaithhub.com/learning', name: 'learning' },
+              { url: 'https://openfaithhub.com/profile', name: 'profile' },
+            ];
+
+            for (const p of webPages) {
+              console.log(`Web: ${p.name}...`);
+              const page = await browser.newPage();
+              await page.setViewport(viewport);
+              await page.goto(p.url, { waitUntil: 'networkidle0', timeout: 30000 });
+              await new Promise(r => setTimeout(r, 3000));
+              await page.screenshot({ path: `screenshots/web/${p.name}.png`, fullPage: false });
+              const fs = require('fs');
+              const stats = fs.statSync(`screenshots/web/${p.name}.png`);
+              console.log(`  -> saved (${p.name}.png, ${stats.size} bytes)`);
+              await page.close();
+            }
+
+            await browser.close();
+            console.log('All screenshots done!');
+          })();
+          SCRIPT
+
+          node screenshot.js
           
-          for i in "${!WEB_PAGES[@]}"; do
-            echo "Capturing Web: ${WEB_NAMES[$i]}"
-            timeout 30 google-chrome-stable --headless=new --no-sandbox --disable-gpu \
-              --screenshot=screenshots/web/${WEB_NAMES[$i]}.png \
-              --window-size=375,812 \
-              --virtual-time-budget=30000 \
-              "${WEB_PAGES[$i]}" 2>/dev/null || true
-            sleep 2
-          done
+          echo "=== File sizes ==="
+          ls -la screenshots/flutter/ screenshots/web/
 
       # 上传截图
       - name: Upload screenshots
