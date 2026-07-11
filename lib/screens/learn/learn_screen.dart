@@ -223,7 +223,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
 
   // ========== HEADER ==========
   Widget _buildHeader() {
-    String hint = ['Search religions...', 'Search books...', 'Search holidays...'][_tabController.index];
+    String hint = [context.tr('learn_search_religions'), context.tr('learn_search_books'), context.tr('learn_search_holidays')][_tabController.index];
     return Container(
       // Sticky header: headerBg + border-bottom
       decoration: BoxDecoration(
@@ -329,7 +329,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
   // ========== ENCYCLOPEDIA TAB ==========
   Widget _buildEncyclopediaTab() {
     if (_searchQuery.isNotEmpty) return _buildSearchResults();
-    if (_religions.isEmpty && !_loading) return Center(child: Text('No data', style: TextStyle(color: AppColors.textSecondary)));
+    if (_religions.isEmpty && !_loading) return Center(child: Text(context.tr('learn_no_data'), style: TextStyle(color: AppColors.textSecondary)));
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: GridView.builder(
@@ -390,7 +390,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
   // ========== SEARCH RESULTS ==========
   Widget _buildSearchResults() {
     final holidays = _filteredHolidays;
-    if (holidays.isEmpty) return Center(child: Text('No results', style: TextStyle(color: AppColors.textSecondary)));
+    if (holidays.isEmpty) return Center(child: Text(context.tr('learn_no_results'), style: TextStyle(color: AppColors.textSecondary)));
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: holidays.length,
@@ -408,13 +408,13 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildLibSubTab('Books', Icons.library_books, 0),
+            _buildLibSubTab(context.tr('learn_books'), Icons.library_books, 0),
             const SizedBox(width: 12),
-            _buildLibSubTab('Shelf', Icons.bookmark, 1),
+            _buildLibSubTab(context.tr('learn_shelf'), Icons.bookmark, 1),
             const SizedBox(width: 12),
-            _buildLibSubTab('Notes', Icons.edit_note, 2),
+            _buildLibSubTab(context.tr('learn_notes'), Icons.edit_note, 2),
             const SizedBox(width: 12),
-            _buildLibSubTab('History', Icons.history, 3),
+            _buildLibSubTab(context.tr('learn_history'), Icons.history, 3),
           ],
         ),
       ),
@@ -518,12 +518,12 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
           }),
           if (ungrouped.isNotEmpty) ...[
             const SizedBox(height: 8),
-            Text('Other Classics', style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600)),
+            Text(context.tr('learn_other_classics'), style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600)),
             const SizedBox(height: 12),
             ...ungrouped.map((b) => _buildBookCard(b)),
           ],
           if (topLevel.isEmpty && _books.isEmpty)
-            Center(child: Padding(padding: const EdgeInsets.all(32), child: Text('No books', style: TextStyle(color: AppColors.textSecondary)))),
+            Center(child: Padding(padding: const EdgeInsets.all(32), child: Text(context.tr('learn_no_books'), style: TextStyle(color: AppColors.textSecondary)))),
         ],
       ),
     );
@@ -536,9 +536,9 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
       children: [
         Icon(Icons.bookmark_border, color: AppColors.textPlaceholder, size: 48),
         const SizedBox(height: 12),
-        Text('Shelf empty', style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
+        Text(context.tr('learn_shelf_empty'), style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
         const SizedBox(height: 4),
-        Text('Add from Library', style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
+        Text(context.tr('learn_add_from_library'), style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
       ],
     ));
     final bBooks = _books.where((b) => _bookmarks.contains(b.id)).toList();
@@ -547,7 +547,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('My Shelf (${bBooks.length})', style: const TextStyle(color: AppColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w600)),
+          Text('${context.tr('learn_my_shelf')} (${bBooks.length})', style: const TextStyle(color: AppColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w600)),
           const SizedBox(height: 12),
           ...bBooks.map((book) {
             final progress = _readingProgress[book.id];
@@ -624,7 +624,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
                       }),
                       if (chTitle.isNotEmpty) ...[
                         const SizedBox(height: 4),
-                        Text('Reading: $chTitle', style: TextStyle(color: AppColors.textSecondary, fontSize: 11)),
+                        Text('${context.tr('learn_reading')}: $chTitle', style: TextStyle(color: AppColors.textSecondary, fontSize: 11)),
                       ],
                     ],
                   ],
@@ -644,7 +644,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
       children: [
         Icon(Icons.edit_note, color: AppColors.textPlaceholder, size: 48),
         const SizedBox(height: 12),
-        Text('No notes', style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
+        Text(context.tr('learn_no_notes'), style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
       ],
     ));
     return ListView.builder(
@@ -724,7 +724,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
       children: [
         Icon(Icons.history, color: AppColors.textPlaceholder, size: 48),
         const SizedBox(height: 12),
-        Text('No history', style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
+        Text(context.tr('learn_no_history'), style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
       ],
     ));
     return ListView.builder(
@@ -768,7 +768,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
                   children: [
                     Text(bTitle, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis),
                     const SizedBox(height: 2),
-                    Text(cTitle.isNotEmpty ? 'Reading: $cTitle' : '',
+                    Text(cTitle.isNotEmpty ? '${context.tr('learn_reading')}: $cTitle' : '',
                       style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
                     if (ts.isNotEmpty) Text(_formatTs(ts),
                       style: TextStyle(color: AppColors.textWeak, fontSize: 11)),
@@ -1157,12 +1157,12 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
           // Selected date holidays
           if (_selectedDate != null) _buildSelectedDateHolidays(),
           const SizedBox(height: 8),
-          Text('This Month', style: TextStyle(color: AppColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w600)),
+          Text(context.tr('learn_this_month'), style: TextStyle(color: AppColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w600)),
           const SizedBox(height: 12),
           if (_monthHolidays.isEmpty)
             Center(child: Padding(
               padding: const EdgeInsets.all(16),
-              child: Text('No holidays', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+              child: Text(context.tr('learn_no_holidays'), style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
             ))
           else
             ..._monthHolidays.map((h) => _buildHolidayListItem(h)),
@@ -1188,7 +1188,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
           Text('${_selectedDate!.month}/${_selectedDate!.day}', style: const TextStyle(color: AppColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w500)),
           const SizedBox(height: 8),
           if (holidays.isEmpty)
-            Text('None today', style: TextStyle(color: AppColors.textSecondary, fontSize: 13))
+            Text(context.tr('learn_none_today'), style: TextStyle(color: AppColors.textSecondary, fontSize: 13))
           else
             ...holidays.map((h) => Padding(
               padding: const EdgeInsets.only(bottom: 6),
@@ -1301,12 +1301,12 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
               ),
               const SizedBox(height: 12),
               Row(children: [
-                Text('Date: ', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+                Text(context.tr('learn_date'), style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
                 Text('${holiday.month}/${holiday.day}', style: const TextStyle(color: AppColors.textPrimary, fontSize: 13)),
               ]),
               const SizedBox(height: 8),
               Row(children: [
-                Text('Religion: ', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+                Text(context.tr('learn_religion_label'), style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
                 Text(holiday.religion, style: const TextStyle(color: AppColors.textPrimary, fontSize: 13)),
               ]),
               const SizedBox(height: 12),
@@ -1333,7 +1333,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Detail', style: TextStyle(color: AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w500)),
+                      Text(context.tr('learn_detail'), style: TextStyle(color: AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w500)),
                       const SizedBox(height: 8),
                       Text(holiday.detail, style: TextStyle(color: AppColors.textPrimary.withOpacity(0.7), fontSize: 13, height: 1.5)),
                     ],
@@ -1353,7 +1353,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Yi', style: TextStyle(color: AppColors.auroraGreen.withOpacity(0.8), fontSize: 12, fontWeight: FontWeight.w500)),
+                        Text(context.tr('learn_yi'), style: TextStyle(color: AppColors.auroraGreen.withOpacity(0.8), fontSize: 12, fontWeight: FontWeight.w500)),
                         const SizedBox(height: 4),
                         Text(holiday.yi, style: TextStyle(color: AppColors.textPrimary.withOpacity(0.7), fontSize: 13, height: 1.4)),
                       ],
@@ -1370,7 +1370,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Ji', style: TextStyle(color: AppColors.auroraRed.withOpacity(0.8), fontSize: 12, fontWeight: FontWeight.w500)),
+                        Text(context.tr('learn_ji'), style: TextStyle(color: AppColors.auroraRed.withOpacity(0.8), fontSize: 12, fontWeight: FontWeight.w500)),
                         const SizedBox(height: 4),
                         Text(holiday.ji, style: TextStyle(color: AppColors.textPrimary.withOpacity(0.7), fontSize: 13, height: 1.4)),
                       ],
@@ -1399,7 +1399,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Year', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
+            Text(context.tr('calendar_year'), style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             SizedBox(
               height: 240,
@@ -1443,7 +1443,7 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Month', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
+            Text(context.tr('calendar_month'), style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             SizedBox(
               height: 320,
@@ -1547,7 +1547,7 @@ class GroupDetailScreen extends StatelessWidget {
             if (groupBooks.isNotEmpty) ...[
               if (childGroups.isNotEmpty) ...[
                 const SizedBox(height: 8),
-                Text('Books', style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600)),
+                Text(context.tr('learn_books_title'), style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 12),
               ],
               ...groupBooks.map((b) => GestureDetector(
@@ -1595,7 +1595,7 @@ class GroupDetailScreen extends StatelessWidget {
             if (childGroups.isEmpty && groupBooks.isEmpty)
               Center(child: Padding(
                 padding: const EdgeInsets.all(32),
-                child: Text('No content', style: TextStyle(color: AppColors.textSecondary)),
+                child: Text(context.tr('learn_no_content'), style: TextStyle(color: AppColors.textSecondary)),
               )),
           ],
         ),
