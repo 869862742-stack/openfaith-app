@@ -850,12 +850,14 @@ class _MessagesScreenState extends State<MessagesScreen>
               GestureDetector(onTap: ip ? null : () => _acceptFriendRequest(rq['requestId'] as String),
                 child: LayoutBuilder(builder: (context, constraints) {
                     final size = Size(constraints.maxWidth, constraints.maxHeight);
-                    return Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    return Container(padding: const EdgeInsets.all(1),
                   decoration: BoxDecoration(borderRadius: BorderRadius.circular(8),
-                    border: Border.all(width: 0.5, color: Colors.transparent),
                     gradient: _diagonalGradient(size)),
-                  child: Text(ip ? '...' : '✓ 接受',
-                    style: const TextStyle(color: AppColors.textPrimary, fontSize: 12, fontWeight: FontWeight.w500)));
+                  child: Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(7),
+                      color: AppColors.bgColor),
+                    child: Text(ip ? '...' : '✓ 接受',
+                      style: const TextStyle(color: AppColors.textPrimary, fontSize: 12, fontWeight: FontWeight.w500))));
                 })),
               const SizedBox(width: 6),
               GestureDetector(onTap: ip ? null : () => _rejectFriendRequest(rq['requestId'] as String),
@@ -1001,15 +1003,17 @@ class _MessagesScreenState extends State<MessagesScreen>
             else GestureDetector(onTap: () => _showAddFriendDlg(u),
               child: LayoutBuilder(builder: (context, constraints) {
                   final size = Size(constraints.maxWidth, constraints.maxHeight);
-                  return Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  return Container(padding: const EdgeInsets.all(1),
                 decoration: BoxDecoration(borderRadius: BorderRadius.circular(8),
-                  border: Border.all(width: 0.5, color: Colors.transparent),
                   gradient: _diagonalGradient(size)),
-                child: const Row(mainAxisSize: MainAxisSize.min, children: [
-                  Icon(Icons.person_add, size: 12, color: AppColors.textPrimary),
-                  SizedBox(width: 4),
-                  Text('添加', style: TextStyle(color: AppColors.textPrimary, fontSize: 12, fontWeight: FontWeight.w500)),
-                ]));
+                child: Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(7),
+                    color: AppColors.bgColor),
+                  child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                    Icon(Icons.person_add, size: 12, color: AppColors.textPrimary),
+                    SizedBox(width: 4),
+                    Text('添加', style: TextStyle(color: AppColors.textPrimary, fontSize: 12, fontWeight: FontWeight.w500)),
+                  ])));
               })),
           ]));
       }),
