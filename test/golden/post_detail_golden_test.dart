@@ -327,10 +327,10 @@ Widget _buildPostDetail() {
       ]))),
       // Comment input
       Container(decoration: BoxDecoration(color: AppColors.headerBg, border: Border(top: BorderSide(color: AppColors.borderColor, width: 0.5))), padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), child: SafeArea(top: false, child: Row(children: [
-        Expanded(child: Container(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10), decoration: BoxDecoration(color: AppColors.inputBg, borderRadius: BorderRadius.circular(20)), child: const Text('写评论...', style: TextStyle(color: AppColors.textPlaceholder, fontSize: 14))),
+        Expanded(child: Container(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10), decoration: BoxDecoration(color: AppColors.inputBg, borderRadius: BorderRadius.circular(20)), child: const Text('写评论...', style: TextStyle(color: AppColors.textPlaceholder, fontSize: 14)))),
         const SizedBox(width: 8),
         Container(width: 32, height: 32, decoration: BoxDecoration(gradient: AppColors.auroraGradient, borderRadius: BorderRadius.circular(16)), child: const Icon(Icons.send, color: Colors.white, size: 16)),
-      ]))),
+      ])),
     ])),
   );
 }

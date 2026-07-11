@@ -332,12 +332,12 @@ Widget _buildChatScreen() {
         child: SafeArea(top: false, child: Row(children: [
           const Icon(Icons.add_circle_outline, color: AppColors.textSecondary, size: 24),
           const SizedBox(width: 8),
-          Expanded(child: Container(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10), decoration: BoxDecoration(color: AppColors.inputBg, borderRadius: BorderRadius.circular(20)), child: const Text('输入消息...', style: TextStyle(color: AppColors.textPlaceholder, fontSize: 14))),
+          Expanded(child: Container(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10), decoration: BoxDecoration(color: AppColors.inputBg, borderRadius: BorderRadius.circular(20)), child: const Text('输入消息...', style: TextStyle(color: AppColors.textPlaceholder, fontSize: 14)))),
           const SizedBox(width: 8),
           const Icon(Icons.emoji_emotions_outlined, color: AppColors.textSecondary, size: 24),
           const SizedBox(width: 8),
           Container(width: 32, height: 32, decoration: BoxDecoration(gradient: AppColors.auroraGradient, borderRadius: BorderRadius.circular(16)), child: const Icon(Icons.send, color: Colors.white, size: 16)),
-        ])),
+        ]),
       ),
     ])),
   );

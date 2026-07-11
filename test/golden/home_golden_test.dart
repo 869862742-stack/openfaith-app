@@ -366,7 +366,7 @@ Widget _buildRoomCard(String name, String info, String tag) {
       Text(name, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600)),
       const SizedBox(height: 4),
       Text(info, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-    ]),
+    ])),
     Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: AppColors.inputBg, borderRadius: BorderRadius.circular(8)), child: Text(tag, style: const TextStyle(color: AppColors.textSecondary, fontSize: 11))),
-  ])));
+  ]));
 }

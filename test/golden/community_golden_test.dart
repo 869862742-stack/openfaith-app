@@ -303,7 +303,6 @@ Widget _buildCommunityRules() {
     body: Column(children: [
       _buildHeader('社区公约'),
       Expanded(child: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(children: [
-        // Intro card
         GlassCard(child: Padding(padding: const EdgeInsets.all(20), child: Column(children: [
           Container(width: 56, height: 56, decoration: BoxDecoration(gradient: AppColors.auroraGradient, borderRadius: BorderRadius.circular(14)), child: const Icon(Icons.gavel, color: Colors.white, size: 28)),
           const SizedBox(height: 16),
@@ -312,18 +311,23 @@ Widget _buildCommunityRules() {
           const Text('我们致力于构建一个包容、理性、安全的信仰交流空间', style: TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.5), textAlign: TextAlign.center),
         ]))),
         const SizedBox(height: 20),
-        ...List.generate(items.length, (i) => Padding(padding: const EdgeInsets.only(bottom: 12), child: GlassCard(child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [Container(width: 28, height: 28, decoration: BoxDecoration(gradient: AppColors.auroraGradientWithOpacity(0.3), borderRadius: BorderRadius.circular(8)), child: Center(child: Text('${i+1}', style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold))))), const SizedBox(width: 10), Text(items[i][0], style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600))]),
-          const SizedBox(height: 8),
-          Text(items[i][1], style: const TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.5)),
-        ])))))),
+        ...List.generate(items.length, (i) {
+          return Padding(padding: const EdgeInsets.only(bottom: 12), child: GlassCard(child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
+              Container(width: 28, height: 28, decoration: BoxDecoration(gradient: AppColors.auroraGradientWithOpacity(0.3), borderRadius: BorderRadius.circular(8)), child: Center(child: Text('${i+1}', style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)))),
+              const SizedBox(width: 10),
+              Text(items[i][0], style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600)),
+            ]),
+            const SizedBox(height: 8),
+            Text(items[i][1], style: const TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.5)),
+          ]))));
+        }),
         const SizedBox(height: 16),
         Center(child: Container(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), decoration: BoxDecoration(color: AppColors.hoverBgLight, borderRadius: BorderRadius.circular(20)), child: const Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.favorite, color: AppColors.auroraRed, size: 14), SizedBox(width: 6), Text('共建和谐社区', style: TextStyle(color: AppColors.textSecondary, fontSize: 12))]))),
-      ])),
-    ]);
+      ]))),
+    ]),
   );
 }
-
 Widget _buildFeedback() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
@@ -343,7 +347,6 @@ Widget _buildFeedback() {
         const SizedBox(height: 8),
         Container(height: 150, padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: AppColors.inputBg, borderRadius: BorderRadius.circular(12)), child: const Text('请详细描述您的问题或建议...')),
         const SizedBox(height: 16),
-        // Upload area
         Row(children: [
           Container(width: 72, height: 72, decoration: BoxDecoration(color: AppColors.inputBg, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.borderColor, width: 0.5)), child: const Icon(Icons.add_photo_alternate_outlined, color: AppColors.textPlaceholder, size: 24)),
         ]),
@@ -353,11 +356,10 @@ Widget _buildFeedback() {
         _buildInput('邮箱或手机号', Icons.contact_mail_outlined),
         const SizedBox(height: 32),
         Container(width: double.infinity, height: 48, decoration: BoxDecoration(gradient: AppColors.auroraGradient, borderRadius: BorderRadius.circular(12)), child: const Center(child: Text('提交反馈', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)))),
-      ])),
+      ]))),
     ]),
   );
 }
-
 Widget _feedbackTag(String label, bool selected) {
   return Container(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8), decoration: BoxDecoration(gradient: selected ? AppColors.auroraGradientWithOpacity(0.3) : null, color: selected ? null : AppColors.inputBg, borderRadius: BorderRadius.circular(18), border: selected ? null : Border.all(color: AppColors.borderColor, width: 0.5)), child: Text(label, style: TextStyle(color: selected ? Colors.white : AppColors.textSecondary, fontSize: 13)));
 }
