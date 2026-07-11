@@ -1,0 +1,45 @@
+name: Flutter Golden Test Screenshots
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'lib/**/*.dart'
+      - 'test/**/*.dart'
+
+jobs:
+  golden-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.5'
+          channel: 'stable'
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Run Golden Tests (generate screenshots)
+        run: flutter test --update-goldens test/golden/
+
+      - name: Upload golden screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: flutter-golden-screenshots
+          path: test/golden/**/*.png
+          retention-days: 30
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: golden-test-results
+          path: |
+            test/golden/**/*.png
+            test/golden/**/failures/*.png
+          retention-days: 30
