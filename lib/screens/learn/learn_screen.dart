@@ -6,8 +6,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../theme/colors.dart';
+import '../../i18n/app_localizations.dart';
 import 'book_detail_screen.dart';
 import 'religion_detail_screen.dart';
+import '../../widgets/religion_icon.dart';
 import 'holidays_data.dart';
 import '../../services/learn_data_cache.dart';
 import '../../utils/api_cache.dart';
@@ -57,48 +59,6 @@ LinearGradient _diagonalGradient(Size size) {
   return LinearGradient(colors: _rainbowColors, transform: GradientRotation(0.785398));
 }
 
-/// 宗教名称 → 彩色 Material Icon 图标（对齐网页版彩色图标风格）
-Widget _religionIcon(String name) {
-  // (icon, color) 映射
-  const Map<String, (IconData, Color)> iconMap = {
-    '基督教': (Icons.church, Color(0xFFFFD700)),
-    '天主教': (Icons.church, Color(0xFFFFD700)),
-    '伊斯兰教': (Icons.mosque, Color(0xFF4FC3F7)),
-    '犹太教': (Icons.synagogue, Color(0xFF64B5F6)),
-    '佛教': (Icons.self_improvement, Color(0xFFFFB300)),
-    '印度教': (Icons.temple_buddhist, Color(0xFFEF5350)),
-    '道教': (Icons.balance, Color(0xFF66BB6A)),
-    '锡克教': (Icons.temple_hindu, Color(0xFFAB47BC)),
-    '神道教': (Icons.temple_buddhist, Color(0xFFE57373)),
-    '巴哈伊教': (Icons.star, Color(0xFFFFD54F)),
-    '琐罗亚斯德教': (Icons.local_fire_department, Color(0xFFFF7043)),
-    '天理教': (Icons.flutter_dash, Color(0xFFF48FB1)),
-    '毛利宗教': (Icons.park, Color(0xFF81C784)),
-    '高台教': (Icons.visibility, Color(0xFFB0BEC5)),
-    '新兴宗教': (Icons.auto_awesome, Color(0xFFCE93D8)),
-  };
-  
-  // 精确匹配
-  if (iconMap.containsKey(name)) {
-    final (icon, color) = iconMap[name]!;
-    return Icon(icon, color: color, size: 22);
-  }
-  // 模糊匹配
-  for (final entry in iconMap.entries) {
-    if (name.contains(entry.key) || entry.key.contains(name)) {
-      final (icon, color) = entry.value;
-      return Icon(icon, color: color, size: 22);
-    }
-  }
-  // 兜底：彩色圆点
-  return Container(
-    width: 14, height: 14,
-    decoration: BoxDecoration(
-      shape: BoxShape.circle,
-      gradient: AppColors.auroraGradient,
-    ),
-  );
-}
 
 class LearnScreen extends StatefulWidget {
   const LearnScreen({super.key});
@@ -404,8 +364,8 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(children: [
-                    // 宗教专属 Emoji 图标（对齐网页版）
-                    _religionIcon(r.name),
+                    // 宗教专属 CustomPaint 图标（对齐网页版 SVG）
+                    ReligionIconWidget(name: r.name, size: 28),
                     const SizedBox(width: 8),
                     Expanded(child: Text(r.name,
                       style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500),
