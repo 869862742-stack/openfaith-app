@@ -12,7 +12,7 @@ jobs:
         with:
           flutter-version: '3.44.5'
       - run: flutter pub get
-      - run: flutter build web --release --web-renderer=canvaskit
+      - run: flutter build web --release
 
       - run: |
           sudo apt-get update
