@@ -60,7 +60,7 @@ jobs:
             timeout 30 google-chrome-stable --headless=new --no-sandbox --disable-gpu \
               --screenshot=screenshots/flutter/${NAMES[$i]}.png \
               --window-size=375,812 \
-              --virtual-time-budget=15000 \
+              --virtual-time-budget=30000 \
               "http://localhost:8080/${PAGES[$i]}" 2>/dev/null || true
             sleep 2
           done
@@ -95,7 +95,7 @@ jobs:
             timeout 30 google-chrome-stable --headless=new --no-sandbox --disable-gpu \
               --screenshot=screenshots/web/${WEB_NAMES[$i]}.png \
               --window-size=375,812 \
-              --virtual-time-budget=15000 \
+              --virtual-time-budget=30000 \
               "${WEB_PAGES[$i]}" 2>/dev/null || true
             sleep 2
           done
