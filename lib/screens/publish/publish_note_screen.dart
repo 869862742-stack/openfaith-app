@@ -348,18 +348,25 @@ class _PublishNoteScreenState extends State<PublishNoteScreen> {
                         return GestureDetector(
                           onTap: () => setModalState(() => tempSelected.remove(tag)),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            padding: const EdgeInsets.all(1),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(16),
                               gradient: AppColors.auroraGradient,
                             ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(tag, style: const TextStyle(color: Colors.white, fontSize: 12)),
-                                const SizedBox(width: 4),
-                                const Icon(Icons.close, size: 14, color: Colors.white70),
-                              ],
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(15),
+                                color: AppColors.bgColor,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(tag, style: const TextStyle(color: AppColors.textPrimary, fontSize: 12)),
+                                  const SizedBox(width: 4),
+                                  const Icon(Icons.close, size: 14, color: Colors.white70),
+                                ],
+                              ),
                             ),
                           ),
                         );
@@ -1006,26 +1013,33 @@ class _PublishNoteScreenState extends State<PublishNoteScreen> {
           children: [
             ..._selectedTags.map((tag) {
               return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.all(1),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
                   gradient: AppColors.auroraGradient,
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Builder(builder: (_) {
-                      final iconData = getReligionIcon(tag);
-                      return Icon(iconData.icon, size: 12, color: iconData.color);
-                    }),
-                    const SizedBox(width: 3),
-                    Text('#$tag', style: const TextStyle(color: Colors.white, fontSize: 12)),
-                    const SizedBox(width: 4),
-                    GestureDetector(
-                      onTap: () => _toggleTag(tag),
-                      child: const Icon(Icons.close, size: 14, color: Colors.white70),
-                    ),
-                  ],
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(15),
+                    color: AppColors.bgColor,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Builder(builder: (_) {
+                        final iconData = getReligionIcon(tag);
+                        return Icon(iconData.icon, size: 12, color: iconData.color);
+                      }),
+                      const SizedBox(width: 3),
+                      Text('#$tag', style: const TextStyle(color: AppColors.textPrimary, fontSize: 12)),
+                      const SizedBox(width: 4),
+                      GestureDetector(
+                        onTap: () => _toggleTag(tag),
+                        child: const Icon(Icons.close, size: 14, color: Colors.white70),
+                      ),
+                    ],
+                  ),
                 ),
               );
             }),
