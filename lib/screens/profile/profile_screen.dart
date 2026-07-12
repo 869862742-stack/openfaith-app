@@ -1,8 +1,6 @@
 import 'dart:math';
-import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/services.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -19,7 +17,6 @@ import 'widgets/level_benefits_dialog.dart';
 // 网页版 Profile.tsx 精确还原
 // 所有颜色引用 AppColors，所有尺寸从网页版 CSS 提取
 // ═══════════════════════════════════════════════════════
-
 
 // 网站静态资源基础URL（与网页版 defaultImages.ts 对齐）
 const _kWebAssetsBase = 'https://openfaithhub.com';
@@ -104,20 +101,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   int _level = 1;
   int _experience = 0;
   bool _loading = true;
-  String? _backgroundUrl;
   int _selectedTab = 0; // 0=笔记, 1=计划, 2=珍藏
 
   final _supabase = Supabase.instance.client;
   final _authService = AuthService();
 
   // 编辑资料弹窗状态
-  String _editUsername = '';
-  String _editBio = '';
-  String _editFaithTag = '寻求者';
-  String? _selectedDefaultAvatar;
-  bool _editAllowStrangerVisit = true;
-  bool _editAllowFriendVisit = true;
-  bool _isSaving = false;
   List<String> _faithTags = List.from(_fallbackFaithTags);
 
   // ══════ 编辑次数限制 ══════
@@ -131,11 +120,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final currentMonth = '${now.year}-${now.month.toString().padLeft(2, '0')}';
     if (_profileEditMonth != currentMonth) return 3; // 新月重置
     return (3 - _profileEditCount).clamp(0, 3);
-  }
-
-  String get _editCountLabel {
-    if (_isVip) return '编辑资料';
-    return '编辑资料（本月剩余 ${_remainingEditCount} 次）';
   }
 
   String? get _userId {
@@ -224,7 +208,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() => _loading = false);
   }
 
-
   /// Apply profile data to state (shared between initial load and SWR refresh).
   void _applyProfile(Map<String, dynamic> response) {
     if (!mounted) return;
@@ -236,13 +219,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _hotPoints = (response['hot_points'] as num?)?.toInt() ?? 0;
       _level = (response['level'] as num?)?.toInt() ?? 1;
       _experience = (response['experience'] as num?)?.toInt() ?? 0;
-      _editUsername = (response['nickname'] as String?)?.isNotEmpty == true
-          ? response['nickname'] as String
-          : (response['username'] as String?) ?? '';
-      _editBio = (response['bio'] as String?) ?? '';
-      _editFaithTag = (response['faith_tag'] as String?) ?? '寻求者';
-      _editAllowStrangerVisit = response['allow_stranger_visit'] != false;
-      _editAllowFriendVisit = response['allow_friend_visit'] != false;
       _isVip = response['is_vip'] == true;
       _profileEditCount = (response['profile_edit_count'] as num?)?.toInt() ?? 0;
       _profileEditMonth = (response['profile_edit_month'] as String?) ?? '';
@@ -270,111 +246,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     } catch (e) {
       debugPrint('Refresh profile error: $e');
-    }
-  }
-
-  Future<void> _handleSaveProfile() async {
-    final userId = _userId;
-    if (userId == null) return;
-
-    // ══ 编辑次数检查 ══
-    if (!_isVip) {
-      final now = DateTime.now();
-      final currentMonth = '${now.year}-${now.month.toString().padLeft(2, '0')}';
-      int monthCount = (_profileEditMonth == currentMonth) ? _profileEditCount : 0;
-      if (monthCount >= 3) {
-        if (mounted) {
-          showDialog(
-            context: context,
-            builder: (ctx) => AlertDialog(
-              backgroundColor: AppColors.cardBg,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-                side: const BorderSide(color: AppColors.auroraPurple, width: 1),
-              ),
-              title: const Text('提示', style: TextStyle(color: AppColors.textPrimary)),
-              content: const Text(
-                '本月编辑次数已达上限（3次），升级VIP可无限修改',
-                style: TextStyle(color: AppColors.textSecondary),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  child: const Text('知道了', style: TextStyle(color: AppColors.textSecondary)),
-                ),
-              ],
-            ),
-          );
-        }
-        return;
-      }
-    }
-
-    // ══ 信仰标签30天限制检查 ══
-    final oldFaithTag = _profile?['faith_tag'] as String? ?? '寻求者';
-    if (_editFaithTag != oldFaithTag && !_canEditFaithTag()) {
-      final lastModified = _profile?['tag_last_modified_at'] as String?;
-      int daysAgo = 0;
-      if (lastModified != null) {
-        final lastDate = DateTime.tryParse(lastModified);
-        if (lastDate != null) {
-          daysAgo = DateTime.now().difference(lastDate).inDays;
-        }
-      }
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('身份标签修改间隔需至少30天，上次修改于 $daysAgo 天前'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-      return;
-    }
-
-    setState(() => _isSaving = true);
-
-    try {
-      final updates = <String, dynamic>{
-        'nickname': _editUsername,
-        'bio': _editBio,
-        'faith_tag': _editFaithTag,
-        'allow_stranger_visit': _editAllowStrangerVisit,
-        'allow_friend_visit': _editAllowFriendVisit,
-      };
-
-      if (_selectedDefaultAvatar != null) {
-        updates['avatar_url'] = '/images/avatars/default-$_selectedDefaultAvatar.svg';
-      }
-
-      // 信仰标签修改时更新 tag_last_modified_at
-      if (_editFaithTag != oldFaithTag) {
-        updates['tag_last_modified_at'] = DateTime.now().toIso8601String();
-      }
-
-      // 更新编辑次数
-      if (!_isVip) {
-        final now = DateTime.now();
-        final currentMonth = '${now.year}-${now.month.toString().padLeft(2, '0')}';
-        int newCount = (_profileEditMonth == currentMonth) ? _profileEditCount + 1 : 1;
-        updates['profile_edit_count'] = newCount;
-        updates['profile_edit_month'] = currentMonth;
-      }
-
-      await _supabase
-          .from('profiles')
-          .update(updates)
-          .eq('user_id', userId);
-
-      // Invalidate profile cache after update
-      await ApiCache.instance.invalidate('profile:$userId');
-
-      await _refreshProfile();
-      if (mounted) Navigator.pop(context);
-    } catch (e) {
-      debugPrint('Save profile error: $e');
-    } finally {
-      if (mounted) setState(() => _isSaving = false);
     }
   }
 
@@ -427,15 +298,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   /// 检查信仰标签是否可修改（30天限制）
-  bool _canEditFaithTag() {
-    if (_profile == null) return true;
-    final lastModified = _profile!['tag_last_modified_at'] as String?;
-    if (lastModified == null) return true;
-    final lastDate = DateTime.tryParse(lastModified);
-    if (lastDate == null) return true;
-    return DateTime.now().difference(lastDate).inDays >= 30;
-  }
-
   // ═══════════════════════════════════════════════════════
   // BUILD
   // ═══════════════════════════════════════════════════════
@@ -1311,564 +1173,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
       return;
     }
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (ctx) => Container(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(ctx).size.height * 0.85,
-        ),
-        decoration: BoxDecoration(
-          color: AppColors.cardBg,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-        ),
-        padding: const EdgeInsets.all(24),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Title
-              Row(
-                children: [
-                  Text(
-                    _editCountLabel,
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const Spacer(),
-                  GestureDetector(
-                    onTap: () => Navigator.pop(ctx),
-                    child: const Icon(Icons.close,
-                        color: AppColors.iconColor, size: 20),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-
-              // ── 头像选择区 ──
-              Center(
-                child: Column(
-                  children: [
-                    Text('更换头像',
-                        style: const TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 14)),
-                    const SizedBox(height: 12),
-                    // 当前头像
-                    _buildEditAvatar(),
-                    const SizedBox(height: 16),
-                    // 默认头像颜色选择（7色圆形按钮）
-                    Text('选择头像颜色',
-                        style: const TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 12)),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children:
-                          _avatarColorMap.entries.map((entry) {
-                        final isSelected =
-                            _selectedDefaultAvatar == entry.key;
-                        return GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _selectedDefaultAvatar = entry.key;
-                            });
-                          },
-                          child: Container(
-                            width: 32,
-                            height: 32,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  entry.value,
-                                  entry.value.withOpacity(0.67),
-                                ],
-                              ),
-                              border: isSelected
-                                  ? Border.all(
-                                      color: AppColors.textPrimary, width: 2)
-                                  : null,
-                            ),
-                            child: isSelected
-                                ? const Icon(Icons.check,
-                                    color: AppColors.textPrimary, size: 16)
-                                : null,
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                    if (_selectedDefaultAvatar != null) ...[
-                      const SizedBox(height: 8),
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _selectedDefaultAvatar = null;
-                          });
-                        },
-                        child: const Text('使用自定义头像',
-                            style: TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 12,
-                              decoration: TextDecoration.underline,
-                            )),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // ── 背景图更换区 ──
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text('更换背景图',
-                    style: const TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 14)),
-              ),
-              const SizedBox(height: 8),
-              GestureDetector(
-                onTap: () async {
-                  try {
-                    final picker = ImagePicker();
-                    final image = await picker.pickImage(source: ImageSource.gallery, maxWidth: 1920, maxHeight: 1080);
-                    if (image == null) return;
-
-                    final user = _supabase.auth.currentUser;
-                    if (user == null) return;
-
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).clearSnackBars();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('上传中...'), backgroundColor: AppColors.cardBg, duration: Duration(seconds: 30)),
-                      );
-                    }
-
-                    final ext = image.path.split('.').last;
-                    final path = 'backgrounds/${user.id}/${DateTime.now().millisecondsSinceEpoch}.$ext';
-                    await _supabase.storage.from('media').upload(path, File(image.path));
-                    final url = _supabase.storage.from('media').getPublicUrl(path);
-
-                    await _supabase.from('profiles').update({'background_url': url}).eq('user_id', user.id);
-
-                    if (!mounted) return;
-                    setState(() {
-                      _backgroundUrl = url;
-                    });
-
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).clearSnackBars();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('背景图已更新'), backgroundColor: AppColors.success),
-                      );
-                    }
-                  } catch (e) {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).clearSnackBars();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('上传失败: $e'), backgroundColor: AppColors.error),
-                      );
-                    }
-                  }
-                },
-                child: Container(
-                  height: 96, // h-24
-                  decoration: BoxDecoration(
-                    color: AppColors.bgSecondary,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Center(
-                    child: Text('点击更换背景图',
-                        style: const TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 12)),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // ── 昵称输入框 ──
-              _buildLabel('昵称'),
-              const SizedBox(height: 8),
-              _buildInputField(
-                hintText: '请输入昵称',
-                onChanged: (v) => _editUsername = v,
-                initialValue: _editUsername,
-              ),
-              const SizedBox(height: 20),
-
-              // ── 签名 ──
-              _buildLabel('个性签名'),
-              const SizedBox(height: 8),
-              _buildTextArea(
-                hintText: '请输入个性签名',
-                onChanged: (v) => setState(() => _editBio = v),
-                initialValue: _editBio,
-                maxLength: 100,
-              ),
-              const SizedBox(height: 20),
-
-              // ── 信仰标签下拉选择 ──
-              _buildLabel(
-                '信仰标签',
-                suffix: _canEditFaithTag()
-                    ? null
-                    : '（30天内仅可修改一次）',
-              ),
-              const SizedBox(height: 8),
-              _buildFaithTagDropdown(),
-              const SizedBox(height: 20),
-
-              // ── 隐私设置 ──
-              Container(
-                decoration: BoxDecoration(
-                  border: Border(
-                    top: BorderSide(
-                        color: AppColors.borderColor, width: 0.5),
-                  ),
-                ),
-                padding: const EdgeInsets.only(top: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('隐私设置',
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        )),
-                    const SizedBox(height: 12),
-                    // 允许陌生人访问
-                    _buildPrivacyToggle(
-                      title: '允许陌生人访问主页',
-                      subtitle: '关闭后，只有好友才能访问',
-                      value: _editAllowStrangerVisit,
-                      onChanged: (v) {
-                        setState(() => _editAllowStrangerVisit = v);
-                      },
-                    ),
-                    const SizedBox(height: 8),
-                    // 允许好友访问
-                    _buildPrivacyToggle(
-                      title: '允许好友访问主页',
-                      subtitle: '双向关注即为好友',
-                      value: _editAllowFriendVisit,
-                      onChanged: (v) {
-                        setState(() => _editAllowFriendVisit = v);
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // ── 保存按钮（aurora-btn 七彩渐变）──
-              GestureDetector(
-                onTap: _isSaving ? null : _handleSaveProfile,
-                child: Container(
-                  width: double.infinity,
-                  height: 48,
-                  padding: const EdgeInsets.all(1),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(13),
-                    gradient: AppColors.auroraGradient,
-                  ),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      color: AppColors.bgColor,
-                    ),
-                    child: Center(
-                      child: Text(
-                        _isSaving ? '保存中...' : '保存修改',
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
-          ),
-        ),
+      builder: (ctx) => EditProfileDialog(
+        profile: _profile ?? {},
+        onSaveSuccess: _loadData,
       ),
     );
   }
 
-  Widget _buildEditAvatar() {
-    final selectedColor = _selectedDefaultAvatar != null
-        ? _avatarColorMap[_selectedDefaultAvatar]
-        : null;
-    final displayColor = selectedColor ?? AppColors.auroraPurple;
 
-    return Container(
-      width: 80,
-      height: 80,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: displayColor,
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [displayColor, displayColor.withOpacity(0.67)],
-        ),
-      ),
-      child: const Icon(Icons.person, color: AppColors.textPrimary, size: 36),
-    );
-  }
-
-  Widget _buildLabel(String text, {String? suffix}) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(text,
-              style: const TextStyle(
-                  color: AppColors.textPrimary, fontSize: 14)),
-          if (suffix != null)
-            Text(suffix,
-                style: const TextStyle(
-                    color: AppColors.textSecondary, fontSize: 12)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInputField({
-    required String hintText,
-    required ValueChanged<String> onChanged,
-    String? initialValue,
-  }) {
-    return SizedBox(
-      height: 48,
-      child: TextField(
-        onChanged: onChanged,
-        controller:
-            initialValue != null ? TextEditingController(text: initialValue) : null,
-        style:
-            const TextStyle(color: AppColors.textPrimary, fontSize: 14),
-        decoration: InputDecoration(
-          hintText: hintText,
-          hintStyle: const TextStyle(
-              color: AppColors.textPlaceholder, fontSize: 14),
-          filled: true,
-          fillColor: AppColors.bgColor,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: AppColors.borderColor, width: 1),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: AppColors.borderActive, width: 1),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextArea({
-    required String hintText,
-    required ValueChanged<String> onChanged,
-    String? initialValue,
-    int? maxLength,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        SizedBox(
-          height: 80,
-          child: TextField(
-            onChanged: onChanged,
-            maxLength: maxLength,
-            controller: initialValue != null
-                ? TextEditingController(text: initialValue)
-                : null,
-            style: const TextStyle(
-                color: AppColors.textPrimary, fontSize: 14),
-            maxLines: 3,
-            decoration: InputDecoration(
-              hintText: hintText,
-              hintStyle: const TextStyle(
-                  color: AppColors.textPlaceholder, fontSize: 14),
-              filled: true,
-              fillColor: AppColors.bgColor,
-              contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16, vertical: 12),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide:
-                    BorderSide(color: AppColors.borderColor, width: 1),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide:
-                    BorderSide(color: AppColors.borderActive, width: 1),
-              ),
-              counterText: '',
-            ),
-          ),
-        ),
-        if (maxLength != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: Text(
-              '${_editBio.length}/$maxLength',
-              style: const TextStyle(
-                  color: AppColors.textSecondary, fontSize: 12),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildFaithTagDropdown() {
-    return SizedBox(
-      height: 48,
-      child: DropdownButtonFormField<String>(
-        value: _faithTags.contains(_editFaithTag) ? _editFaithTag : null,
-        isExpanded: true,
-        style:
-            const TextStyle(color: AppColors.textPrimary, fontSize: 14),
-        dropdownColor: AppColors.cardBg,
-        decoration: InputDecoration(
-          filled: true,
-          fillColor: AppColors.bgColor,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: AppColors.borderColor, width: 1),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide:
-                BorderSide(color: AppColors.borderActive, width: 1),
-          ),
-        ),
-        icon: const Icon(Icons.keyboard_arrow_down,
-            color: AppColors.iconColor, size: 20),
-        items: _faithTags.map((tag) {
-          return DropdownMenuItem<String>(
-            value: tag,
-            child: Text(tag,
-                style: const TextStyle(
-                    color: AppColors.textPrimary, fontSize: 14)),
-          );
-        }).toList(),
-        onChanged: (v) {
-          if (v != null) setState(() => _editFaithTag = v);
-        },
-      ),
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════
-  // Privacy toggle（网页版: 七彩渐变边框 + 渐变滑块）
-  // ═══════════════════════════════════════════════════════
-  Widget _buildPrivacyToggle({
-    required String title,
-    required String subtitle,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-  }) {
-    return Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title,
-                  style: const TextStyle(
-                      color: AppColors.textPrimary, fontSize: 14)),
-              const SizedBox(height: 2),
-              Text(subtitle,
-                  style: const TextStyle(
-                      color: AppColors.textSecondary, fontSize: 12)),
-            ],
-          ),
-        ),
-        const SizedBox(width: 12),
-        GestureDetector(
-          onTap: () => onChanged(!value),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            width: 48,
-            height: 24,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              // 开启：七彩渐变边框
-              // 关闭：普通灰色背景
-              gradient: value ? AppColors.auroraGradient : null,
-              color: value ? null : AppColors.hoverBgLight,
-              border: value
-                  ? null
-                  : Border.all(
-                      color: AppColors.borderActive, width: 1),
-            ),
-            child: value
-                ? Container(
-                    margin: const EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: AppColors.bgColor,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Container(
-                          width: 18,
-                          height: 18,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: AppColors.auroraGradient,
-                          ),
-                          margin: const EdgeInsets.only(right: 2),
-                        ),
-                      ],
-                    ),
-                  )
-                : Stack(
-                    children: [
-                      Positioned(
-                        left: 3,
-                        top: 3,
-                        child: Container(
-                          width: 18,
-                          height: 18,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: AppColors.textWeak,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// ═══════════════════════════════════════════════════════
-// Starfield painter — 精确匹配网页版8个 radial-gradient
-// ═══════════════════════════════════════════════════════
 class _StarfieldPainter extends CustomPainter {
   const _StarfieldPainter();
 
@@ -1929,4 +1243,6 @@ class _Star {
   final Color color;
 
   const _Star(this.xPercent, this.yPercent, this.radius, this.color);
+}
+
 }
