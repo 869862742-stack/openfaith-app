@@ -496,188 +496,318 @@ Widget _buildGongjingRoomCard(String name, String info, IconData icon) {
   );
 }
 
-// ─── Privacy Page ───
+// ─── Privacy Page ─── (aligned with PrivacyPolicyScreen source)
 Widget _buildPrivacy() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
     body: Column(children: [
-      _buildSliverHeader('隐私政策'),
-      Expanded(child: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(color: AppColors.inputBg, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.borderDefault)),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [
-              Container(
-                width: 48, height: 48,
-                padding: const EdgeInsets.all(1.5),
-                decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: AppColors.auroraColors)),
-                child: Container(
-                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(10.5), color: AppColors.background),
-                  child: const Center(child: Icon(Icons.privacy_tip_outlined, color: AppColors.textPrimary, size: 24)),
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('OpenFaith 隐私政策', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
-                SizedBox(height: 2),
-                Text('最后更新：2026年1月1日', style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
-              ])),
-            ]),
+      // Custom header: back | title | EN toggle
+      Container(
+        height: 56,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: const BoxDecoration(
+          color: AppColors.headerBg,
+          border: Border(bottom: BorderSide(color: AppColors.borderDefault, width: 1)),
+        ),
+        child: SafeArea(
+          bottom: false,
+          child: Row(children: [
+            const Text('← 返回', style: TextStyle(color: AppColors.iconColorWeak, fontSize: 14)),
+            const Spacer(),
+            const Text('隐私政策', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+            const Spacer(),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(color: AppColors.hoverBg, borderRadius: BorderRadius.circular(8)),
+              child: const Text('EN', style: TextStyle(color: AppColors.iconColorWeak, fontSize: 12)),
+            ),
           ]),
         ),
+      ),
+      Expanded(child: SingleChildScrollView(padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const Text('最后更新：2026年6月7日', style: TextStyle(color: AppColors.textPlaceholder, fontSize: 12)),
         const SizedBox(height: 24),
-        _buildPrivacySection('1. 信息收集', '我们收集您在注册、使用过程中提供的个人信息，包括用户名、邮箱、信仰偏好等。我们不会收集与信仰服务无关的个人信息。'),
+        const Text('1. 概述', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+        const SizedBox(height: 12),
+        const Text('OpenFaith（以下简称"我们"）深知个人信息对您的重要性，我们将按照法律法规的规定，保护您的个人信息及隐私安全。本隐私政策适用于 OpenFaith 移动应用及网站（openfaithhub.com）提供的所有服务。', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6)),
+        const SizedBox(height: 8),
+        const Text('我们制定本隐私政策旨在帮助您了解：我们如何收集、使用、存储和保护您的个人信息；您如何管理您的个人信息。', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6)),
+        const SizedBox(height: 24),
+        const Text('2. 我们收集的信息', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+        const SizedBox(height: 12),
+        const Text('2.1 您主动提供的信息', style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500)),
+        const SizedBox(height: 8),
+        _buildPrivacyBullet('注册信息：邮箱地址、昵称、身份标签'),
+        _buildPrivacyBullet('内容信息：您发布的笔记、评论、问答等用户生成内容'),
+        _buildPrivacyBullet('社交信息：关注关系、好友请求、私信内容'),
         const SizedBox(height: 16),
-        _buildPrivacySection('2. 信息使用', '您的信息仅用于提供和改善我们的服务，包括个性化推荐、社区互动等功能。我们不会将您的信息出售给第三方。'),
-        const SizedBox(height: 16),
-        _buildPrivacySection('3. 信息保护', '我们采用行业标准的安全措施保护您的个人信息，包括数据加密、安全存储等。'),
-        const SizedBox(height: 16),
-        _buildPrivacySection('4. 信息共享', '除法律法规要求外，我们不会与任何第三方共享您的个人信息。'),
+        const Text('2.2 自动收集的信息', style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500)),
+        const SizedBox(height: 8),
+        _buildPrivacyBullet('设备信息：设备型号、操作系统版本'),
+        _buildPrivacyBullet('使用数据：访问页面、功能使用频率、阅读时长'),
+        _buildPrivacyBullet('Cookie 及类似技术：用于维护登录状态、偏好设置'),
+        const SizedBox(height: 24),
+        const Text('3. 我们如何使用信息', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+        const SizedBox(height: 12),
+        _buildPrivacyBullet('提供、维护和改进我们的服务'),
+        _buildPrivacyBullet('个性化推荐内容（基于您的身份标签和阅读偏好）'),
+        _buildPrivacyBullet('处理交易和管理VIP会员权益'),
+        _buildPrivacyBullet('发送服务通知（系统消息、互动提醒）'),
+        const SizedBox(height: 24),
+        const Text('4. 信息共享', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+        const SizedBox(height: 12),
+        const Text('我们不会出售您的个人信息。仅在以下情况下我们可能共享您的信息：', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6)),
+        const SizedBox(height: 8),
+        _buildPrivacyBullet('获得您的明确同意后'),
+        _buildPrivacyBullet('与我们的服务提供商共享（云托管、支付处理）'),
+        _buildPrivacyBullet('遵守法律义务或法律程序'),
+        const SizedBox(height: 32),
       ]))),
     ]),
   );
 }
 
-Widget _buildPrivacySection(String title, String content) {
-  return Container(
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(color: AppColors.hoverBgLight, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.borderDefault)),
-    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(title, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.bold)),
-      const SizedBox(height: 8),
-      Text(content, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.5)),
+Widget _buildPrivacyBullet(String text) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 4),
+    child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      const Text('• ', style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
+      Expanded(child: Text(text, style: const TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6))),
     ]),
   );
 }
 
-// ─── Terms Page ───
+// ─── Terms Page ─── (aligned with TermsOfServiceScreen source)
 Widget _buildTerms() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
     body: Column(children: [
-      _buildSliverHeader('服务条款'),
-      Expanded(child: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(color: AppColors.inputBg, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.borderDefault)),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [
-              Container(
-                width: 48, height: 48,
-                padding: const EdgeInsets.all(1.5),
-                decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: AppColors.auroraColors)),
-                child: Container(
-                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(10.5), color: AppColors.background),
-                  child: const Center(child: Icon(Icons.description_outlined, color: AppColors.textPrimary, size: 24)),
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('OpenFaith 服务条款', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
-                SizedBox(height: 2),
-                Text('最后更新：2026年1月1日', style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
-              ])),
-            ]),
+      // Custom header: back | title | EN toggle
+      Container(
+        height: 56,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: const BoxDecoration(
+          color: AppColors.headerBg,
+          border: Border(bottom: BorderSide(color: AppColors.borderDefault, width: 1)),
+        ),
+        child: SafeArea(
+          bottom: false,
+          child: Row(children: [
+            const Text('← 返回', style: TextStyle(color: AppColors.iconColorWeak, fontSize: 14)),
+            const Spacer(),
+            const Text('服务条款', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+            const Spacer(),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(color: AppColors.hoverBg, borderRadius: BorderRadius.circular(8)),
+              child: const Text('EN', style: TextStyle(color: AppColors.iconColorWeak, fontSize: 12)),
+            ),
           ]),
         ),
+      ),
+      Expanded(child: SingleChildScrollView(padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const Text('最后更新：2026年6月7日', style: TextStyle(color: AppColors.textPlaceholder, fontSize: 12)),
         const SizedBox(height: 24),
-        _buildTermsSection('1. 服务说明', 'OpenFaith 是一个全球信仰交流平台，旨在连接不同信仰背景的探索者，提供学习、交流和成长的空间。'),
-        const SizedBox(height: 16),
-        _buildTermsSection('2. 用户责任', '用户应遵守社区公约，尊重其他信仰传统，不传播虚假信息，不从事违法活动。'),
-        const SizedBox(height: 16),
-        _buildTermsSection('3. 内容规范', '用户发布的内容应合法合规，不得包含仇恨言论、暴力内容或商业广告。'),
-        const SizedBox(height: 16),
-        _buildTermsSection('4. 免责声明', '平台上的内容代表用户个人观点，不构成专业信仰指导。'),
+        const Text('1. 接受条款', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+        const SizedBox(height: 12),
+        const Text('欢迎使用 OpenFaith！使用本应用及网站（openfaithhub.com）即表示您同意遵守本服务条款。如果您不同意这些条款，请勿使用我们的服务。', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6)),
+        const SizedBox(height: 24),
+        const Text('2. 服务描述', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+        const SizedBox(height: 12),
+        const Text('OpenFaith 是一个宗教经典阅读与信仰交流平台，提供以下核心服务：', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6)),
+        const SizedBox(height: 8),
+        _buildTermsBullet('多宗教经典书籍的在线阅读'),
+        _buildTermsBullet('信仰社区互动（笔记、评论、问答）'),
+        _buildTermsBullet('静默陪伴与共境功能'),
+        _buildTermsBullet('VIP会员增值服务'),
+        const SizedBox(height: 24),
+        const Text('3. 用户资格', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+        const SizedBox(height: 12),
+        _buildTermsBullet('您必须年满13周岁方可使用本服务'),
+        _buildTermsBullet('您提供的注册信息必须真实、准确'),
+        _buildTermsBullet('每人仅限注册一个账号'),
+        _buildTermsBullet('不得使用他人身份注册或使用服务'),
+        const SizedBox(height: 24),
+        const Text('4. 用户行为规范', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+        const SizedBox(height: 12),
+        const Text('您在使用本服务时，不得：', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6)),
+        const SizedBox(height: 8),
+        _buildTermsBullet('发布违法、淫秽、诽谤、仇恨、暴力或歧视性内容'),
+        _buildTermsBullet('冒充他人或虚构身份'),
+        _buildTermsBullet('骚扰、威胁或恐吓其他用户'),
+        _buildTermsBullet('传播垃圾信息或恶意软件'),
+        const SizedBox(height: 32),
       ]))),
     ]),
   );
 }
 
-Widget _buildTermsSection(String title, String content) {
-  return Container(
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(color: AppColors.hoverBgLight, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.borderDefault)),
-    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(title, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.bold)),
-      const SizedBox(height: 8),
-      Text(content, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.5)),
+Widget _buildTermsBullet(String text) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 4),
+    child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      const Text('• ', style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
+      Expanded(child: Text(text, style: const TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6))),
     ]),
   );
 }
 
-// ─── VIP Page ───
+// ─── VIP Page ─── (aligned with VipScreen source)
 Widget _buildVip() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
     body: Column(children: [
       _buildGlassHeader('会员中心'),
-      Expanded(child: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(children: [
-        // VIP banner
+      Expanded(child: SingleChildScrollView(padding: const EdgeInsets.fromLTRB(16, 20, 16, 16), child: Column(children: [
+        // Hero: crown icon with rainbow border + title + subtitle
         Container(
-          padding: const EdgeInsets.all(24),
+          width: 64, height: 64,
+          padding: const EdgeInsets.all(1.5),
           decoration: BoxDecoration(
-            gradient: AppColors.auroraGradientWithOpacity(0.3),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.auroraBlue.withOpacity(0.3)),
+            borderRadius: BorderRadius.circular(40),
+            gradient: AppColors.auroraGradientWithOpacity(0.5),
           ),
-          child: Column(children: [
-            Container(
-              width: 64, height: 64,
-              padding: const EdgeInsets.all(2),
-              decoration: const BoxDecoration(shape: BoxShape.circle, gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: AppColors.auroraColors)),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(38.5),
+              color: AppColors.bgColor,
+            ),
+            child: const Center(child: Icon(Icons.workspace_premium, color: AppColors.textPrimary, size: 40)),
+          ),
+        ),
+        const SizedBox(height: 20),
+        const Text('解锁专属权益', style: TextStyle(color: AppColors.textPrimary, fontSize: 24, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        Text('升级VIP，畅享信仰之旅', style: TextStyle(color: AppColors.textWeak, fontSize: 14)),
+        const SizedBox(height: 24),
+        // 我的特权卡片 section
+        Align(alignment: Alignment.centerLeft, child: Text('我的特权卡片', style: TextStyle(color: AppColors.textWeak, fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 1.2))),
+        const SizedBox(height: 12),
+        Row(children: List.generate(5, (i) {
+          final icons = [Icons.visibility, Icons.push_pin, Icons.volume_up, Icons.send, Icons.chat_bubble_outline];
+          final labels = ['加热卡', '置顶卡', '回响卡', '同行卡', '答疑卡'];
+          return Expanded(child: Container(
+            margin: EdgeInsets.only(left: i > 0 ? 4 : 0, right: i < 4 ? 4 : 0),
+            child: Container(
+              padding: const EdgeInsets.all(0.5),
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: AppColors.auroraGradientWithOpacity(0.5)),
               child: Container(
-                decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.bgColor),
-                child: const Center(child: Icon(Icons.workspace_premium, color: AppColors.auroraYellow, size: 32)),
+                decoration: BoxDecoration(borderRadius: BorderRadius.circular(11.5), color: AppColors.bgColor),
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Column(children: [
+                  Icon(icons[i], color: AppColors.textPrimary, size: 16),
+                  const SizedBox(height: 4),
+                  Text('${i + 1}', style: const TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 2),
+                  Text(labels[i], style: TextStyle(color: AppColors.textWeak, fontSize: 10)),
+                ]),
               ),
             ),
-            const SizedBox(height: 16),
-            const Text('OpenFaith VIP', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            const Text('解锁更多专属功能与特权', style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
-            const SizedBox(height: 20),
-            Container(
-              width: double.infinity, height: 44,
-              decoration: BoxDecoration(gradient: AppColors.auroraGradient, borderRadius: BorderRadius.circular(22)),
-              child: const Center(child: Text('开通 VIP', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold))),
-            ),
-          ]),
+          ));
+        })),
+        const SizedBox(height: 8),
+        Text('每月赠送1张，超月未用自动过期', style: TextStyle(color: AppColors.textPlaceholder, fontSize: 12), textAlign: TextAlign.center),
+        const SizedBox(height: 20),
+        // VIP 专属权益 section (3-col grid, show first 2 rows = 6 items)
+        Align(alignment: Alignment.centerLeft, child: Text('VIP 专属权益', style: TextStyle(color: AppColors.textWeak, fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 1.2))),
+        const SizedBox(height: 12),
+        ..._buildVipGridRow([
+          {'icon': Icons.visibility, 'label': '加热卡', 'color': AppColors.auroraCyan},
+          {'icon': Icons.push_pin, 'label': '置顶卡', 'color': AppColors.auroraBlue},
+          {'icon': Icons.volume_up, 'label': '回响卡', 'color': AppColors.auroraPurple},
+        ]),
+        const SizedBox(height: 10),
+        ..._buildVipGridRow([
+          {'icon': Icons.send, 'label': '同行卡', 'color': AppColors.auroraOrange},
+          {'icon': Icons.chat_bubble_outline, 'label': '答疑卡', 'color': AppColors.auroraGreen},
+          {'icon': Icons.workspace_premium, 'label': '专属标识', 'color': AppColors.auroraPurple},
+        ]),
+        const SizedBox(height: 20),
+        // 开通即享 section
+        Container(
+          padding: const EdgeInsets.all(0.5),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), gradient: AppColors.auroraGradientWithOpacity(0.5)),
+          child: Container(
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(15.5), color: AppColors.bgColor),
+            padding: const EdgeInsets.all(20),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(children: [
+                Icon(Icons.card_giftcard, color: AppColors.textPrimary, size: 20),
+                const SizedBox(width: 8),
+                const Text('开通即享', style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.bold)),
+              ]),
+              const SizedBox(height: 12),
+              Wrap(spacing: 8, runSpacing: 8, children: [
+                '1张加热卡', '1张置顶卡', '1张回响卡', '1张同行卡', '1张答疑卡', '+500经验',
+              ].map((g) => Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(color: AppColors.hoverBgLight, borderRadius: BorderRadius.circular(20)),
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  Icon(Icons.check, color: AppColors.auroraGreen, size: 14),
+                  const SizedBox(width: 4),
+                  Text(g, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                ]),
+              )).toList()),
+            ]),
+          ),
         ),
-        const SizedBox(height: 24),
-        // Benefits
-        _buildVipBenefit(Icons.star, '专属标识', '显示独特的 VIP 标识'),
-        const SizedBox(height: 12),
-        _buildVipBenefit(Icons.flash_on, '加热卡', '每月赠送加热卡，提升曝光'),
-        const SizedBox(height: 12),
-        _buildVipBenefit(Icons.block, '无广告', '享受无广告的纯净体验'),
-        const SizedBox(height: 12),
-        _buildVipBenefit(Icons.support_agent, '优先支持', '优先获得客服支持'),
+        const SizedBox(height: 20),
+        // Bottom CTA button
+        Container(
+          padding: const EdgeInsets.all(0.5),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), gradient: AppColors.auroraGradientWithOpacity(0.5)),
+          child: Container(
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(15.5), color: AppColors.bgColor),
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            alignment: Alignment.center,
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              const Icon(Icons.workspace_premium, color: AppColors.textPrimary, size: 20),
+              const SizedBox(width: 8),
+              const Text('开通 VIP 会员', style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(color: AppColors.textPrimary.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
+                child: const Text('¥99', style: TextStyle(color: AppColors.textPrimary, fontSize: 14)),
+              ),
+            ]),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text('一次性付费 · 永久享受', style: TextStyle(color: AppColors.textPlaceholder, fontSize: 12), textAlign: TextAlign.center),
+        const SizedBox(height: 16),
       ]))),
     ]),
   );
 }
 
-Widget _buildVipBenefit(IconData icon, String title, String desc) {
-  return Container(
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: AppColors.cardBg,
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: AppColors.borderColor, width: 0.5),
-    ),
-    child: Row(children: [
-      Container(
-        width: 40, height: 40,
-        decoration: BoxDecoration(color: AppColors.auroraBlue.withOpacity(0.15), borderRadius: BorderRadius.circular(10)),
-        child: Icon(icon, color: AppColors.auroraBlue, size: 22),
-      ),
-      const SizedBox(width: 12),
-      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(title, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 2),
-        Text(desc, style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
-      ])),
-      const Icon(Icons.check_circle, color: AppColors.auroraGreen, size: 20),
-    ]),
-  );
+List<Widget> _buildVipGridRow(List<Map<String, dynamic>> items) {
+  return [
+    Row(children: List.generate(3, (col) {
+      final item = items[col];
+      final icon = item['icon'] as IconData;
+      final label = item['label'] as String;
+      final color = item['color'] as Color;
+      return Expanded(child: Container(
+        margin: EdgeInsets.only(left: col > 0 ? 10 : 0, right: col < 2 ? 10 : 0),
+        child: Container(
+          padding: const EdgeInsets.all(0.5),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: AppColors.auroraGradientWithOpacity(0.5)),
+          child: Container(
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(11.5), color: AppColors.bgColor),
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Container(
+                width: 36, height: 36,
+                decoration: BoxDecoration(color: color.withOpacity(0.08), borderRadius: BorderRadius.circular(8)),
+                child: Icon(icon, color: color, size: 18),
+              ),
+              const SizedBox(height: 8),
+              Text(label, style: const TextStyle(color: AppColors.textPrimary, fontSize: 12, fontWeight: FontWeight.w500), textAlign: TextAlign.center),
+            ]),
+          ),
+        ),
+      ));
+    })),
+  ];
 }

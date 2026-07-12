@@ -47,77 +47,108 @@ void main() {
   });
 }
 
-// ─── Switch Account Page ───
+// ─── Switch Account Page ─── (aligned with SwitchAccountScreen source)
 Widget _buildSwitchAccount() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
-    body: Column(children: [
-      _buildGlassHeader('切换账号'),
-      Expanded(child: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(children: [
-        // Current account
-        _buildAccountItem(
-          name: '张三',
-          email: 'zhangsan@example.com',
-          avatarLetter: 'Z',
-          gradient: [AppColors.auroraRed, AppColors.auroraOrange],
-          isCurrent: true,
-        ),
-        const SizedBox(height: 12),
-        _buildAccountItem(
-          name: '李四',
-          email: 'lisi@example.com',
-          avatarLetter: 'L',
-          gradient: [AppColors.auroraBlue, AppColors.auroraPurple],
-          isCurrent: false,
-        ),
-        const SizedBox(height: 24),
-        // Add account button
-        Container(
-          width: double.infinity, height: 48,
-          padding: const EdgeInsets.all(1.5),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: AppColors.auroraColors),
-          ),
-          child: Container(
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(10.5), color: AppColors.background),
-            child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-              Icon(Icons.add, color: AppColors.textPrimary, size: 20),
-              SizedBox(width: 8),
-              Text('添加账号', style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500)),
-            ]),
-          ),
-        ),
-      ]))),
-    ]),
-  );
-}
-
-Widget _buildAccountItem({required String name, required String email, required String avatarLetter, required List<Color> gradient, required bool isCurrent}) {
-  return Container(
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: AppColors.cardBg,
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: isCurrent ? AppColors.auroraBlue.withOpacity(0.5) : AppColors.borderColor, width: 0.5),
+    appBar: AppBar(
+      backgroundColor: AppColors.bgColor,
+      elevation: 0,
+      leading: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+      title: const Text('切换账号', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600)),
     ),
-    child: Row(children: [
+    body: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text('当前及已关联账号', style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
+      const SizedBox(height: 12),
+      // Current account card with rainbow border
       Container(
-        width: 48, height: 48,
-        decoration: BoxDecoration(shape: BoxShape.circle, gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: gradient)),
-        child: Center(child: Text(avatarLetter, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold))),
+        padding: const EdgeInsets.all(1),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: const LinearGradient(colors: [
+            Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A),
+            Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD),
+          ]),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.background,
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Row(children: [
+            Stack(clipBehavior: Clip.none, children: [
+              Container(
+                width: 48, height: 48,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF3A86FF), Color(0xFF9D4EDD)]),
+                ),
+                child: const Center(child: Text('O', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold))),
+              ),
+              Positioned(
+                bottom: -2, right: -2,
+                child: Container(
+                  width: 20, height: 20,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(colors: [Color(0xFF70E000), Color(0xFF00E5FF)]),
+                  ),
+                  child: const Icon(Icons.check, color: Colors.white, size: 12),
+                ),
+              ),
+            ]),
+            const SizedBox(width: 12),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(children: [
+                const Text('OpenFaith', style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(4),
+                    gradient: const LinearGradient(colors: [Color(0xFF3A86FF), Color(0xFF9D4EDD)]),
+                  ),
+                  child: const Text('CURRENT', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600)),
+                ),
+              ]),
+              const SizedBox(height: 4),
+              Text('user@openfaithhub.com', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+            ])),
+          ]),
+        ),
       ),
-      const SizedBox(width: 12),
-      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(name, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 2),
-        Text(email, style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
-      ])),
-      if (isCurrent)
-        Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(gradient: AppColors.auroraGradientWithOpacity(0.3), borderRadius: BorderRadius.circular(12)), child: const Text('当前', style: TextStyle(color: Colors.white, fontSize: 12)))
-      else
-        Text('切换', style: TextStyle(color: AppColors.auroraBlue, fontSize: 13)),
-    ]),
+      const SizedBox(height: 24),
+      // Add account button (outlined style)
+      Container(
+        width: double.infinity, height: 56,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.textMuted.withOpacity(0.5), width: 1),
+        ),
+        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+          Icon(Icons.person_add_outlined, color: AppColors.textSecondary, size: 20),
+          const SizedBox(width: 8),
+          Text('添加新账号', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, fontWeight: FontWeight.w500)),
+        ]),
+      ),
+      const SizedBox(height: 24),
+      // Security notice card
+      Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(color: AppColors.cardBg, borderRadius: BorderRadius.circular(12)),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            Icon(Icons.shield_outlined, color: AppColors.auroraBlue, size: 16),
+            const SizedBox(width: 8),
+            Text('账号安全提示', style: TextStyle(color: AppColors.auroraBlue, fontSize: 14, fontWeight: FontWeight.bold)),
+          ]),
+          const SizedBox(height: 8),
+          Text('切换账号功能方便您在多个身份间快速跳转。请确保所有关联账号均为本人使用，以保护您的灵性成长数据与个人隐私。',
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 12, height: 1.5)),
+        ]),
+      ),
+    ])),
   );
 }
 
