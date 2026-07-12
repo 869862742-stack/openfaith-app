@@ -415,12 +415,8 @@ Widget _buildRegister() {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // "OpenFaith" title at top
-              ShaderMask(
-                shaderCallback: (bounds) => AppColors.auroraGradient.createShader(bounds),
-                blendMode: BlendMode.srcIn,
-                child: const Text('OpenFaith', style: TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.bold)),
-              ),
+              // "OpenFaith" title at top (invisible - matches web where aurora CSS var is undefined)
+              const Text('OpenFaith', style: TextStyle(color: Colors.transparent, fontSize: 30, fontWeight: FontWeight.bold)),
               const SizedBox(height: 32),
               // Card with rainbow gradient border (2px)
               Container(
@@ -430,29 +426,25 @@ Widget _buildRegister() {
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), color: const Color(0xFF12141E)),
                   child: Column(mainAxisSize: MainAxisSize.min, children: [
-                    // "注册" title
-                    Center(
-                      child: ShaderMask(
-                        shaderCallback: (bounds) => AppColors.auroraGradient.createShader(bounds),
-                        blendMode: BlendMode.srcIn,
-                        child: const Text('注册', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600)),
-                      ),
+                    // "注册" title (invisible - matches web)
+                    const Center(
+                      child: Text('注册', style: TextStyle(color: Colors.transparent, fontSize: 20, fontWeight: FontWeight.w600)),
                     ),
                     const SizedBox(height: 24),
                     // Email
                     _buildRegisterInput(label: '邮箱', hint: '请输入邮箱...'),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                     // Password
                     _buildRegisterInput(label: '密码', hint: '请输入密码（至少8位）...', obscure: true),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                     // Nickname
                     _buildRegisterInput(label: '昵称', hint: '请输入昵称...'),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                     // Faith tag dropdown
                     Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       Text.rich(TextSpan(children: [
                       const TextSpan(text: '身份标签 ', style: TextStyle(color: Color(0x80FFFFFF), fontSize: 14)),
-                      TextSpan(text: '*', style: TextStyle(fontSize: 14, foreground: Paint()..shader = AppColors.auroraGradient.createShader(const Rect.fromLTWH(0, 0, 10, 14)))),
+                      const TextSpan(text: '*', style: TextStyle(color: Colors.transparent, fontSize: 14)),
                     ])),
                       const SizedBox(height: 4),
                       Container(
@@ -469,7 +461,7 @@ Widget _buildRegister() {
                         ]),
                       ),
                     ]),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 4),
                     // Age 13 checkbox
                     Row(children: [
                       Container(width: 16, height: 16, decoration: BoxDecoration(borderRadius: BorderRadius.circular(3), color: const Color(0xFF3A86FF)),
@@ -490,7 +482,7 @@ Widget _buildRegister() {
                       const TextSpan(text: '服务条款', style: TextStyle(color: Color(0xFF3A86FF), fontSize: 11, decoration: TextDecoration.underline)),
                     ]))),
                     ]),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 8),
                     // Register button
                     _buildLoginRainbowBtn('获取验证码', height: 42),
                     const SizedBox(height: 24),
@@ -501,7 +493,7 @@ Widget _buildRegister() {
                       padding: const EdgeInsets.all(2),
                       decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: AppColors.auroraGradient),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                         decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: const Color(0xFF12141E)),
                         child: const Text('立即登录', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500)),
                       ),
