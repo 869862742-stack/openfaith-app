@@ -216,12 +216,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 400),
+                constraints: const BoxConstraints(maxWidth: 384),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const _GradientText(text: 'Sign Up', fontSize: 24),
-                    const SizedBox(height: 16),
+                    const _GradientText(text: '注册', fontSize: 24),
+                    const SizedBox(height: 32),
 
                     Container(
                       padding: const EdgeInsets.all(2),
@@ -234,7 +234,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ],
                       ),
                       child: Container(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(32),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(14),
                           color: const Color(0xFF050816).withOpacity(0.97),
@@ -244,7 +244,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           children: [
                             if (!_codeSent) _buildStep1Form() else _buildStep2Form(),
 
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 24),
 
                             if (!_codeSent) ...[
                               Text('已有账号？',
@@ -253,7 +253,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               GestureDetector(
                                 onTap: () => Navigator.pop(context),
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+                                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(10),
                                     border: Border.all(
@@ -285,7 +285,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       mainAxisSize: MainAxisSize.min,
       children: [
         _buildInput(controller: _emailCtrl, label: '邮箱', hint: '请输入邮箱...', focusNode: _emailFocus),
-        const SizedBox(height: 12),
+        const SizedBox(height: 20),
 
         _buildInput(controller: _passwordCtrl, label: '密码', hint: '请输入密码（至少8位）...',
             obscure: _obscure1, focusNode: _passwordFocus,
@@ -294,13 +294,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   color: Colors.white.withOpacity(0.45), size: 18),
               onPressed: () => setState(() => _obscure1 = !_obscure1),
             )),
-        const SizedBox(height: 12),
+        const SizedBox(height: 20),
 
         _buildInput(controller: _nicknameCtrl, label: '昵称', hint: '请输入昵称...', focusNode: _nicknameFocus),
-        const SizedBox(height: 12),
+        const SizedBox(height: 20),
 
         _buildFaithTagDropdown(),
-        const SizedBox(height: 12),
+        const SizedBox(height: 20),
 
         // 年满13周岁 checkbox
         GestureDetector(
@@ -316,7 +316,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
 
         // 同意条款 checkbox
         GestureDetector(
@@ -359,7 +359,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 20),
 
         if (_error != null) ...[
           Container(
@@ -553,20 +553,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Container(
       padding: const EdgeInsets.all(2),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         gradient: _diagonalGradient(),
       ),
       child: SizedBox(
-        height: 42,
+        height: 48,
         width: double.infinity,
         child: TextButton(
           onPressed: _loading ? () {} : _handleRegister,
           style: TextButton.styleFrom(
             backgroundColor: const Color(0xFF050816).withOpacity(0.95),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9)),
           ),
           child: Text(_loading ? '发送中...' : '获取验证码',
-              style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500)),
+              style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500)),
         ),
       ),
     );
@@ -576,19 +576,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Container(
       padding: const EdgeInsets.all(2),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         gradient: _diagonalGradient(),
       ),
       child: SizedBox(
-        height: 42,
+        height: 48,
         child: TextButton(
           onPressed: _loading ? () {} : _verifyCode,
           style: TextButton.styleFrom(
             backgroundColor: const Color(0xFF050816).withOpacity(0.95),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9)),
           ),
           child: Text(_loading ? '验证中...' : '完成注册',
-              style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500)),
+              style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500)),
         ),
       ),
     );

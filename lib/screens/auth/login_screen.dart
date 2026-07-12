@@ -498,10 +498,19 @@ class _LoginScreenState extends State<LoginScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
+        const Text(
+          '登录',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 32),
         _buildInput(controller: _emailController, focusNode: _emailFocusNode, label: '邮箱', hint: '请输入邮箱...'),
-        const SizedBox(height: 12),
+        const SizedBox(height: 20),
         _buildInput(controller: _passwordController, focusNode: _passwordFocusNode, label: '密码', hint: '请输入密码...', obscure: true),
-        const SizedBox(height: 12),
+        const SizedBox(height: 20),
         // 记住我 - 小对勾 + 七彩渐变边框（无填充色）
         GestureDetector(
           onTap: () => setState(() => _rememberMe = !_rememberMe),
@@ -523,7 +532,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     : null,
               ),
               const SizedBox(width: 8),
-              Text('记住我（30天）', style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.5))),
+              Text('记住登录状态（30天）', style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.5))),
             ],
           ),
         ),
@@ -531,36 +540,36 @@ class _LoginScreenState extends State<LoginScreen> {
           const SizedBox(height: 8),
           Text(_error!, style: const TextStyle(color: Colors.redAccent, fontSize: 12)),
         ],
-        const SizedBox(height: 14),
+        const SizedBox(height: 20),
         // 登录按钮 - 七彩渐变边框 + 黑底（无渐变填充）
         _rainbowBorderBox(
-          borderRadius: 8,
+          borderRadius: 10,
           child: Material(
             color: Colors.transparent,
             child: InkWell(
               onTap: _loading ? null : _login,
-              borderRadius: BorderRadius.circular(7),
+              borderRadius: BorderRadius.circular(9),
               child: SizedBox(
-                height: 36,
+                height: 48,
                 child: Center(
                   child: _loading
                       ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : const Text('登录', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
+                      : const Text('登录', style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600)),
                 ),
               ),
             ),
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 16),
         Center(
           child: GestureDetector(
             onTap: _showForgotPassword,
             child: Text('忘记密码？', style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.4))),
           ),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 24),
         Container(height: 1, color: Colors.white.withOpacity(0.06)),
-        const SizedBox(height: 14),
+        const SizedBox(height: 24),
         Center(
           child: Column(
             children: [
@@ -570,10 +579,10 @@ class _LoginScreenState extends State<LoginScreen> {
               GestureDetector(
                 onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const RegisterScreen())),
                 child: _rainbowBorderBox(
-                  borderRadius: 7,
+                  borderRadius: 10,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    child: const Text('立即注册', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w500)),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                    child: const Text('立即注册', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
                   ),
                 ),
               ),
@@ -590,7 +599,7 @@ class _LoginScreenState extends State<LoginScreen> {
       padding: const EdgeInsets.all(1),
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: _diagonalGradient(size)),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 18),
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 32),
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(11), color: const Color(0xFF050816)),
         child: cardContent,
       ),
@@ -606,7 +615,7 @@ class _LoginScreenState extends State<LoginScreen> {
         alignment: Alignment.center,
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: SizedBox(width: 240, child: card),
+          child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 384), child: SizedBox(width: double.infinity, child: card)),
         ),
       ),
     );
