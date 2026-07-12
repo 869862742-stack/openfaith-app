@@ -129,23 +129,39 @@ Widget _buildHistory() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
     body: Column(children: [
-      _buildSliverHeader('浏览记录', showBack: true),
-      // Toggle bar
+      // Header: back + title on left, "关闭记录" on right
       Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: AppColors.bgSecondary,
-          border: Border(bottom: BorderSide(color: AppColors.borderDefault, width: 1)),
+          color: AppColors.headerBg,
+          border: Border(bottom: BorderSide(color: AppColors.borderColor, width: 0.5)),
         ),
-        child: Row(children: [
-          Icon(Icons.fiber_manual_record, color: AppColors.auroraGreen, size: 10),
-          const SizedBox(width: 8),
-          Text('记录浏览', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
-          const Spacer(),
-          Text('清空记录', style: TextStyle(color: AppColors.textWeak, fontSize: 13)),
-        ]),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: SafeArea(
+          bottom: false,
+          child: Row(children: [
+            const Icon(Icons.arrow_back_ios, color: AppColors.textPrimary, size: 20),
+            const SizedBox(width: 12),
+            const Text('浏览记录', style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
+            const Spacer(),
+            const Text('关闭记录', style: TextStyle(color: Colors.white, fontSize: 14)),
+          ]),
+        ),
       ),
       Expanded(child: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(children: [
+        // Clear history button with rainbow border
+        Container(padding: const EdgeInsets.all(1),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: AppColors.auroraGradient),
+          child: Container(
+            width: double.infinity, height: 44,
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(11), color: AppColors.bgColor),
+            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Icon(Icons.delete_outline, color: AppColors.textSecondary, size: 16),
+              const SizedBox(width: 8),
+              Text('清空浏览记录', style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
+            ]),
+          ),
+        ),
+        const SizedBox(height: 16),
         _buildHistoryItem('今天读了一段很有启发的经文', '张三', '2小时前', '基督教'),
         const SizedBox(height: 8),
         _buildHistoryItem('禅修日记第30天', '李明', '昨天', '佛教'),
@@ -162,29 +178,37 @@ Widget _buildHistory() {
 
 Widget _buildHistoryItem(String title, String author, String time, String tag) {
   return Container(
-    padding: const EdgeInsets.all(14),
+    padding: const EdgeInsets.all(12),
     decoration: BoxDecoration(
       color: AppColors.cardBg,
       borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: AppColors.borderColor, width: 0.5),
     ),
     child: Row(children: [
+      // Cover thumbnail (48x48 rounded-lg)
       Container(
-        width: 40, height: 40,
-        decoration: BoxDecoration(shape: BoxShape.circle, gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [AppColors.auroraBlue, AppColors.auroraPurple])),
-        child: Center(child: Text(author[0], style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold))),
+        width: 48, height: 48,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          color: Colors.white.withOpacity(0.04),
+        ),
+        child: const Center(child: Text('📖', style: TextStyle(fontSize: 18))),
       ),
       const SizedBox(width: 12),
       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(title, style: const TextStyle(color: Colors.white, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
-        const SizedBox(height: 4),
+        // Title + tag on same line
         Row(children: [
-          Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1), decoration: BoxDecoration(gradient: AppColors.auroraGradientWithOpacity(0.3), borderRadius: BorderRadius.circular(6)), child: Text(tag, style: const TextStyle(color: Colors.white, fontSize: 10))),
+          Expanded(child: Text(title, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500), maxLines: 1, overflow: TextOverflow.ellipsis)),
           const SizedBox(width: 8),
-          Text('$author · $time', style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
+          Text(tag, style: TextStyle(color: Colors.white.withOpacity(0.35), fontSize: 12)),
+        ]),
+        const SizedBox(height: 4),
+        // Author + time
+        Row(children: [
+          Text(author, style: const TextStyle(color: AppColors.textWeak, fontSize: 12)),
+          const SizedBox(width: 8),
+          Text(time, style: TextStyle(color: AppColors.textWeak.withOpacity(0.5), fontSize: 12)),
         ]),
       ])),
-      Icon(Icons.chevron_right, color: AppColors.textWeak, size: 20),
     ]),
   );
 }
