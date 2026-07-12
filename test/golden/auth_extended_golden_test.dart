@@ -428,7 +428,7 @@ Widget _buildRegister() {
                 decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), gradient: AppColors.auroraGradient),
                 child: Container(
                   padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), color: const Color(0xFF12141E)),
+                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), color: const Color(0xFF0A0E1F)),
                   child: Column(mainAxisSize: MainAxisSize.min, children: [
                     // "注册" title
                     Center(
@@ -469,41 +469,41 @@ Widget _buildRegister() {
                         ]),
                       ),
                     ]),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
                     // Age 13 checkbox
                     Row(children: [
                       Container(width: 16, height: 16, decoration: BoxDecoration(borderRadius: BorderRadius.circular(3), color: const Color(0xFF3A86FF)),
                         child: const Icon(Icons.check, color: Colors.white, size: 14)),
-                      const SizedBox(width: 6),
-                      Expanded(child: Text('我已年满13周岁', style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 11))),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text('我已年满13周岁', style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12))),
                     ]),
                     const SizedBox(height: 8),
                     // Terms checkbox
                     Row(children: [
                       Container(width: 16, height: 16, decoration: BoxDecoration(borderRadius: BorderRadius.circular(3), color: const Color(0xFF3A86FF)),
                         child: const Icon(Icons.check, color: Colors.white, size: 14)),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 8),
                       Expanded(child: Text.rich(TextSpan(children: [
-                      const TextSpan(text: '我已阅读并同意 ', style: TextStyle(color: Color(0x80FFFFFF), fontSize: 11)),
-                      const TextSpan(text: '隐私政策', style: TextStyle(color: Color(0xFF3A86FF), fontSize: 11, decoration: TextDecoration.underline)),
-                      const TextSpan(text: ' 和 ', style: TextStyle(color: Color(0x80FFFFFF), fontSize: 11)),
-                      const TextSpan(text: '服务条款', style: TextStyle(color: Color(0xFF3A86FF), fontSize: 11, decoration: TextDecoration.underline)),
+                      const TextSpan(text: '我已阅读并同意 ', style: TextStyle(color: Color(0x80FFFFFF), fontSize: 12)),
+                      const TextSpan(text: '隐私政策', style: TextStyle(color: Color(0xFF3A86FF), fontSize: 12, decoration: TextDecoration.underline)),
+                      const TextSpan(text: ' 和 ', style: TextStyle(color: Color(0x80FFFFFF), fontSize: 12)),
+                      const TextSpan(text: '服务条款', style: TextStyle(color: Color(0xFF3A86FF), fontSize: 12, decoration: TextDecoration.underline)),
                     ]))),
                     ]),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 16),
                     // Register button
-                    _buildLoginRainbowBtn('获取验证码', height: 42),
+                    _buildLoginRainbowBtn('获取验证码', height: 44),
                     const SizedBox(height: 24),
                     // Login link
-                    Text('已有账号？', style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 12)),
+                    Text('已有账号？', style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 14)),
                     const SizedBox(height: 8),
                     Container(
                       padding: const EdgeInsets.all(2),
                       decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: AppColors.auroraGradient),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: const Color(0xFF12141E)),
-                        child: const Text('立即登录', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500)),
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: const Color(0xFF0A0E1F)),
+                        child: const Text('立即登录', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
                       ),
                     ),
                   ]),
