@@ -493,10 +493,25 @@ Widget _buildSettingsNotification() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
     body: Column(children: [
-      _buildHeader('通知设置'),
+      // Web-style header: px-4 py-3 border-b (1px)
+      Container(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+        decoration: BoxDecoration(
+          color: AppColors.headerBg,
+          border: Border(bottom: BorderSide(color: AppColors.borderColor, width: 1)),
+        ),
+        child: SafeArea(
+          bottom: false,
+          child: Row(children: [
+            const Padding(padding: EdgeInsets.only(right: 8), child: Icon(Icons.arrow_back_ios, color: AppColors.textPrimary, size: 20)),
+            const SizedBox(width: 4),
+            const Text('通知设置', style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
+          ]),
+        ),
+      ),
       Expanded(child: SingleChildScrollView(padding: const EdgeInsets.symmetric(vertical: 8), child: Column(children: [
         // Notification permission banner - rainbow gradient border matching web
-        Container(margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), padding: const EdgeInsets.all(1),
+        Container(margin: const EdgeInsets.fromLTRB(16, 0, 16, 12), padding: const EdgeInsets.all(1),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             gradient: AppColors.auroraGradient,
@@ -506,11 +521,12 @@ Widget _buildSettingsNotification() {
               borderRadius: BorderRadius.circular(11),
               color: const Color.fromRGBO(5, 8, 22, 0.95),
             ),
-            child: Row(children: [
-              const Icon(Icons.notifications, color: Color(0xFFFF9F1C), size: 20),
+            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              const Padding(padding: EdgeInsets.only(top: 2), child: Icon(Icons.notifications, color: Color(0xFFFF9F1C), size: 20)),
               const SizedBox(width: 12),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 const Text('开启通知权限', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
+                const SizedBox(height: 4),
                 Text('开启后才能收到来电和消息提醒，即使不在聊天页面也不会错过', style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
               ])),
             ])),
@@ -576,7 +592,7 @@ Widget _buildNotifSettingItem({required IconData icon, required String title, St
     const SizedBox(width: 12),
     Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text(title, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
-      if (desc != null) Text(desc, style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
+      if (desc != null) ...[const SizedBox(height: 2), Text(desc, style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12))],
     ])),
     action,
   ]));

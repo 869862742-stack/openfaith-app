@@ -776,7 +776,22 @@ Widget _buildVip() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
     body: Column(children: [
-      _buildGlassHeader('订阅会员'),
+      // Web VIP header: left-aligned back button + title (px-4 py-3)
+      Container(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+        decoration: BoxDecoration(
+          color: AppColors.headerBg,
+          border: Border(bottom: BorderSide(color: AppColors.borderColor, width: 1)),
+        ),
+        child: SafeArea(
+          bottom: false,
+          child: Row(children: [
+            const Padding(padding: EdgeInsets.only(right: 8), child: Icon(Icons.arrow_back_ios, color: AppColors.textPrimary, size: 20)),
+            const SizedBox(width: 4),
+            const Text('订阅会员', style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
+          ]),
+        ),
+      ),
       Expanded(child: SingleChildScrollView(padding: const EdgeInsets.fromLTRB(16, 20, 16, 16), child: Column(children: [
         // Hero: crown icon with glow ring + title + subtitle (web: w-24 h-24 = 96px)
         Container(
@@ -794,10 +809,10 @@ Widget _buildVip() {
           ),
           child: Container(
             width: 96, height: 96,
-            padding: const EdgeInsets.all(1.5),
+            padding: const EdgeInsets.all(1),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: AppColors.auroraGradientWithOpacity(0.5),
+              gradient: AppColors.auroraGradient,
             ),
             child: Container(
               decoration: BoxDecoration(
@@ -843,9 +858,9 @@ Widget _buildVip() {
         // 开通即享 section
         Container(
           padding: const EdgeInsets.all(0.5),
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), gradient: AppColors.auroraGradientWithOpacity(0.5)),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), gradient: AppColors.auroraGradientWithOpacity(0.35)),
           child: Container(
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(15.5), color: AppColors.bgColor),
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), color: AppColors.bgColor),
             padding: const EdgeInsets.all(20),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
@@ -861,7 +876,7 @@ Widget _buildVip() {
                 decoration: BoxDecoration(color: AppColors.hoverBgLight, borderRadius: BorderRadius.circular(20)),
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
                   Icon(Icons.check, color: AppColors.auroraGreen, size: 14),
-                  const SizedBox(width: 4),
+                  const SizedBox(width: 6),
                   Text(g, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
                 ]),
               )).toList()),
@@ -871,10 +886,10 @@ Widget _buildVip() {
         const SizedBox(height: 20),
         // Bottom CTA button
         Container(
-          padding: const EdgeInsets.all(0.5),
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), gradient: AppColors.auroraGradientWithOpacity(0.5)),
+          padding: const EdgeInsets.all(1),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), gradient: AppColors.auroraGradient),
           child: Container(
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(15.5), color: AppColors.bgColor),
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(15), color: AppColors.bgColor),
             padding: const EdgeInsets.symmetric(vertical: 14),
             alignment: Alignment.center,
             child: Row(mainAxisSize: MainAxisSize.min, children: [
@@ -910,9 +925,9 @@ List<Widget> _buildVipGridRow(List<Map<String, dynamic>> items) {
         margin: EdgeInsets.only(left: col > 0 ? 5 : 0, right: col < 2 ? 5 : 0),
         child: Container(
           padding: const EdgeInsets.all(0.5),
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: AppColors.auroraGradientWithOpacity(0.5)),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: AppColors.auroraGradientWithOpacity(0.35)),
           child: Container(
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(11.5), color: AppColors.bgColor),
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: AppColors.bgColor),
             padding: const EdgeInsets.symmetric(vertical: 12),
             child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
               Container(
