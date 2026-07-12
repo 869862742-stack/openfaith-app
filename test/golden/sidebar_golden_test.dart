@@ -186,7 +186,6 @@ Widget _buildHistory() {
         _buildHistoryItem('圣经研读心得分享', '赵六', '5天前', '基督教'),
       ]))),
     ]),
-  ]),
   );
 }
 
@@ -677,7 +676,6 @@ Widget _buildPrivacy() {
         const SizedBox(height: 32),
       ]))),
     ]),
-  ]),
   );
 }
 Widget _buildPrivacyBullet(String text) {
@@ -799,7 +797,6 @@ Widget _buildTerms() {
         const SizedBox(height: 32),
       ]))),
     ]),
-  ]),
   );
 }
 Widget _buildTermsBullet(String text) {
