@@ -14,9 +14,12 @@ class _NotificationSettingsScreenState
     extends State<NotificationSettingsScreen> {
   bool _callNotification = true;
   bool _messageNotification = true;
-  bool _soundEnabled = true;
+  bool _showNotificationContent = true;
+  bool _messageSound = true;
+  bool _callSound = true;
   String _ringTone = 'gentle';
   String _messageTone = 'default';
+  String _callTone = 'gentle';
 
   static const _ringTones = [
     {'id': 'gentle', 'name': '柔和铃声', 'desc': '轻柔的提示音'},
@@ -32,6 +35,13 @@ class _NotificationSettingsScreenState
     {'id': 'ping', 'name': '清脆', 'desc': '简洁提示'},
   ];
 
+  static const _callTones = [
+    {'id': 'gentle', 'name': '柔和铃声', 'desc': '轻柔的呼叫音'},
+    {'id': 'bright', 'name': '明亮铃声', 'desc': '清脆悦耳'},
+    {'id': 'classic', 'name': '经典铃声', 'desc': '传统风格'},
+    {'id': 'nature', 'name': '自然之声', 'desc': '鸟鸣与流水'},
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -44,13 +54,16 @@ class _NotificationSettingsScreenState
     setState(() {
       _callNotification = prefs.getBool('call_notification') ?? true;
       _messageNotification = prefs.getBool('message_notification') ?? true;
-      _soundEnabled = prefs.getBool('sound_enabled') ?? true;
+      _showNotificationContent = prefs.getBool('show_notification_content') ?? true;
+      _messageSound = prefs.getBool('message_sound') ?? true;
+      _callSound = prefs.getBool('call_sound') ?? true;
       _ringTone = prefs.getString('ring_tone') ?? 'gentle';
       _messageTone = prefs.getString('message_tone') ?? 'default';
+      _callTone = prefs.getString('call_tone') ?? 'gentle';
     });
   }
 
-  Future<void> _toggle(String key, bool value) async {
+  Future<void> _toggleBool(String key, bool value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(key, value);
   }
@@ -62,6 +75,9 @@ class _NotificationSettingsScreenState
     setState(() {});
   }
 
+  /// Toggle switch matching web style:
+  /// enabled: 2px transparent border + rainbow gradient border (outer gradient + inner dark bg)
+  /// disabled: gray bg + slight border
   Widget _buildToggle({
     required bool value,
     required VoidCallback onChanged,
@@ -76,15 +92,15 @@ class _NotificationSettingsScreenState
                 borderRadius: BorderRadius.circular(14),
                 gradient: AppColors.auroraGradient,
               ),
-              padding: const EdgeInsets.all(1),
+              padding: const EdgeInsets.all(2),
               child: Container(
-                width: 46,
-                height: 26,
+                width: 44,
+                height: 24,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(13),
+                  borderRadius: BorderRadius.circular(12),
                   color: AppColors.bgColor,
                 ),
-                padding: const EdgeInsets.only(left: 2, right: 2, top: 2, bottom: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 2),
                 child: Align(
                   alignment: Alignment.centerRight,
                   child: Container(
@@ -110,8 +126,11 @@ class _NotificationSettingsScreenState
               height: 28,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(14),
-                color: AppColors.borderColor,
-                border: Border.all(color: AppColors.borderSubtle, width: 1),
+                color: const Color(0x26FFFFFF), // rgba(255,255,255,0.15)
+                border: Border.all(
+                  color: const Color(0x1AFFFFFF), // rgba(255,255,255,0.1)
+                  width: 1,
+                ),
               ),
               padding: const EdgeInsets.all(2),
               child: Container(
@@ -119,7 +138,7 @@ class _NotificationSettingsScreenState
                 height: 20,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.textPlaceholder,
+                  color: const Color(0x66FFFFFF), // rgba(255,255,255,0.4)
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.2),
@@ -142,6 +161,10 @@ class _NotificationSettingsScreenState
     final currentMessageTone = _messageTones.firstWhere(
       (t) => t['id'] == _messageTone,
       orElse: () => _messageTones[0],
+    );
+    final currentCallTone = _callTones.firstWhere(
+      (t) => t['id'] == _callTone,
+      orElse: () => _callTones[0],
     );
 
     return Scaffold(
@@ -168,178 +191,166 @@ class _NotificationSettingsScreenState
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: Column(
           children: [
-            // Notification permission banner with gradient border
-            Container(
-              margin:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              padding: const EdgeInsets.all(1),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                gradient: AppColors.auroraGradient,
-              ),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(11),
-                  color: AppColors.overlayBg,
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.notifications_active,
-                        color: AppColors.auroraOrange, size: 20),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('通知权限',
-                              style: TextStyle(
-                                  color: AppColors.textPrimary,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600)),
-                          Text('允许发送通知以接收消息提醒',
-                              style: TextStyle(
-                                  color: AppColors.textWeak,
-                                  fontSize: 12)),
-                        ],
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('通知权限设置请在系统设置中开启'),
-                            backgroundColor: AppColors.cardBg,
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
-                      },
-                      child: const Text('去开启',
-                          style: TextStyle(
-                              color: AppColors.auroraBlue,
-                              fontWeight: FontWeight.w600)),
-                    ),
-                  ],
+            // ===== 消息通知 =====
+            _sectionTitle('消息通知'),
+            _sectionCard(children: [
+              _settingItem(
+                icon: Icons.message_outlined,
+                title: '新消息通知',
+                desc: '收到新消息时提醒',
+                action: _buildToggle(
+                  value: _messageNotification,
+                  onChanged: () {
+                    setState(() => _messageNotification = !_messageNotification);
+                    _toggleBool('message_notification', _messageNotification);
+                  },
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.only(top: 16, bottom: 8),
-                    child: Text('通知开关',
-                        style: TextStyle(
-                            color: AppColors.textWeak,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500)),
-                  ),
-                  _sectionCard(children: [
-                    _settingItem(
-                      icon: Icons.phone_android,
-                      title: '来电提醒',
-                      desc: '接收语音/视频通话提醒',
-                      action: _buildToggle(
-                        value: _callNotification,
-                        onChanged: () {
-                          setState(
-                              () => _callNotification = !_callNotification);
-                          _toggle('call_notification', _callNotification);
-                        },
-                      ),
-                    ),
-                    Container(
-                        height: 1, color: AppColors.borderColor),
-                    _settingItem(
-                      icon: Icons.chat_bubble_outline,
-                      title: '消息通知',
-                      desc: '接收新消息通知',
-                      action: _buildToggle(
-                        value: _messageNotification,
-                        onChanged: () {
-                          setState(() => _messageNotification =
-                              !_messageNotification);
-                          _toggle(
-                              'message_notification', _messageNotification);
-                        },
-                      ),
-                    ),
-                    Container(
-                        height: 1, color: AppColors.borderColor),
-                    _settingItem(
-                      icon: Icons.volume_up,
-                      title: '声音',
-                      desc: '开启提示音',
-                      action: _buildToggle(
-                        value: _soundEnabled,
-                        onChanged: () {
-                          setState(() => _soundEnabled = !_soundEnabled);
-                          _toggle('sound_enabled', _soundEnabled);
-                        },
-                      ),
-                    ),
-                  ]),
-                ],
+              _divider(),
+              _settingItem(
+                icon: Icons.phone_outlined,
+                title: '语音和视频通话通知',
+                desc: '收到通话邀请时响铃提醒',
+                action: _buildToggle(
+                  value: _callNotification,
+                  onChanged: () {
+                    setState(() => _callNotification = !_callNotification);
+                    _toggleBool('call_notification', _callNotification);
+                  },
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.only(top: 16, bottom: 8),
-                    child: Text('声音设置',
-                        style: TextStyle(
-                            color: AppColors.textWeak,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500)),
-                  ),
-                  _sectionCard(children: [
-                    GestureDetector(
-                      onTap: () => _showTonePicker(
-                        title: '选择来电铃声',
-                        tones: _ringTones,
-                        currentId: _ringTone,
-                        prefKey: 'ring_tone',
-                        icon: Icons.music_note,
-                      ),
-                      child: _settingItem(
-                        icon: Icons.music_note,
-                        title: '来电铃声',
-                        desc: currentRingTone['name'],
-                        action: const Icon(Icons.chevron_right,
-                            color: AppColors.textWeak, size: 20),
-                      ),
-                    ),
-                    Container(
-                        height: 1, color: AppColors.borderColor),
-                    GestureDetector(
-                      onTap: () => _showTonePicker(
-                        title: '选择消息提示音',
-                        tones: _messageTones,
-                        currentId: _messageTone,
-                        prefKey: 'message_tone',
-                        icon: Icons.volume_up,
-                      ),
-                      child: _settingItem(
-                        icon: Icons.volume_up,
-                        title: '消息提示音',
-                        desc: currentMessageTone['name'],
-                        action: const Icon(Icons.chevron_right,
-                            color: AppColors.textWeak, size: 20),
-                      ),
-                    ),
-                  ]),
-                ],
+            ]),
+
+            // ===== 通知显示 =====
+            _sectionTitle('通知显示'),
+            _sectionCard(children: [
+              _settingItem(
+                icon: Icons.visibility_outlined,
+                title: '通知显示内容',
+                desc: _showNotificationContent
+                    ? '显示发送者和消息内容'
+                    : '隐藏消息内容，保护隐私',
+                action: _buildToggle(
+                  value: _showNotificationContent,
+                  onChanged: () {
+                    setState(() => _showNotificationContent = !_showNotificationContent);
+                    _toggleBool('show_notification_content', _showNotificationContent);
+                  },
+                ),
               ),
-            ),
+            ]),
+
+            // ===== 声音与震动 =====
+            _sectionTitle('声音与震动'),
+            _sectionCard(children: [
+              _settingItem(
+                icon: Icons.volume_up_outlined,
+                title: '消息提示音',
+                desc: '收到新消息时播放提示音',
+                action: _buildToggle(
+                  value: _messageSound,
+                  onChanged: () {
+                    setState(() => _messageSound = !_messageSound);
+                    _toggleBool('message_sound', _messageSound);
+                  },
+                ),
+              ),
+              _divider(),
+              _settingItem(
+                icon: Icons.music_note_outlined,
+                title: '通话铃声',
+                desc: '收到通话邀请时播放铃声',
+                action: _buildToggle(
+                  value: _callSound,
+                  onChanged: () {
+                    setState(() => _callSound = !_callSound);
+                    _toggleBool('call_sound', _callSound);
+                  },
+                ),
+              ),
+            ]),
+
+            // ===== 提示音与铃声 =====
+            _sectionTitle('提示音与铃声'),
+            _sectionCard(children: [
+              GestureDetector(
+                onTap: () => _showTonePicker(
+                  title: '选择消息提示音',
+                  tones: _messageTones,
+                  currentId: _messageTone,
+                  prefKey: 'message_tone',
+                  icon: Icons.message_outlined,
+                ),
+                child: _settingItem(
+                  icon: Icons.message_outlined,
+                  title: '消息提示音',
+                  desc: currentMessageTone['name'],
+                  action: const Icon(Icons.chevron_right,
+                      color: AppColors.textPlaceholder, size: 20),
+                ),
+              ),
+              _divider(),
+              GestureDetector(
+                onTap: () => _showTonePicker(
+                  title: '选择来电铃声',
+                  tones: _ringTones,
+                  currentId: _ringTone,
+                  prefKey: 'ring_tone',
+                  icon: Icons.phone_outlined,
+                ),
+                child: _settingItem(
+                  icon: Icons.phone_outlined,
+                  title: '来电铃声',
+                  desc: currentRingTone['name'],
+                  action: const Icon(Icons.chevron_right,
+                      color: AppColors.textPlaceholder, size: 20),
+                ),
+              ),
+              _divider(),
+              GestureDetector(
+                onTap: () => _showTonePicker(
+                  title: '选择呼叫铃声',
+                  tones: _callTones,
+                  currentId: _callTone,
+                  prefKey: 'call_tone',
+                  icon: Icons.phone_callback_outlined,
+                ),
+                child: _settingItem(
+                  icon: Icons.phone_callback_outlined,
+                  title: '呼叫铃声',
+                  desc: currentCallTone['name'],
+                  action: const Icon(Icons.chevron_right,
+                      color: AppColors.textPlaceholder, size: 20),
+                ),
+              ),
+            ]),
+
             const SizedBox(height: 32),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _sectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 8),
+      child: Text(
+        title.toUpperCase(),
+        style: const TextStyle(
+          color: Color(0x66FFFFFF), // rgba(255,255,255,0.4)
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+
+  Widget _divider() {
+    return Container(
+      height: 1,
+      color: const Color(0x0FFFFFFF), // rgba(255,255,255,0.06)
     );
   }
 
@@ -357,7 +368,7 @@ class _NotificationSettingsScreenState
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: AppColors.hoverBg,
+              color: const Color(0x14FFFFFF), // rgba(255,255,255,0.08)
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: AppColors.textPrimary, size: 16),
@@ -373,9 +384,12 @@ class _NotificationSettingsScreenState
                         fontSize: 14,
                         fontWeight: FontWeight.w500)),
                 if (desc != null)
-                  Text(desc,
-                      style: const TextStyle(
-                          color: AppColors.textWeak, fontSize: 12)),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Text(desc,
+                        style: const TextStyle(
+                            color: AppColors.textWeak, fontSize: 12)),
+                  ),
               ],
             ),
           ),
@@ -387,11 +401,11 @@ class _NotificationSettingsScreenState
 
   Widget _sectionCard({required List<Widget> children}) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: AppColors.hoverBgLight,
+        color: const Color(0x0AFFFFFF), // rgba(255,255,255,0.04)
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: const Color(0x0FFFFFFF)), // rgba(255,255,255,0.06)
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(children: children),
@@ -430,6 +444,8 @@ class _NotificationSettingsScreenState
                   setState(() {
                     if (prefKey == 'ring_tone') {
                       _ringTone = tone['id']!;
+                    } else if (prefKey == 'call_tone') {
+                      _callTone = tone['id']!;
                     } else {
                       _messageTone = tone['id']!;
                     }
@@ -459,7 +475,7 @@ class _NotificationSettingsScreenState
                                 width: 32,
                                 height: 32,
                                 decoration: BoxDecoration(
-                                  color: AppColors.hoverBg,
+                                  color: const Color(0x14FFFFFF),
                                   borderRadius:
                                       BorderRadius.circular(8),
                                 ),
@@ -514,7 +530,7 @@ class _NotificationSettingsScreenState
                             borderRadius: BorderRadius.circular(11),
                             color: AppColors.bgColor,
                             border: Border.all(
-                                color: AppColors.borderSubtle),
+                                color: const Color(0x0FFFFFFF)),
                           ),
                           child: Row(
                             children: [
@@ -522,7 +538,7 @@ class _NotificationSettingsScreenState
                                 width: 32,
                                 height: 32,
                                 decoration: BoxDecoration(
-                                  color: AppColors.hoverBg,
+                                  color: const Color(0x14FFFFFF),
                                   borderRadius:
                                       BorderRadius.circular(8),
                                 ),
@@ -562,7 +578,7 @@ class _NotificationSettingsScreenState
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
-                  color: AppColors.hoverBg,
+                  color: const Color(0x14FFFFFF),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Center(
