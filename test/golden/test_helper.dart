@@ -44,16 +44,30 @@ void _mockPlatformChannels() {
   );
 }
 
+/// Load Chinese font from assets for proper CJK rendering in tests
+Future<void> _loadChineseFont() async {
+  try {
+    final fontData = await rootBundle.load('assets/fonts/NotoSansSC-Regular.ttf');
+    final fontLoader = FontLoader('NotoSansSC');
+    fontLoader.addFont(Future.value(fontData));
+    await fontLoader.load();
+    debugPrint('[TestHelper] NotoSansSC font loaded successfully');
+  } catch (e) {
+    debugPrint('[TestHelper] Failed to load NotoSansSC font: $e');
+  }
+}
+
 /// Helper to copy a TextStyle with a different fontFamily
 TextStyle _withFont(TextStyle? style, String fontFamily) {
   return (style ?? const TextStyle()).copyWith(fontFamily: fontFamily);
 }
 
-/// Initialize test dependencies (Supabase, SharedPreferences, plugin mocks)
+/// Initialize test dependencies (Supabase, SharedPreferences, plugin mocks, fonts)
 Future<void> initTestDependencies() async {
   if (_initialized) return;
 
   _mockPlatformChannels();
+  await _loadChineseFont();
 
   SharedPreferences.setMockInitialValues({});
 
@@ -68,7 +82,7 @@ Future<void> initTestDependencies() async {
 }
 
 /// Wrap a page widget for golden testing with 393×852 constraint
-/// Uses NotoSansSC font family (declared in pubspec.yaml) for proper CJK rendering
+/// Uses NotoSansSC font family for proper CJK rendering
 Widget wrapForGoldenTest(Widget child, {Locale locale = const Locale('zh')}) {
   final baseTheme = AppTheme.darkTheme;
 
