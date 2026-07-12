@@ -813,7 +813,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         height: height,
         fit: fit,
         placeholderBuilder: placeholder != null ? (_) => placeholder : null,
-        errorBuilder: errorWidget != null ? (_, __, ___) => errorWidget! : (placeholder != null ? (_, __, ___) => placeholder : const SizedBox.shrink()),
+        errorBuilder: (BuildContext ctx, Object err, StackTrace? st) => errorWidget ?? placeholder ?? const SizedBox.shrink(),
       );
     }
     return CachedNetworkImage(
@@ -822,7 +822,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       height: height,
       fit: fit,
       placeholder: placeholder != null ? (_, __) => placeholder : null,
-      errorWidget: errorWidget != null ? (_, __, ___) => errorWidget : (placeholder != null ? (_, __, ___) => placeholder : const SizedBox.shrink()),
+      errorWidget: (BuildContext ctx, String url, Object err) => errorWidget ?? placeholder ?? const SizedBox.shrink(),
     );
   }
 
