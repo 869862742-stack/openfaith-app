@@ -275,6 +275,9 @@ Widget _buildEmptyState(String title, String subtitle) {
 
 
 void main() {
+    setUpAll(() async {
+      await initTestDependencies();
+    });
   group('Settings Extended Golden Tests', () {
 
     testWidgets('Settings main page', (WidgetTester tester) async {
