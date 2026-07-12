@@ -300,73 +300,85 @@ Widget _buildCovenant() {
       // Content layer
       Column(children: [
       _buildSliverHeader('信仰公约'),
-      Expanded(child: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        // Intro card (web: rounded-2xl p-6, bg=rgba(255,255,255,0.04), border=rgba(255,255,255,0.08))
-        Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: const Color(0x0AFFFFFF),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0x14FFFFFF)),
+      Expanded(child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          // Intro card (web: rounded-2xl p-6 mb-6, bg=rgba(255,255,255,0.04), border=rgba(255,255,255,0.08))
+          Container(
+            padding: const EdgeInsets.all(24),
+            margin: const EdgeInsets.only(bottom: 24),
+            decoration: BoxDecoration(
+              color: const Color(0x0AFFFFFF),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0x14FFFFFF)),
+            ),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(children: [
+                Container(
+                  width: 48, height: 48,
+                  padding: const EdgeInsets.all(1.5),
+                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: AppColors.auroraGradient),
+                  child: Container(
+                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(10.5), color: AppColors.bgColor),
+                    child: const Center(child: Icon(Icons.shield_outlined, color: AppColors.textPrimary, size: 24)),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text('OpenFaith 信仰公约', style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 2),
+                  Text('尊重 · 包容 · 和平', style: TextStyle(color: AppColors.textPrimary, fontSize: 12)),
+                ])),
+              ]),
+              const SizedBox(height: 12),
+              const Text('我们致力于创建一个尊重、包容、和平的全球信仰交流社区，让每一位探索者都能在这里找到心灵的归属。', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6)),
+            ]),
           ),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [
-              Container(
-                width: 48, height: 48,
-                padding: const EdgeInsets.all(1.5),
-                decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: AppColors.auroraGradient),
-                child: Container(
-                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(10.5), color: AppColors.bgColor),
-                  child: const Center(child: Icon(Icons.shield_outlined, color: AppColors.textPrimary, size: 24)),
+          // Items (web: space-y-3)
+          ...List.generate(items.length, (i) {
+            final item = items[i];
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0x08FFFFFF),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0x14FFFFFF)),
                 ),
+                child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Container(
+                    width: 32, height: 32,
+                    padding: const EdgeInsets.all(1.5),
+                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), gradient: AppColors.auroraGradient),
+                    child: Container(
+                      decoration: BoxDecoration(borderRadius: BorderRadius.circular(6.5), color: AppColors.bgColor),
+                      child: Center(child: Text('${i + 1}', style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.bold))),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text(item['title']!, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 4),
+                    Text(item['content']!, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, height: 1.6)),
+                  ])),
+                ]),
               ),
-              const SizedBox(width: 12),
-              const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('OpenFaith 信仰公约', style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
-                SizedBox(height: 2),
-                Text('尊重 · 包容 · 和平', style: TextStyle(color: AppColors.textPrimary, fontSize: 12)),
-              ])),
+            );
+          }),
+          // Bottom tag (web: mt-6 text-center, inline-flex gap-2 px-4 py-2 rounded-full)
+          const SizedBox(height: 24),
+          Center(child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(color: AppColors.hoverBgLight, borderRadius: BorderRadius.circular(20)),
+            child: const Row(mainAxisSize: MainAxisSize.min, children: [
+              Icon(Icons.check, color: AppColors.textPrimary, size: 16),
+              SizedBox(width: 8),
+              Text('共同维护社区环境', style: TextStyle(color: AppColors.textPrimary, fontSize: 12)),
             ]),
-            const SizedBox(height: 12),
-            const Text('我们致力于创建一个尊重、包容、和平的全球信仰交流社区，让每一位探索者都能在这里找到心灵的归属。', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6)),
-          ]),
-        ),
-        const SizedBox(height: 12),
-        ...List.generate(items.length, (i) {
-          final item = items[i];
-          return Padding(padding: const EdgeInsets.only(bottom: 12), child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(color: const Color(0x08FFFFFF), borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0x14FFFFFF))),
-            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Container(
-                width: 32, height: 32,
-                padding: const EdgeInsets.all(1.5),
-                decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), gradient: AppColors.auroraGradient),
-                child: Container(
-                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(6.5), color: AppColors.bgColor),
-                  child: Center(child: Text('${i + 1}', style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.bold))),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(item['title']!, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
-                Text(item['content']!, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, height: 1.6)),
-              ])),
-            ]),
-          ));
-        }),
-        const SizedBox(height: 24),
-        Center(child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(color: AppColors.hoverBgLight, borderRadius: BorderRadius.circular(20)),
-          child: const Row(mainAxisSize: MainAxisSize.min, children: [
-            Icon(Icons.check, color: AppColors.textPrimary, size: 16),
-            SizedBox(width: 8),
-            Text('共同维护社区环境', style: TextStyle(color: AppColors.textPrimary, fontSize: 12)),
-          ]),
-        )),
-      ]))),
+          )),
+        ]),
+      )),
     ]),
   ]),
   );
