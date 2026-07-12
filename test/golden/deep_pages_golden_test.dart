@@ -108,6 +108,9 @@ Widget _rainbowBorder({required Widget child, double radius = 12}) {
 }
 
 void main() {
+    setUpAll(() async {
+      await initTestDependencies();
+    });
   group('Deep Pages Golden Tests', () {
     // ──── 1. Edit Profile ────
     testWidgets('page_edit_profile renders correctly', (WidgetTester tester) async {

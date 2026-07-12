@@ -7,6 +7,9 @@ import 'package:openfaith_app/widgets/aurora_button.dart';
 import 'test_helper.dart';
 
 void main() {
+    setUpAll(() async {
+      await initTestDependencies();
+    });
   group('UI Component Golden Tests', () {
     
     testWidgets('RainbowBorder renders correctly', (WidgetTester tester) async {

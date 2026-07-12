@@ -68,6 +68,9 @@ Widget _buildSettingsCard(IconData icon, String title, {String? subtitle, bool s
 }
 
 void main() {
+    setUpAll(() async {
+      await initTestDependencies();
+    });
   group('Sidebar Pages Golden Tests', () {
     testWidgets('history page renders correctly', (WidgetTester tester) async {
       await setupGoldenSurface(tester);

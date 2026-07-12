@@ -27,6 +27,9 @@ Widget _buildGlassHeader(String title) {
 }
 
 void main() {
+    setUpAll(() async {
+      await initTestDependencies();
+    });
   group('Profile Extended Golden Tests', () {
     testWidgets('switch_account page renders correctly', (WidgetTester tester) async {
       await setupGoldenSurface(tester);

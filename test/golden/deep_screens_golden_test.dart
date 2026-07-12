@@ -7,6 +7,9 @@ import 'test_helper.dart';
 /// Covers actual screen deep pages using mock UI to avoid network calls
 
 void main() {
+    setUpAll(() async {
+      await initTestDependencies();
+    });
   group('Deep Screens Golden Tests', () {
     testWidgets('page_create_post renders correctly', (WidgetTester tester) async {
       await setupGoldenSurface(tester);

@@ -7,6 +7,9 @@ import 'test_helper.dart';
 /// Covers: splash
 
 void main() {
+    setUpAll(() async {
+      await initTestDependencies();
+    });
   group('Splash Golden Test', () {
     testWidgets('splash page renders correctly', (WidgetTester tester) async {
       await setupGoldenSurface(tester);

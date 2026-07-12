@@ -52,6 +52,9 @@ Widget _buildInputField(String hint, {int maxLines = 1}) {
 }
 
 void main() {
+    setUpAll(() async {
+      await initTestDependencies();
+    });
   group('Publish Extended Golden Tests', () {
     testWidgets('publish_video page renders correctly', (WidgetTester tester) async {
       await setupGoldenSurface(tester);

@@ -28,6 +28,9 @@ Widget _buildGlassHeader(String title) {
 }
 
 void main() {
+    setUpAll(() async {
+      await initTestDependencies();
+    });
   group('Learn Extended 2 Golden Tests', () {
     testWidgets('religion_detail page renders correctly', (WidgetTester tester) async {
       await setupGoldenSurface(tester);

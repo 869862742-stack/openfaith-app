@@ -275,6 +275,9 @@ Widget _buildEmptyState(String title, String subtitle) {
 
 
 void main() {
+    setUpAll(() async {
+      await initTestDependencies();
+    });
   group('Auth Extended Golden Tests', () {
 
     testWidgets('Login page full render', (WidgetTester tester) async {

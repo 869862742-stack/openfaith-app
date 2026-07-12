@@ -9,6 +9,9 @@ import 'package:openfaith_app/widgets/glass_card.dart';
 import 'test_helper.dart';
 
 void main() {
+    setUpAll(() async {
+      await initTestDependencies();
+    });
   group('Page Component Golden Tests', () {
     
     testWidgets('AuroraButton renders correctly', (WidgetTester tester) async {
