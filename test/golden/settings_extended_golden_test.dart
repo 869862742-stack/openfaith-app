@@ -332,27 +332,46 @@ void main() {
   });
 }
 
+Widget _buildSettingsFlatItem(IconData icon, String title, {bool destructive = false}) {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+    decoration: BoxDecoration(
+      color: AppColors.cardBg,
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Row(children: [
+      Icon(icon, color: destructive ? AppColors.error : AppColors.textSecondary, size: 20),
+      const SizedBox(width: 16),
+      Expanded(child: Text(title, style: TextStyle(color: destructive ? AppColors.error : Colors.white, fontSize: 14))),
+    ]),
+  );
+}
+
 Widget _buildSettings() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
     body: Column(children: [
       _buildHeader('设置'),
       Expanded(child: ListView(padding: const EdgeInsets.all(16), children: [
-        _buildSettingsCard(Icons.person_outline, '账号安全', subtitle: '密码、登录设备'),
-        const SizedBox(height: 4),
-        _buildSettingsCard(Icons.text_fields_outlined, '显示设置', subtitle: '字体大小'),
-        const SizedBox(height: 4),
-        _buildSettingsCard(Icons.notifications_outlined, '通知设置'),
-        const SizedBox(height: 4),
-        _buildSettingsCard(Icons.language, '语言设置', subtitle: '简体中文'),
-        const SizedBox(height: 4),
-        _buildSettingsCard(Icons.article_outlined, '内容偏好'),
+        Column(children: [
+          _buildSettingsFlatItem(Icons.person_outline, '账号安全'),
+          const SizedBox(height: 4),
+          _buildSettingsFlatItem(Icons.text_fields_outlined, '显示设置'),
+          const SizedBox(height: 4),
+          _buildSettingsFlatItem(Icons.notifications_outlined, '通知设置'),
+          const SizedBox(height: 4),
+          _buildSettingsFlatItem(Icons.language, '语言设置'),
+          const SizedBox(height: 4),
+          _buildSettingsFlatItem(Icons.article_outlined, '内容偏好'),
+        ]),
         const SizedBox(height: 24),
         Container(height: 0.5, color: AppColors.borderColor),
         const SizedBox(height: 24),
-        _buildSettingsCard(Icons.people_outline, '切换账号'),
-        const SizedBox(height: 4),
-        _buildSettingsCard(Icons.logout, '退出登录', destructive: true),
+        Column(children: [
+          _buildSettingsFlatItem(Icons.people_outline, '切换账号'),
+          const SizedBox(height: 4),
+          _buildSettingsFlatItem(Icons.logout, '退出登录', destructive: true),
+        ]),
       ])),
     ]),
   );
@@ -384,85 +403,70 @@ Widget _buildSettingsProfile() {
   );
 }
 
+Widget _buildAccountMenuItem(IconData icon, String label, String value, {bool destructive = false}) {
+  return Container(
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: const Color(0x0AFFFFFF),
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: const Color(0x14FFFFFF), width: 0.5),
+    ),
+    child: Row(children: [
+      Icon(icon, color: destructive ? AppColors.error : Colors.white, size: 20),
+      const SizedBox(width: 16),
+      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(label, style: TextStyle(color: destructive ? AppColors.error : Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
+        if (value.isNotEmpty) Text(value, style: TextStyle(color: destructive ? AppColors.error : const Color(0xFFAAAAAA), fontSize: 12)),
+      ])),
+      Icon(Icons.chevron_right, color: AppColors.textWeak, size: 20),
+    ]),
+  );
+}
+
 Widget _buildSettingsAccount() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
     body: Column(children: [
-      _buildHeader('账号安全'),
+      _buildHeader('账号与安全'),
       Expanded(child: ListView(padding: const EdgeInsets.all(16), children: [
-        // Security banner
+        // Security banner with gradient background
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             gradient: LinearGradient(
               begin: Alignment.topLeft, end: Alignment.bottomRight,
-              colors: [AppColors.hoverBg, AppColors.hoverBgLight],
+              colors: [const Color(0x14FF4D6D), const Color(0x14FF9F1C), const Color(0x1400E5FF)],
             ),
+            border: Border.all(color: const Color(0x14FFFFFF), width: 0.5),
           ),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [
+          child: Row(children: [
+            Container(width: 40, height: 40, decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              gradient: AppColors.auroraGradientWithOpacity(0.3),
+            ), child: const Icon(Icons.shield_outlined, color: Colors.white, size: 20)),
+            const SizedBox(width: 12),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               ShaderMask(shaderCallback: (r) => AppColors.auroraGradient.createShader(r),
-                child: const Icon(Icons.shield_outlined, color: AppColors.textPrimary, size: 20)),
-              const SizedBox(width: 8),
-              Text('安全保护已开启', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold,
-                foreground: Paint()..shader = AppColors.auroraGradient.createShader(const Rect.fromLTWH(0,0,200,70)))),
-            ]),
-            const SizedBox(height: 8),
-            Text('您的账号正在受到 OpenFaith 加密盾的实时保护。建议定期修改密码并保持手机/邮箱可用。',
-              style: const TextStyle(fontSize: 12, color: Color.fromRGBO(255,255,255,0.6))),
+                child: const Text('安全保护已开启', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600))),
+              const SizedBox(height: 4),
+              Text('您的账号正在受到 OpenFaith 加密盾的实时保护。建议定期修改密码并保持手机/邮箱可用。',
+                style: const TextStyle(color: Color.fromRGBO(255,255,255,0.6), fontSize: 12)),
+            ])),
           ]),
         ),
         const SizedBox(height: 24),
-        // Account info card
-        Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: AppColors.cardBg, borderRadius: BorderRadius.circular(12)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Row(children: [Icon(Icons.shield_outlined, color: AppColors.textPrimary, size: 22), SizedBox(width: 8), Text('账号信息', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600))]),
-          const SizedBox(height: 16),
-          _buildInfoRow('邮箱', 'user@example.com'),
+        // Menu items
+        Column(children: [
+          _buildAccountMenuItem(Icons.smartphone_outlined, '手机号', '未绑定'),
           const SizedBox(height: 12),
-          _buildInfoRow('注册时间', '2024-06-15'),
+          _buildAccountMenuItem(Icons.mail_outline, '邮箱号', 'user@example.com'),
           const SizedBox(height: 12),
-          _buildInfoRow('账号状态', '正常', valueColor: AppColors.success),
-        ])),
-        const SizedBox(height: 16),
-        // Password change card
-        Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: AppColors.cardBg, borderRadius: BorderRadius.circular(12)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('通过邮箱重置密码', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
-          const SizedBox(height: 16),
-          _buildInput('请输入新密码（至少6位）', Icons.lock_outline, obscure: true),
-          const SizedBox(height: 12),
-          _buildInput('请再次输入新密码', Icons.lock_outline, obscure: true),
-          const SizedBox(height: 20),
-          SizedBox(width: double.infinity, child: DecoratedBox(decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: AppColors.auroraGradient),
-            child: ElevatedButton(onPressed: () {}, style: ElevatedButton.styleFrom(backgroundColor: Colors.transparent, shadowColor: Colors.transparent, foregroundColor: AppColors.textPrimary,
-              padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-              child: const Text('发送重置链接', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600))))),
-        ])),
-        const SizedBox(height: 16),
-        // Email verification card
-        Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: AppColors.cardBg, borderRadius: BorderRadius.circular(12)), child: Row(children: [
-          Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: AppColors.success.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
-            child: const Icon(Icons.verified, color: AppColors.success, size: 24)),
-          const SizedBox(width: 12),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Text('邮箱已验证', style: TextStyle(color: AppColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w500)),
-            const SizedBox(height: 2),
-            const Text('您的邮箱已成功验证', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-          ])),
-        ])),
-        const SizedBox(height: 16),
-        // Phone binding card
-        Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: AppColors.cardBg, borderRadius: BorderRadius.circular(12)), child: Row(children: [
-          Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: AppColors.textMuted.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
-            child: const Icon(Icons.phone_android_outlined, color: AppColors.textSecondary, size: 24)),
-          const SizedBox(width: 12),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Text('绑定手机', style: TextStyle(color: AppColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w500)),
-            const SizedBox(height: 2),
-            const Text('绑定手机号以增强账号安全', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-          ])),
-          TextButton(onPressed: () {}, child: const Text('绑定', style: TextStyle(color: AppColors.auroraBlue))),
-        ])),
+          _buildAccountMenuItem(Icons.lock_outline, '登录密码', '已设置'),
+        ]),
+        const SizedBox(height: 12),
+        // Delete account
+        _buildAccountMenuItem(Icons.delete_outline, '注销账号', '', destructive: true),
       ])),
     ]),
   );
