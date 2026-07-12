@@ -43,3 +43,8 @@ flutter:
     - assets/images/
     - assets/icons/
     - shorebird.yaml
+
+  fonts:
+    - family: NotoSansSC
+      fonts:
+        - asset: assets/fonts/NotoSansSC-Regular.ttf
