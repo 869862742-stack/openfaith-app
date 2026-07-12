@@ -81,12 +81,18 @@ Widget _buildPublishVideo() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
     body: Column(children: [
-      _buildGlassHeader('发布视频', trailing: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        decoration: BoxDecoration(gradient: AppColors.auroraGradient, borderRadius: BorderRadius.circular(16)),
-        child: const Text('发布', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
-      )),
+      _buildGlassHeader('发布视频笔记', trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+        Text('存草稿', style: TextStyle(color: AppColors.textWeak, fontSize: 14)),
+        const SizedBox(width: 12),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          decoration: BoxDecoration(gradient: AppColors.auroraGradient, borderRadius: BorderRadius.circular(16)),
+          child: const Text('发布', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
+        ),
+      ])),
       Expanded(child: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        _buildSectionLabel('视频 *'),
+        const SizedBox(height: 8),
         Container(
           height: 180,
           decoration: BoxDecoration(
@@ -151,17 +157,13 @@ Widget _buildPublishPlan() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
     body: Column(children: [
-      _buildGlassHeader('发布计划', trailing: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        decoration: BoxDecoration(gradient: AppColors.auroraGradient, borderRadius: BorderRadius.circular(16)),
-        child: const Text('发布', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
-      )),
+      _buildGlassHeader('发起计划', trailing: const Text('发起', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500))),
       Expanded(child: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         _buildSectionLabel('计划名称'),
         const SizedBox(height: 8),
-        _buildInputField('输入计划名称...'),
+        _buildInputField('例如：每日晨间冥想30分钟'),
         const SizedBox(height: 16),
-        _buildSectionLabel('计划日期'),
+        _buildSectionLabel('日期'),
         const SizedBox(height: 8),
         Container(
           height: 48,
@@ -189,7 +191,7 @@ Widget _buildPublishPlan() {
               Text('09:00', style: TextStyle(color: AppColors.textPrimary, fontSize: 14)),
             ]),
           )),
-          Padding(padding: const EdgeInsets.symmetric(horizontal: 12), child: Text('至', style: TextStyle(color: AppColors.textWeak, fontSize: 14))),
+          const SizedBox(width: 8),
           Expanded(child: Container(
             height: 48,
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -204,7 +206,7 @@ Widget _buildPublishPlan() {
         const SizedBox(height: 16),
         _buildSectionLabel('计划描述'),
         const SizedBox(height: 8),
-        _buildInputField('描述你的计划...', maxLines: 4),
+        _buildInputField('描述你的计划...', maxLines: 3),
         const SizedBox(height: 16),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
