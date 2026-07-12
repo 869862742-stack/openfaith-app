@@ -187,6 +187,7 @@ Widget _buildHistory() {
         _buildHistoryItem('圣经研读心得分享', '赵六', '5天前', '基督教'),
       ]))),
     ]),
+  ]),
   );
 }
 
@@ -270,6 +271,7 @@ Widget _buildDownloads() {
         Text('浏览书籍时可以离线保存', style: const TextStyle(color: AppColors.textWeak, fontSize: 13)),
       ])))),
     ]),
+  ]),
   );
 }
 
@@ -366,6 +368,7 @@ Widget _buildCovenant() {
         )),
       ]))),
     ]),
+  ]),
   );
 }
 
@@ -401,6 +404,7 @@ Widget _buildScan() {
         const Center(child: Text('扫描二维码可以快速添加好友或加入群聊', style: TextStyle(color: AppColors.textSecondary, fontSize: 13))),
       ]))),
     ]),
+  ]),
   );
 }
 
@@ -446,6 +450,7 @@ Widget _buildSupport() {
         _buildTicketCard('Bug反馈：页面加载缓慢', '处理中', '5天前'),
       ]))),
     ]),
+  ]),
   );
 }
 
@@ -519,6 +524,7 @@ Widget _buildGongjing() {
         _buildGongjingRoomCard('静默祷告', '3人正在共修', Icons.church),
       ]))),
     ]),
+  ]),
   );
 }
 
@@ -666,6 +672,7 @@ Widget _buildPrivacy() {
         const SizedBox(height: 32),
       ]))),
     ]),
+  ]),
   );
 }
 Widget _buildPrivacyBullet(String text) {
@@ -791,6 +798,7 @@ Widget _buildTerms() {
         const SizedBox(height: 32),
       ]))),
     ]),
+  ]),
   );
 }
 Widget _buildTermsBullet(String text) {
