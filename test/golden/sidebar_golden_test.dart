@@ -287,57 +287,57 @@ Widget _buildCovenant() {
     body: Column(children: [
       _buildSliverHeader('信仰公约'),
       Expanded(child: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        // Intro card
+        // Intro card (web: rounded-2xl p-6, bg=rgba(255,255,255,0.04), border=rgba(255,255,255,0.08))
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: AppColors.inputBg,
+            color: const Color(0x0AFFFFFF),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.borderDefault),
+            border: Border.all(color: const Color(0x14FFFFFF)),
           ),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
               Container(
                 width: 48, height: 48,
                 padding: const EdgeInsets.all(1.5),
-                decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: AppColors.auroraColors)),
+                decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: AppColors.auroraGradient),
                 child: Container(
-                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(10.5), color: AppColors.background),
+                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(10.5), color: AppColors.bgColor),
                   child: const Center(child: Icon(Icons.shield_outlined, color: AppColors.textPrimary, size: 24)),
                 ),
               ),
               const SizedBox(width: 12),
               const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('OpenFaith 信仰公约', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
+                Text('OpenFaith 信仰公约', style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
                 SizedBox(height: 2),
-                Text('尊重 · 包容 · 和平', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                Text('尊重 · 包容 · 和平', style: TextStyle(color: AppColors.textPrimary, fontSize: 12)),
               ])),
             ]),
             const SizedBox(height: 12),
-            const Text('我们致力于创建一个尊重、包容、和平的全球信仰交流社区，让每一位探索者都能在这里找到心灵的归属。', style: TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.5)),
+            const Text('我们致力于创建一个尊重、包容、和平的全球信仰交流社区，让每一位探索者都能在这里找到心灵的归属。', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6)),
           ]),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 12),
         ...List.generate(items.length, (i) {
           final item = items[i];
           return Padding(padding: const EdgeInsets.only(bottom: 12), child: Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(color: AppColors.hoverBgLight, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.borderDefault)),
+            decoration: BoxDecoration(color: const Color(0x08FFFFFF), borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0x14FFFFFF))),
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Container(
                 width: 32, height: 32,
                 padding: const EdgeInsets.all(1.5),
-                decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: AppColors.auroraColors)),
+                decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), gradient: AppColors.auroraGradient),
                 child: Container(
-                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(6.5), color: AppColors.background),
-                  child: Center(child: Text('${i + 1}', style: const TextStyle(color: AppColors.textPrimary, fontSize: 13, fontWeight: FontWeight.bold))),
+                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(6.5), color: AppColors.bgColor),
+                  child: Center(child: Text('${i + 1}', style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.bold))),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(item['title']!, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
-                Text(item['content']!, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.5)),
+                Text(item['content']!, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, height: 1.6)),
               ])),
             ]),
           ));
@@ -535,25 +535,24 @@ Widget _buildPrivacy() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
     body: Column(children: [
-      // Custom header: back | title | EN toggle
+      // Custom header: back | title | EN toggle (matches web TermsOfService/PrivacyPolicy)
       Container(
-        height: 56,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: const BoxDecoration(
-          color: AppColors.headerBg,
-          border: Border(bottom: BorderSide(color: AppColors.borderDefault, width: 1)),
+          color: Color.fromRGBO(5, 8, 22, 0.95),
+          border: Border(bottom: BorderSide(color: Color(0x14FFFFFF), width: 1)),
         ),
         child: SafeArea(
           bottom: false,
           child: Row(children: [
-            const Text('← 返回', style: TextStyle(color: AppColors.iconColorWeak, fontSize: 14)),
+            const Text('← 返回', style: TextStyle(color: Color(0x99FFFFFF), fontSize: 14)),
             const Spacer(),
-            const Text('隐私政策', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+            const Text('隐私政策', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
             const Spacer(),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(color: AppColors.hoverBg, borderRadius: BorderRadius.circular(8)),
-              child: const Text('EN', style: TextStyle(color: AppColors.iconColorWeak, fontSize: 12)),
+              decoration: BoxDecoration(color: Color(0x14FFFFFF), borderRadius: BorderRadius.circular(8)),
+              child: const Text('EN', style: TextStyle(color: Color(0x99FFFFFF), fontSize: 12)),
             ),
           ]),
         ),
@@ -656,25 +655,24 @@ Widget _buildTerms() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
     body: Column(children: [
-      // Custom header: back | title | EN toggle
+      // Custom header: back | title | EN toggle (matches web TermsOfService)
       Container(
-        height: 56,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: const BoxDecoration(
-          color: AppColors.headerBg,
-          border: Border(bottom: BorderSide(color: AppColors.borderDefault, width: 1)),
+          color: Color.fromRGBO(5, 8, 22, 0.95),
+          border: Border(bottom: BorderSide(color: Color(0x14FFFFFF), width: 1)),
         ),
         child: SafeArea(
           bottom: false,
           child: Row(children: [
-            const Text('← 返回', style: TextStyle(color: AppColors.iconColorWeak, fontSize: 14)),
+            const Text('← 返回', style: TextStyle(color: Color(0x99FFFFFF), fontSize: 14)),
             const Spacer(),
-            const Text('服务条款', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+            const Text('服务条款', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
             const Spacer(),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(color: AppColors.hoverBg, borderRadius: BorderRadius.circular(8)),
-              child: const Text('EN', style: TextStyle(color: AppColors.iconColorWeak, fontSize: 12)),
+              decoration: BoxDecoration(color: Color(0x14FFFFFF), borderRadius: BorderRadius.circular(8)),
+              child: const Text('EN', style: TextStyle(color: Color(0x99FFFFFF), fontSize: 12)),
             ),
           ]),
         ),
@@ -780,55 +778,41 @@ Widget _buildVip() {
     body: Column(children: [
       _buildGlassHeader('订阅会员'),
       Expanded(child: SingleChildScrollView(padding: const EdgeInsets.fromLTRB(16, 20, 16, 16), child: Column(children: [
-        // Hero: crown icon with rainbow border + title + subtitle
+        // Hero: crown icon with glow ring + title + subtitle (web: w-24 h-24 = 96px)
         Container(
-          width: 64, height: 64,
-          padding: const EdgeInsets.all(1.5),
+          width: 96, height: 96,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(40),
-            gradient: AppColors.auroraGradientWithOpacity(0.5),
+            shape: BoxShape.circle,
+            gradient: RadialGradient(
+              colors: [
+                AppColors.auroraRed.withOpacity(0.15),
+                AppColors.auroraCyan.withOpacity(0.1),
+                Colors.transparent,
+              ],
+              stops: const [0.0, 0.5, 0.7],
+            ),
           ),
           child: Container(
+            width: 96, height: 96,
+            padding: const EdgeInsets.all(1.5),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(38.5),
-              color: AppColors.bgColor,
+              shape: BoxShape.circle,
+              gradient: AppColors.auroraGradientWithOpacity(0.5),
             ),
-            child: const Center(child: Icon(Icons.workspace_premium, color: AppColors.textPrimary, size: 40)),
+            child: Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.bgColor,
+              ),
+              child: const Center(child: Icon(Icons.workspace_premium, color: AppColors.textPrimary, size: 40)),
+            ),
           ),
         ),
         const SizedBox(height: 20),
         const Text('解锁专属权益', style: TextStyle(color: AppColors.textPrimary, fontSize: 24, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         Text('升级VIP，畅享信仰之旅', style: TextStyle(color: AppColors.textWeak, fontSize: 14)),
-        const SizedBox(height: 24),
-        // 我的特权卡片 section
-        Align(alignment: Alignment.centerLeft, child: Text('我的特权卡片', style: TextStyle(color: AppColors.textWeak, fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 1.2))),
-        const SizedBox(height: 12),
-        Row(children: List.generate(5, (i) {
-          final icons = [Icons.visibility, Icons.push_pin, Icons.volume_up, Icons.send, Icons.chat_bubble_outline];
-          final labels = ['加热卡', '置顶卡', '回响卡', '同行卡', '答疑卡'];
-          return Expanded(child: Container(
-            margin: EdgeInsets.only(left: i > 0 ? 4 : 0, right: i < 4 ? 4 : 0),
-            child: Container(
-              padding: const EdgeInsets.all(0.5),
-              decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: AppColors.auroraGradientWithOpacity(0.5)),
-              child: Container(
-                decoration: BoxDecoration(borderRadius: BorderRadius.circular(11.5), color: AppColors.bgColor),
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Column(children: [
-                  Icon(icons[i], color: AppColors.textPrimary, size: 16),
-                  const SizedBox(height: 4),
-                  Text('${i + 1}', style: const TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 2),
-                  Text(labels[i], style: TextStyle(color: AppColors.textWeak, fontSize: 10)),
-                ]),
-              ),
-            ),
-          ));
-        })),
-        const SizedBox(height: 8),
-        Text('每月赠送1张，超月未用自动过期', style: TextStyle(color: AppColors.textPlaceholder, fontSize: 12), textAlign: TextAlign.center),
-        const SizedBox(height: 20),
+        const SizedBox(height: 32),
         // VIP 专属权益 section (3-col grid, show first 2 rows = 6 items)
         Align(alignment: Alignment.centerLeft, child: Text('VIP 专属权益', style: TextStyle(color: AppColors.textWeak, fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 1.2))),
         const SizedBox(height: 12),

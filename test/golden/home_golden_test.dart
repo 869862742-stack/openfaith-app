@@ -75,29 +75,6 @@ Widget _buildHome() {
         ),
       ),
 
-      // ── Checkin Banner ──
-      Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            gradient: const LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: [AppColors.auroraOrange, AppColors.auroraRed],
-            ),
-          ),
-          child: const Row(children: [
-            Icon(Icons.local_fire_department, color: Colors.white, size: 20),
-            SizedBox(width: 10),
-            Expanded(child: Text('每日签到，积累信仰能量', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600))),
-            SizedBox(width: 10),
-            Text('签到', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500)),
-          ]),
-        ),
-      ),
-
       // ── Hot Ranking Section ──
       Padding(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
