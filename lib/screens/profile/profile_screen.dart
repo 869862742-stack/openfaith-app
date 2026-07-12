@@ -1182,6 +1182,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+}
 
 class _StarfieldPainter extends CustomPainter {
   const _StarfieldPainter();
@@ -1245,4 +1246,3 @@ class _Star {
   const _Star(this.xPercent, this.yPercent, this.radius, this.color);
 }
 
-}
