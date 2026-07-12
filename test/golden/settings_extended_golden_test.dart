@@ -648,21 +648,88 @@ Widget _buildSettingsFont() {
     body: Column(children: [
       _buildHeader('显示设置'),
       Expanded(child: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('字体大小', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 16),
-        _buildFontOption('小', '12px / 14px', false),
-        const SizedBox(height: 8),
-        _buildFontOption('标准', '14px / 16px', true),
-        const SizedBox(height: 8),
-        _buildFontOption('大', '16px / 18px', false),
-        const SizedBox(height: 32),
-        const Text('预览', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+        // Section title: text-sm font-bold mb-3
+        const Text('字体大小', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
         const SizedBox(height: 12),
-        GlassCard(child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('标题文字示例', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          const Text('这是正文内容的预览效果。字体大小设置后，所有页面的文字都会相应调整。', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.5)),
-        ]))),
+        // 3 horizontal buttons - web: flex gap-3 (12px)
+        Row(children: [
+          Expanded(child: _buildFontSizeButton('小', '12px / 14px', false)),
+          const SizedBox(width: 12),
+          Expanded(child: _buildFontSizeButton('标准', '14px / 16px', true)),
+          const SizedBox(width: 12),
+          Expanded(child: _buildFontSizeButton('大', '16px / 18px', false)),
+        ]),
+        const SizedBox(height: 32),
+        // Preview section - web: rainbow gradient border container, rounded-xl, p-4
+        Container(
+          padding: const EdgeInsets.all(0.5),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            gradient: AppColors.auroraGradientWithOpacity(0.6),
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(11),
+              color: AppColors.bgColor,
+            ),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              // Preview header with Type icon
+              Row(children: [
+                const Icon(Icons.text_fields, color: Colors.white, size: 16),
+                const SizedBox(width: 8),
+                const Text('预览', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
+              ]),
+              const SizedBox(height: 12),
+              // Inner preview card: bg=rgba(255,255,255,0.04), border=rgba(255,255,255,0.08), rounded-xl, p-4
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0x0AFFFFFF),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0x14FFFFFF), width: 1),
+                ),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  const Text('标题文字示例', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  Text('这是正文内容的预览效果。字体大小设置后，所有页面的文字都会相应调整。',
+                    style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 14, height: 1.5)),
+                  const SizedBox(height: 12),
+                  // Action buttons: "确认" with rainbow border + "取消" subtle
+                  Row(children: [
+                    // 确认 button - rainbow gradient border pill
+                    Container(
+                      padding: const EdgeInsets.all(0.5),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        gradient: AppColors.auroraGradient,
+                      ),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(15),
+                          color: AppColors.bgColor,
+                        ),
+                        child: const Text('确认', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500)),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // 取消 button - subtle pill
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        color: const Color(0x0DFFFFFF),
+                        border: Border.all(color: const Color(0x1AFFFFFF), width: 1),
+                      ),
+                      child: Text('取消', style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 12, fontWeight: FontWeight.w500)),
+                    ),
+                  ]),
+                ]),
+              ),
+            ]),
+          ),
+        ),
       ]))),
     ]),
   );
@@ -821,6 +888,47 @@ Widget _buildSettingsPrivacy() {
         const SizedBox(height: 4),
         _buildSettingsCard(Icons.delete_outline, '清除缓存'),
       ])),
+    ]),
+  );
+}
+
+
+Widget _buildFontSizeButton(String label, String desc, bool selected) {
+  // Web: flex-1 py-3 px-2 rounded-xl, centered content
+  // Selected: rainbow gradient border (RAINBOW_STYLES.clipBorder1_5px)
+  // Not selected: bg=rgba(255,255,255,0.04), border=rgba(255,255,255,0.08)
+  if (selected) {
+    return Container(
+      padding: const EdgeInsets.all(1.5),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        gradient: AppColors.auroraGradient,
+      ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          color: AppColors.bgColor,
+        ),
+        child: Column(children: [
+          Text(label, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
+          const SizedBox(height: 4),
+          Text(desc, style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 10)),
+        ]),
+      ),
+    );
+  }
+  return Container(
+    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+    decoration: BoxDecoration(
+      color: const Color(0x0AFFFFFF),
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: const Color(0x14FFFFFF), width: 1),
+    ),
+    child: Column(children: [
+      Text(label, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
+      const SizedBox(height: 4),
+      Text(desc, style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 10)),
     ]),
   );
 }

@@ -376,12 +376,23 @@ Widget _buildCovenant() {
 Widget _buildScan() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
-    body: Stack(children: [
-      // Star decoration layer
-      _buildStarOverlay(),
-      // Content layer
-      Column(children: [
-      _buildSliverHeader('扫一扫'),
+    body: Column(children: [
+      // Web header: px-4 py-3 border-b flex items-center gap-3
+      Container(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+        decoration: BoxDecoration(
+          color: AppColors.headerBg,
+          border: Border(bottom: BorderSide(color: AppColors.borderColor, width: 1)),
+        ),
+        child: SafeArea(
+          bottom: false,
+          child: Row(children: [
+            const Icon(Icons.arrow_back_ios, color: AppColors.textPrimary, size: 20),
+            const SizedBox(width: 12),
+            const Text('扫一扫', style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
+          ]),
+        ),
+      ),
       Expanded(child: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(children: [
         Container(
           padding: const EdgeInsets.all(20),
@@ -404,7 +415,6 @@ Widget _buildScan() {
         const Center(child: Text('扫描二维码可以快速添加好友或加入群聊', style: TextStyle(color: AppColors.textSecondary, fontSize: 13))),
       ]))),
     ]),
-  ]),
   );
 }
 
