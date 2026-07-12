@@ -494,40 +494,24 @@ Widget _buildSettingsNotification() {
               ])),
               TextButton(onPressed: () {}, child: const Text('去开启', style: TextStyle(color: AppColors.auroraBlue, fontWeight: FontWeight.w600))),
             ]))),
-        // Section 1: 消息通知 (2 toggles)
+        // Section 1: 通知开关 (3 toggles matching notification_settings_screen.dart)
         Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Padding(padding: EdgeInsets.only(top: 16, bottom: 8), child: Text('消息通知', style: TextStyle(color: AppColors.textWeak, fontSize: 12, fontWeight: FontWeight.w500))),
+          const Padding(padding: EdgeInsets.only(top: 16, bottom: 8), child: Text('通知开关', style: TextStyle(color: AppColors.textWeak, fontSize: 12, fontWeight: FontWeight.w500))),
           _buildNotifSectionCard(children: [
             _buildNotifSettingItem(icon: Icons.phone_android, title: '来电提醒', desc: '接收语音/视频通话提醒', action: _buildNotifToggle(enabled: true)),
             Container(height: 1, color: AppColors.borderColor),
             _buildNotifSettingItem(icon: Icons.chat_bubble_outline, title: '消息通知', desc: '接收新消息通知', action: _buildNotifToggle(enabled: true)),
-          ]),
-        ])),
-        // Section 2: 通知显示 (1 toggle)
-        Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Padding(padding: EdgeInsets.only(top: 16, bottom: 8), child: Text('通知显示', style: TextStyle(color: AppColors.textWeak, fontSize: 12, fontWeight: FontWeight.w500))),
-          _buildNotifSectionCard(children: [
-            _buildNotifSettingItem(icon: Icons.preview_outlined, title: '通知预览', desc: '在通知栏显示消息内容', action: _buildNotifToggle(enabled: true)),
-          ]),
-        ])),
-        // Section 3: 声音与震动 (2 toggles)
-        Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Padding(padding: EdgeInsets.only(top: 16, bottom: 8), child: Text('声音与震动', style: TextStyle(color: AppColors.textWeak, fontSize: 12, fontWeight: FontWeight.w500))),
-          _buildNotifSectionCard(children: [
-            _buildNotifSettingItem(icon: Icons.vibration, title: '震动', desc: '收到通知时震动', action: _buildNotifToggle(enabled: true)),
             Container(height: 1, color: AppColors.borderColor),
             _buildNotifSettingItem(icon: Icons.volume_up, title: '声音', desc: '开启提示音', action: _buildNotifToggle(enabled: true)),
           ]),
         ])),
-        // Section 4: 提示音与铃声 (3 clickable items)
+        // Section 2: 声音设置 (2 clickable items matching notification_settings_screen.dart)
         Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Padding(padding: EdgeInsets.only(top: 16, bottom: 8), child: Text('提示音与铃声', style: TextStyle(color: AppColors.textWeak, fontSize: 12, fontWeight: FontWeight.w500))),
+          const Padding(padding: EdgeInsets.only(top: 16, bottom: 8), child: Text('声音设置', style: TextStyle(color: AppColors.textWeak, fontSize: 12, fontWeight: FontWeight.w500))),
           _buildNotifSectionCard(children: [
             _buildNotifSettingItem(icon: Icons.music_note, title: '来电铃声', desc: '柔和铃声', action: const Icon(Icons.chevron_right, color: AppColors.textWeak, size: 20)),
             Container(height: 1, color: AppColors.borderColor),
             _buildNotifSettingItem(icon: Icons.volume_up, title: '消息提示音', desc: '默认提示音', action: const Icon(Icons.chevron_right, color: AppColors.textWeak, size: 20)),
-            Container(height: 1, color: AppColors.borderColor),
-            _buildNotifSettingItem(icon: Icons.notifications_active, title: '通知铃声', desc: '经典铃声', action: const Icon(Icons.chevron_right, color: AppColors.textWeak, size: 20)),
           ]),
         ])),
         const SizedBox(height: 32),

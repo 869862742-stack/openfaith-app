@@ -292,72 +292,225 @@ void main() {
 
 Widget _buildLogin() {
   return Scaffold(
-    backgroundColor: AppColors.bgColor,
-    body: SafeArea(child: Center(child: SingleChildScrollView(padding: const EdgeInsets.all(20), child: GlassCard(
-      borderRadius: 24,
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          const Text('OpenFaith', style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          const Text('开启你的信仰之旅', style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
-          const SizedBox(height: 32),
-          const Text('邮箱', style: TextStyle(color: AppColors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500), textAlign: TextAlign.left),
-          const SizedBox(height: 8),
-          _buildInput('请输入邮箱', Icons.email_outlined),
-          const SizedBox(height: 20),
-          const Text('密码', style: TextStyle(color: AppColors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500), textAlign: TextAlign.left),
-          const SizedBox(height: 8),
-          _buildInput('请输入密码', Icons.lock_outline, obscure: true),
-          const SizedBox(height: 12),
-          Row(children: [
-            Container(width: 18, height: 18, decoration: BoxDecoration(gradient: AppColors.auroraGradient, borderRadius: BorderRadius.circular(4)), child: const Icon(Icons.check, color: Colors.white, size: 12)),
-            const SizedBox(width: 6),
-            const Text('记住我', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
-            const Spacer(),
-            const Text('忘记密码?', style: TextStyle(color: AppColors.auroraBlue, fontSize: 13)),
-          ]),
-          const SizedBox(height: 24),
-          Container(width: double.infinity, height: 48, decoration: BoxDecoration(gradient: AppColors.auroraGradient, borderRadius: BorderRadius.circular(12)), child: const Center(child: Text('登录', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)))),
-          const SizedBox(height: 20),
-          const Text('还没有账号? 注册', style: TextStyle(color: AppColors.auroraBlue, fontSize: 14)),
-        ]),
+    backgroundColor: const Color(0xFF050816),
+    body: SafeArea(
+      child: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: SizedBox(
+            width: 240,
+            child: _buildLoginRainbowCard(
+              borderRadius: 12,
+              child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                // Email input
+                Text('邮箱', style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
+                const SizedBox(height: 6),
+                _buildLoginInput('请输入邮箱...'),
+                const SizedBox(height: 12),
+                // Password input
+                Text('密码', style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
+                const SizedBox(height: 6),
+                _buildLoginInput('请输入密码...', obscure: true),
+                const SizedBox(height: 12),
+                // Remember me checkbox
+                Row(children: [
+                  Container(width: 16, height: 16, decoration: BoxDecoration(borderRadius: BorderRadius.circular(3), border: Border.all(color: Colors.white, width: 0.8)),
+                    child: const Icon(Icons.check, color: Colors.white, size: 14)),
+                  const SizedBox(width: 8),
+                  Text('记住我（30天）', style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.5))),
+                ]),
+                const SizedBox(height: 14),
+                // Login button - rainbow gradient border + dark bg
+                _buildLoginRainbowBtn('登录', height: 36),
+                const SizedBox(height: 10),
+                // Forgot password
+                Center(child: Text('忘记密码？', style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.4)))),
+                const SizedBox(height: 14),
+                // Divider
+                Container(height: 1, color: Colors.white.withOpacity(0.06)),
+                const SizedBox(height: 14),
+                // Register section
+                Center(child: Column(children: [
+                  Text('还没有账号？', style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.4))),
+                  const SizedBox(height: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(7), border: Border.all(color: Colors.white.withOpacity(0.15), width: 1)),
+                    child: const Text('立即注册', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w500)),
+                  ),
+                ])),
+              ]),
+            ),
+          ),
+        ),
       ),
-    )))),
+    ),
+  );
+}
+
+// ─── Login/Register Rainbow Border Helpers ───
+Widget _buildLoginRainbowCard({required double borderRadius, required Widget child}) {
+  return Container(
+    padding: const EdgeInsets.all(1),
+    decoration: BoxDecoration(borderRadius: BorderRadius.circular(borderRadius), gradient: AppColors.auroraGradient),
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 18),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(borderRadius - 1), color: const Color(0xFF050816)),
+      child: child,
+    ),
+  );
+}
+
+Widget _buildLoginInput(String hint, {bool obscure = false}) {
+  return Container(
+    height: 36,
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(8),
+      border: Border.all(color: Colors.white.withOpacity(0.08), width: 1),
+    ),
+    child: TextField(
+      enabled: false,
+      obscureText: obscure,
+      style: const TextStyle(color: Colors.white, fontSize: 13),
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: TextStyle(color: Colors.white.withOpacity(0.25), fontSize: 13),
+        border: InputBorder.none,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        isDense: true,
+      ),
+    ),
+  );
+}
+
+Widget _buildLoginRainbowBtn(String label, {required double height}) {
+  return Container(
+    padding: const EdgeInsets.all(1),
+    decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), gradient: AppColors.auroraGradient),
+    child: Container(
+      height: height,
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(7), color: const Color(0xFF050816)),
+      child: Center(child: Text(label, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600))),
+    ),
   );
 }
 
 Widget _buildRegister() {
   return Scaffold(
-    backgroundColor: AppColors.bgColor,
-    body: SafeArea(child: SingleChildScrollView(padding: const EdgeInsets.all(20), child: GlassCard(
-      borderRadius: 24,
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Center(child: Text('创建账号', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold))),
-          const SizedBox(height: 8),
-          const Center(child: Text('开启你的信仰之旅', style: TextStyle(color: AppColors.textSecondary, fontSize: 14))),
-          const SizedBox(height: 32),
-          const Text('邮箱', style: TextStyle(color: AppColors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500)),
-          const SizedBox(height: 8),
-          _buildInput('请输入邮箱', Icons.email_outlined),
-          const SizedBox(height: 20),
-          const Text('昵称', style: TextStyle(color: AppColors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500)),
-          const SizedBox(height: 8),
-          _buildInput('请输入昵称', Icons.person_outline),
-          const SizedBox(height: 20),
-          const Text('密码', style: TextStyle(color: AppColors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500)),
-          const SizedBox(height: 8),
-          _buildInput('至少8位', Icons.lock_outline, obscure: true),
-          const SizedBox(height: 20),
-          const Text('确认密码', style: TextStyle(color: AppColors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500)),
-          const SizedBox(height: 8),
-          _buildInput('再次输入密码', Icons.lock_outline, obscure: true),
-          const SizedBox(height: 24),
-          Container(width: double.infinity, height: 48, decoration: BoxDecoration(gradient: AppColors.auroraGradient, borderRadius: BorderRadius.circular(12)), child: const Center(child: Text('注册', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)))),
-        ]),
+    backgroundColor: const Color(0xFF0a0a15),
+    body: SafeArea(
+      child: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // "Sign Up" gradient text
+              ShaderMask(
+                shaderCallback: (bounds) => AppColors.auroraGradient.createShader(bounds),
+                blendMode: BlendMode.srcIn,
+                child: const Text('Sign Up', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+              ),
+              const SizedBox(height: 16),
+              // Card with rainbow gradient border (2px)
+              Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), gradient: AppColors.auroraGradient),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), color: const Color(0xFF050816)),
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    // Email
+                    _buildRegisterInput(label: '邮箱', hint: '请输入邮箱...'),
+                    const SizedBox(height: 12),
+                    // Password
+                    _buildRegisterInput(label: '密码', hint: '请输入密码（至少8位）...', obscure: true),
+                    const SizedBox(height: 12),
+                    // Nickname
+                    _buildRegisterInput(label: '昵称', hint: '请输入昵称...'),
+                    const SizedBox(height: 12),
+                    // Faith tag dropdown
+                    Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Text('身份标签', style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
+                      const SizedBox(height: 4),
+                      Container(
+                        height: 42,
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(11),
+                          border: Border.all(color: Colors.white.withOpacity(0.12), width: 1),
+                          color: Colors.white.withOpacity(0.06),
+                        ),
+                        child: Row(children: [
+                          Expanded(child: Text('请选择身份标签...', style: TextStyle(color: Colors.white.withOpacity(0.35), fontSize: 13))),
+                          Icon(Icons.keyboard_arrow_down, color: Colors.white.withOpacity(0.45), size: 18),
+                        ]),
+                      ),
+                    ]),
+                    const SizedBox(height: 12),
+                    // Age 13 checkbox
+                    Row(children: [
+                      Container(width: 16, height: 16, decoration: BoxDecoration(borderRadius: BorderRadius.circular(3), border: Border.all(color: Colors.white, width: 0.8)),
+                        child: const Icon(Icons.check, color: Colors.white, size: 14)),
+                      const SizedBox(width: 6),
+                      Expanded(child: Text('我已年满13周岁', style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 11))),
+                    ]),
+                    const SizedBox(height: 8),
+                    // Terms checkbox
+                    Row(children: [
+                      Container(width: 16, height: 16, decoration: BoxDecoration(borderRadius: BorderRadius.circular(3), border: Border.all(color: Colors.white, width: 0.8)),
+                        child: const Icon(Icons.check, color: Colors.white, size: 14)),
+                      const SizedBox(width: 6),
+                      Expanded(child: Text('我已阅读并同意 隐私政策 和 用户协议', style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 11))),
+                    ]),
+                    const SizedBox(height: 14),
+                    // Register button
+                    _buildLoginRainbowBtn('获取验证码', height: 42),
+                    const SizedBox(height: 16),
+                    // Login link
+                    Text('已有账号？', style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 12)),
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+                      decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.white.withOpacity(0.15), width: 1)),
+                      child: const Text('立即登录', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500)),
+                    ),
+                  ]),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
-    ))),
+    ),
   );
+}
+
+Widget _buildRegisterInput({required String label, required String hint, bool obscure = false}) {
+  return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+    Text(label, style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
+    const SizedBox(height: 3),
+    Container(
+      height: 42,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.12), width: 1),
+      ),
+      child: Container(
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: const Color(0xFF050816)),
+        child: TextField(
+          enabled: false,
+          obscureText: obscure,
+          style: const TextStyle(color: Colors.white, fontSize: 13),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: TextStyle(color: Colors.white.withOpacity(0.35), fontSize: 13),
+            border: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            isDense: true,
+          ),
+        ),
+      ),
+    ),
+  ]);
 }
