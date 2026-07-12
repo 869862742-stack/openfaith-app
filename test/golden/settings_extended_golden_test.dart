@@ -481,21 +481,29 @@ Widget _buildSettingsNotification() {
     body: Column(children: [
       _buildHeader('通知设置'),
       Expanded(child: SingleChildScrollView(padding: const EdgeInsets.symmetric(vertical: 8), child: Column(children: [
-        // Notification permission banner - warm background matching web
+        // Notification permission banner - warm gradient background matching web
         Container(margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            color: const Color.fromRGBO(255, 197, 15, 0.12),
-            border: Border.all(color: const Color.fromRGBO(255, 197, 15, 0.3), width: 0.5),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft, end: Alignment.bottomRight,
+              colors: [const Color.fromRGBO(255,77,109,0.08), const Color.fromRGBO(255,159,28,0.08), const Color.fromRGBO(0,229,255,0.08)],
+            ),
+            border: Border.all(color: const Color.fromRGBO(255,255,255,0.08), width: 0.5),
           ),
           child: Row(children: [
-            const Icon(Icons.notifications_active, color: Color.fromRGBO(255, 197, 15, 0.8), size: 24),
+            Container(width: 40, height: 40, decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              gradient: AppColors.auroraGradientWithOpacity(0.3),
+            ), child: const Icon(Icons.notifications_active, color: Colors.white, size: 20)),
             const SizedBox(width: 12),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               const Text('开启通知权限', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
-              Text('允许发送通知以接收消息提醒', style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 12)),
+              Text('允许发送通知以接收消息提醒', style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
             ])),
-            TextButton(onPressed: () {}, child: const Text('去开启', style: TextStyle(color: Color.fromRGBO(255, 197, 15, 1.0), fontWeight: FontWeight.w600))),
+            Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), gradient: AppColors.auroraGradient),
+              child: const Text('去开启', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600))),
           ])),
         // Section 1: 消息通知 (2 toggles)
         Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -560,18 +568,16 @@ Widget _buildNotifSettingItem({required IconData icon, required String title, St
 
 Widget _buildNotifToggle({required bool enabled}) {
   return enabled
-    ? Container(width: 48, height: 28, decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), gradient: AppColors.auroraGradient),
-        padding: const EdgeInsets.all(1),
-        child: Container(width: 46, height: 26, decoration: BoxDecoration(borderRadius: BorderRadius.circular(13), color: AppColors.bgColor),
-          padding: const EdgeInsets.all(2),
-          child: Align(alignment: Alignment.centerRight,
-            child: Container(width: 20, height: 20, decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.textPrimary,
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 4, offset: const Offset(0,1))])))))
-    : Container(width: 48, height: 28, decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), color: AppColors.borderColor,
-        border: Border.all(color: AppColors.borderSubtle, width: 1)),
+    ? Container(width: 48, height: 28, decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), color: const Color(0xFF00E4FF)),
         padding: const EdgeInsets.all(2),
-        child: Container(width: 20, height: 20, decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.textPlaceholder,
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 4, offset: const Offset(0,1))])));
+        child: Align(alignment: Alignment.centerRight,
+          child: Container(width: 22, height: 22, decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white,
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 4, offset: const Offset(0,1))]))))
+    : Container(width: 48, height: 28, decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), color: const Color(0xFF2A2B35),
+        border: Border.all(color: const Color(0xFF3A3B45), width: 1)),
+        padding: const EdgeInsets.all(2),
+        child: Container(width: 22, height: 22, decoration: BoxDecoration(shape: BoxShape.circle, color: const Color(0xFF6B6C75),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 4, offset: const Offset(0,1))])));
 }
 
 Widget _buildSettingsFont() {
