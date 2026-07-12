@@ -413,22 +413,29 @@ Widget _buildSettingsProfile() {
   );
 }
 
+// ═══════════════════════════════════════════════════════════════
+// 1. SETTINGS ACCOUNT - matches AccountSecurity.tsx
+// ═══════════════════════════════════════════════════════════════
+
 Widget _buildAccountMenuItem(IconData icon, String label, String value, {bool destructive = false}) {
+  // Web: flex items-center gap-4 p-4 rounded-xl
+  // Normal: bg=rgba(255,255,255,0.04) border=rgba(255,255,255,0.08)
+  // Delete: bg=var(--card-bg) border=var(--border-color)
   return Container(
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
-      color: const Color(0x0AFFFFFF),
+      color: destructive ? AppColors.cardBg : const Color(0x0AFFFFFF),
       borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: const Color(0x14FFFFFF), width: 0.5),
+      border: Border.all(color: AppColors.borderColor, width: 1),
     ),
     child: Row(children: [
       Icon(icon, color: destructive ? AppColors.error : Colors.white, size: 20),
       const SizedBox(width: 16),
       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(label, style: TextStyle(color: destructive ? AppColors.error : Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
-        if (value.isNotEmpty) Text(value, style: TextStyle(color: destructive ? AppColors.error : const Color(0xFFAAAAAA), fontSize: 12)),
+        if (value.isNotEmpty) Text(value, style: TextStyle(color: destructive ? const Color(0x66FFFFFF) : Colors.white, fontSize: 12)),
       ])),
-      Icon(Icons.chevron_right, color: AppColors.textWeak, size: 20),
+      Icon(Icons.chevron_right, color: destructive ? const Color(0x66FFFFFF) : AppColors.textSecondary, size: 20),
     ]),
   );
 }
@@ -439,43 +446,39 @@ Widget _buildSettingsAccount() {
     body: Column(children: [
       _buildHeader('账号与安全'),
       Expanded(child: ListView(padding: const EdgeInsets.all(16), children: [
-        // Security banner with gradient background
+        // Security banner - web: rounded-2xl p-4 mb-6
+        // bg=linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04))
         Container(
           padding: const EdgeInsets.all(16),
+          margin: const EdgeInsets.only(bottom: 24),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft, end: Alignment.bottomRight,
-              colors: [const Color(0x14FF4D6D), const Color(0x14FF9F1C), const Color(0x1400E5FF)],
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0x14FFFFFF), Color(0x0AFFFFFF)],
             ),
-            border: Border.all(color: const Color(0x14FFFFFF), width: 0.5),
           ),
-          child: Row(children: [
-            Container(width: 40, height: 40, decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              gradient: AppColors.auroraGradientWithOpacity(0.3),
-            ), child: const Icon(Icons.shield_outlined, color: Colors.white, size: 20)),
-            const SizedBox(width: 12),
-            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
+              const Icon(Icons.shield, color: Colors.white, size: 20),
+              const SizedBox(width: 8),
               ShaderMask(shaderCallback: (r) => AppColors.auroraGradient.createShader(r),
-                child: const Text('安全保护已开启', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600))),
-              const SizedBox(height: 4),
-              Text('您的账号正在受到 OpenFaith 加密盾的实时保护。建议定期修改密码并保持手机/邮箱可用。',
-                style: const TextStyle(color: Color.fromRGBO(255,255,255,0.6), fontSize: 12)),
-            ])),
+                child: const Text('安全保护已开启', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold))),
+            ]),
+            const SizedBox(height: 8),
+            Text('您的账号正在受到 OpenFaith 加密盾的实时保护。建议定期修改密码并保持手机/邮箱可用。',
+              style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 12)),
           ]),
         ),
-        const SizedBox(height: 24),
-        // Menu items
-        Column(children: [
-          _buildAccountMenuItem(Icons.smartphone_outlined, '手机号', '未绑定'),
-          const SizedBox(height: 12),
-          _buildAccountMenuItem(Icons.mail_outline, '邮箱号', 'user@example.com'),
-          const SizedBox(height: 12),
-          _buildAccountMenuItem(Icons.lock_outline, '登录密码', '已设置'),
-        ]),
+        // Menu items - web: space-y-3 (12px gap)
+        _buildAccountMenuItem(Icons.smartphone, '手机号', '未绑定'),
         const SizedBox(height: 12),
-        // Delete account
+        _buildAccountMenuItem(Icons.mail, '邮箱号', 'user@example.com'),
+        const SizedBox(height: 12),
+        _buildAccountMenuItem(Icons.lock, '登录密码', '已设置'),
+        const SizedBox(height: 12),
+        // Delete account - uses same style but red
         _buildAccountMenuItem(Icons.delete_outline, '注销账号', '', destructive: true),
       ])),
     ]),
@@ -489,11 +492,15 @@ Widget _buildInfoRow(String label, String value, {Color? valueColor}) {
   ]);
 }
 
+// ═══════════════════════════════════════════════════════════════
+// 4. SETTINGS NOTIFICATION - matches NotificationSettings.tsx
+// ═══════════════════════════════════════════════════════════════
+
 Widget _buildSettingsNotification() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
     body: Column(children: [
-      // Web-style header: px-4 py-3 bg=rgba(5,8,22,0.92) border-bottom=rgba(255,255,255,0.08)
+      // Header: px-4 py-3 bg=rgba(5,8,22,0.92) border-bottom=rgba(255,255,255,0.08)
       Container(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
         decoration: BoxDecoration(
@@ -510,8 +517,7 @@ Widget _buildSettingsNotification() {
         ),
       ),
       Expanded(child: SingleChildScrollView(padding: const EdgeInsets.symmetric(vertical: 8), child: Column(children: [
-        // Notification permission banner - rainbow gradient border matching web
-        // Web: mx-4 mb-3, outer p-[0.8px] rainbow border rounded-xl, inner p-4 rounded-xl bg=rgba(5,8,22,0.95)
+        // Notification permission banner - rainbow gradient border
         Container(margin: const EdgeInsets.fromLTRB(16, 0, 16, 12), padding: const EdgeInsets.all(0.8),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
@@ -524,16 +530,15 @@ Widget _buildSettingsNotification() {
             ),
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
               const Padding(padding: EdgeInsets.only(top: 2), child: Icon(Icons.notifications, color: Color(0xFFFF9F1C), size: 20)),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 const Text('开启通知权限', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
                 const SizedBox(height: 4),
-                Text('开启后即使不在聊天页面，也能收到消息和来电提醒', style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
+                Text('开启后才能收到来电和消息提醒，即使不在聊天页面也不会错过', style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
               ])),
             ])),
         ),
         // Section 1: 消息通知 (2 toggles)
-        // Web: px-4 pt-4 pb-2 title, mx-4 mb-3 card
         Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const Padding(padding: EdgeInsets.only(top: 14, bottom: 8), child: Text('消息通知', style: TextStyle(color: Color(0x66FFFFFF), fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 0.6))),
           _buildNotifSectionCard(children: [
@@ -564,11 +569,11 @@ Widget _buildSettingsNotification() {
         Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const Padding(padding: EdgeInsets.only(top: 14, bottom: 8), child: Text('提示音与铃声', style: TextStyle(color: Color(0x66FFFFFF), fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 0.6))),
           _buildNotifSectionCard(children: [
-            _buildNotifSettingItem(icon: Icons.chat_bubble, title: '消息提示音', desc: '默认提示音', action: const Icon(Icons.chevron_right, color: AppColors.textWeak, size: 20)),
+            _buildNotifSettingItem(icon: Icons.chat_bubble, title: '消息提示音', desc: '默认提示音', action: const Icon(Icons.chevron_right, color: Color(0x4DFFFFFF), size: 20)),
             Container(height: 1, color: const Color(0x0FFFFFFF)),
-            _buildNotifSettingItem(icon: Icons.call, title: '来电铃声', desc: '柔和铃声', action: const Icon(Icons.chevron_right, color: AppColors.textWeak, size: 20)),
+            _buildNotifSettingItem(icon: Icons.call, title: '来电铃声', desc: '柔和铃声', action: const Icon(Icons.chevron_right, color: Color(0x4DFFFFFF), size: 20)),
             Container(height: 1, color: const Color(0x0FFFFFFF)),
-            _buildNotifSettingItem(icon: Icons.call, title: '呼叫铃声', desc: '经典铃声', action: const Icon(Icons.chevron_right, color: AppColors.textWeak, size: 20)),
+            _buildNotifSettingItem(icon: Icons.call, title: '呼叫铃声', desc: '经典铃声', action: const Icon(Icons.chevron_right, color: Color(0x4DFFFFFF), size: 20)),
           ]),
         ])),
         const SizedBox(height: 24),
@@ -588,6 +593,7 @@ Widget _buildNotifSectionCard({required List<Widget> children}) {
 }
 
 Widget _buildNotifSettingItem({required IconData icon, required String title, String? desc, required Widget action}) {
+  // Web: flex items-center gap-3 py-3 px-4
   return Padding(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), child: Row(children: [
     Container(width: 32, height: 32, decoration: BoxDecoration(color: const Color(0x14FFFFFF), borderRadius: BorderRadius.circular(8)),
       child: Icon(icon, color: Colors.white, size: 16)),
@@ -644,42 +650,146 @@ Widget _buildNotifToggle({required bool enabled}) {
   );
 }
 
+// ═══════════════════════════════════════════════════════════════
+// 3. SETTINGS FONT/DISPLAY - matches DisplaySettings.tsx
+// ═══════════════════════════════════════════════════════════════
+
 Widget _buildSettingsFont() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
     body: Column(children: [
       _buildHeader('显示设置'),
       Expanded(child: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('字体大小', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 16),
-        _buildFontOption('小', '12px / 14px', false),
-        const SizedBox(height: 8),
-        _buildFontOption('标准', '14px / 16px', true),
-        const SizedBox(height: 8),
-        _buildFontOption('大', '16px / 18px', false),
-        const SizedBox(height: 32),
-        const Text('预览', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+        // Section title: text-sm font-bold mb-3
+        const Text('字体大小', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
         const SizedBox(height: 12),
-        GlassCard(child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('标题文字示例', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          const Text('这是正文内容的预览效果。字体大小设置后，所有页面的文字都会相应调整。', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.5)),
-        ]))),
+        // 3 horizontal buttons - web: flex gap-3 (12px)
+        Row(children: [
+          Expanded(child: _buildFontSizeButton('小', '12px / 14px', false)),
+          const SizedBox(width: 12),
+          Expanded(child: _buildFontSizeButton('标准', '14px / 16px', true)),
+          const SizedBox(width: 12),
+          Expanded(child: _buildFontSizeButton('大', '16px / 18px', false)),
+        ]),
+        const SizedBox(height: 32),
+        // Preview section - web: rainbow gradient border container, rounded-xl, p-4
+        Container(
+          padding: const EdgeInsets.all(0.5),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            gradient: AppColors.auroraGradientWithOpacity(0.6),
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(11),
+              color: AppColors.bgColor,
+            ),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              // Preview header with Type icon
+              Row(children: [
+                const Icon(Icons.text_fields, color: Colors.white, size: 16),
+                const SizedBox(width: 8),
+                const Text('预览', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
+              ]),
+              const SizedBox(height: 12),
+              // Inner preview card: bg=rgba(255,255,255,0.04), border=rgba(255,255,255,0.08), rounded-xl, p-4
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0x0AFFFFFF),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0x14FFFFFF), width: 1),
+                ),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  const Text('标题文字示例', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  Text('这是正文内容的预览效果。字体大小设置后，所有页面的文字都会相应调整。',
+                    style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 14, height: 1.5)),
+                  const SizedBox(height: 12),
+                  // Action buttons: "确认" with rainbow border + "取消" subtle
+                  Row(children: [
+                    // 确认 button - rainbow gradient border pill
+                    Container(
+                      padding: const EdgeInsets.all(0.5),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        gradient: AppColors.auroraGradient,
+                      ),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(15),
+                          color: AppColors.bgColor,
+                        ),
+                        child: const Text('确认', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500)),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // 取消 button - subtle pill
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        color: const Color(0x0DFFFFFF),
+                        border: Border.all(color: const Color(0x1AFFFFFF), width: 1),
+                      ),
+                      child: Text('取消', style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 12, fontWeight: FontWeight.w500)),
+                    ),
+                  ]),
+                ]),
+              ),
+            ]),
+          ),
+        ),
       ]))),
     ]),
   );
 }
 
-Widget _buildFontOption(String label, String desc, bool selected) {
-  return Container(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14), decoration: BoxDecoration(color: AppColors.cardBg, borderRadius: BorderRadius.circular(12), border: Border.all(color: selected ? AppColors.auroraBlue : AppColors.borderColor, width: selected ? 1.5 : 0.5)), child: Row(children: [
-    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(label, style: TextStyle(color: selected ? Colors.white : AppColors.textSecondary, fontSize: 15, fontWeight: selected ? FontWeight.w600 : FontWeight.normal)),
-      const SizedBox(height: 2),
-      Text(desc, style: const TextStyle(color: AppColors.textWeak, fontSize: 12)),
-    ])),
-    if (selected) const Icon(Icons.check_circle, color: AppColors.auroraBlue, size: 22),
-  ]));
+Widget _buildFontSizeButton(String label, String desc, bool selected) {
+  // Web: flex-1 py-3 px-2 rounded-xl, centered content
+  // Selected: rainbow gradient border (RAINBOW_STYLES.clipBorder1_5px)
+  // Not selected: bg=rgba(255,255,255,0.04), border=rgba(255,255,255,0.08)
+  if (selected) {
+    return Container(
+      padding: const EdgeInsets.all(1.5),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        gradient: AppColors.auroraGradient,
+      ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          color: AppColors.bgColor,
+        ),
+        child: Column(children: [
+          Text(label, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
+          const SizedBox(height: 4),
+          Text(desc, style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 10)),
+        ]),
+      ),
+    );
+  }
+  return Container(
+    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+    decoration: BoxDecoration(
+      color: const Color(0x0AFFFFFF),
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: const Color(0x14FFFFFF), width: 1),
+    ),
+    child: Column(children: [
+      Text(label, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
+      const SizedBox(height: 4),
+      Text(desc, style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 10)),
+    ]),
+  );
 }
+
+// ═══════════════════════════════════════════════════════════════
+// 5. SETTINGS LANGUAGE - matches LanguageSettings.tsx
+// ═══════════════════════════════════════════════════════════════
 
 Widget _buildSettingsLanguage() {
   final langs = [
@@ -695,33 +805,47 @@ Widget _buildSettingsLanguage() {
     body: Column(children: [
       _buildHeader('语言设置'),
       Expanded(child: ListView(padding: const EdgeInsets.all(16), children: [
-        // Current language card
+        // Current language card - web: rounded-xl p-4 mb-4 bg=rgba(255,255,255,0.04) border=rgba(255,255,255,0.08)
         Container(padding: const EdgeInsets.all(16), margin: const EdgeInsets.only(bottom: 16),
-          decoration: BoxDecoration(color: AppColors.hoverBgLight, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.borderColor, width: 0.5)),
-          child: const Row(children: [
-            Icon(Icons.language, color: AppColors.textPrimary, size: 16),
-            SizedBox(width: 8),
-            Text('当前语言: ', style: TextStyle(color: AppColors.textPrimary, fontSize: 14)),
-            Text('简体中文', style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500)),
+          decoration: BoxDecoration(
+            color: const Color(0x0AFFFFFF),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0x14FFFFFF), width: 1),
+          ),
+          child: Row(children: [
+            const Icon(Icons.language, color: Colors.white, size: 16),
+            const SizedBox(width: 8),
+            const Text('当前语言: ', style: TextStyle(color: Colors.white, fontSize: 14)),
+            const Text('简体中文', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
           ])),
-        // Language list
+        // Language list - web: space-y-2 (8px gap)
         ...langs.map((l) {
           final isSelected = l[4] as bool;
           return Padding(padding: const EdgeInsets.only(bottom: 8), child: isSelected
+            // Selected: 2px rainbow gradient border, inner bgColor
             ? Container(padding: const EdgeInsets.all(2),
                 decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: AppColors.auroraGradient),
-                child: Container(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                child: Container(padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: AppColors.bgColor),
                   child: _buildLangRow(l)))
-            : Container(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: AppColors.hoverBgLight, border: Border.all(color: AppColors.borderColor)),
+            // Not selected: bg=rgba(255,255,255,0.04), border=rgba(255,255,255,0.08)
+            : Container(padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: const Color(0x0AFFFFFF),
+                  border: Border.all(color: const Color(0x14FFFFFF), width: 1),
+                ),
                 child: _buildLangRow(l)));
         }),
         const SizedBox(height: 24),
-        // Hint text
+        // Hint text - web: mt-6 p-4 rounded-xl bg=rgba(255,255,255,0.03) border=rgba(255,255,255,0.06)
         Container(padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(color: AppColors.hoverBgLight, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.borderSubtle)),
-          child: Center(child: Text('语言切换后立即生效', style: TextStyle(color: AppColors.textWeak, fontSize: 12)))),
+          decoration: BoxDecoration(
+            color: const Color(0x08FFFFFF),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0x0FFFFFFF), width: 1),
+          ),
+          child: Center(child: Text('语言切换后立即生效', style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 12)))),
         const SizedBox(height: 16),
       ])),
     ]),
@@ -734,44 +858,151 @@ Widget _buildLangRow(List<dynamic> l) {
     Text(l[0] as String, style: const TextStyle(fontSize: 20)),
     const SizedBox(width: 12),
     Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(l[2] as String, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500)),
-      Text(l[1] as String, style: const TextStyle(color: AppColors.textWeak, fontSize: 12)),
+      Text(l[2] as String, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
+      Text(l[1] as String, style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
     ])),
-    if (isSelected) const Icon(Icons.check, color: AppColors.textPrimary, size: 20),
+    if (isSelected) const Icon(Icons.check, color: Colors.white, size: 20),
   ]);
 }
+
+// ═══════════════════════════════════════════════════════════════
+// 2. SETTINGS PREFERENCES - matches ContentPreferences.tsx
+// ═══════════════════════════════════════════════════════════════
 
 Widget _buildSettingsPreferences() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
     body: Column(children: [
       _buildHeader('内容偏好'),
-      Expanded(child: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('感兴趣的标签', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 8),
-        const Text('选择你感兴趣的内容标签，我们将为你推荐相关内容', style: TextStyle(color: AppColors.textWeak, fontSize: 13)),
+      Expanded(child: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(children: [
+        // Section 1: 偏好标签 - rainbow gradient border container
+        _buildPrefSection(
+          title: '偏好标签',
+          desc: '我们会为您优先推荐您感兴趣的学习内容',
+          tags: const ['基督教', '佛教'],
+          showEmpty: false,
+          hasGradientAddButton: true,
+          addLabel: '添加偏好',
+        ),
         const SizedBox(height: 16),
-        Wrap(spacing: 8, runSpacing: 8, children: [
-          _tagChip('祈祷', true), _tagChip('读经', true), _tagChip('赞美', false), _tagChip('布道', false),
-          _tagChip('神学', true), _tagChip('教会生活', false), _tagChip('圣经研究', true), _tagChip('教会历史', false),
-          _tagChip('心理健康', false), _tagChip('情绪管理', false), _tagChip('自我成长', true),
-        ]),
-        const SizedBox(height: 32),
-        const Text('屏蔽的标签', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 8),
-        Wrap(spacing: 8, runSpacing: 8, children: [_tagChip('广告', true, isBlock: true)]),
+        // Section 2: 屏蔽标签 - rainbow gradient border container
+        _buildPrefSection(
+          title: '屏蔽标签',
+          desc: '被屏蔽的标签内容将不会出现在您的推荐中',
+          tags: const [],
+          showEmpty: true,
+          hasGradientAddButton: false,
+          addLabel: '添加屏蔽',
+        ),
       ]))),
     ]),
   );
 }
 
-Widget _tagChip(String label, bool selected, {bool isBlock = false}) {
-  return Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), decoration: BoxDecoration(
-    gradient: selected && !isBlock ? AppColors.auroraGradientWithOpacity(0.3) : null,
-    color: selected && !isBlock ? null : isBlock ? AppColors.error.withOpacity(0.15) : AppColors.inputBg,
-    borderRadius: BorderRadius.circular(16),
-    border: selected ? null : Border.all(color: isBlock ? AppColors.error.withOpacity(0.3) : AppColors.borderColor, width: 0.5),
-  ), child: Text(label, style: TextStyle(color: selected && !isBlock ? Colors.white : isBlock ? AppColors.error : AppColors.textSecondary, fontSize: 13)));
+Widget _buildPrefSection({
+  required String title,
+  required String desc,
+  required List<String> tags,
+  required bool showEmpty,
+  required bool hasGradientAddButton,
+  required String addLabel,
+}) {
+  // Web: rounded-xl p-4, rainbow gradient border (0.5px), bg=transparent (we use bgColor for Flutter)
+  return Container(
+    padding: const EdgeInsets.all(0.5),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(12),
+      gradient: AppColors.auroraGradientWithOpacity(0.5),
+    ),
+    child: Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(11),
+        color: AppColors.bgColor,
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        // Section header with colored indicator bar
+        Row(children: [
+          Container(width: 4, height: 16, decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(2),
+            gradient: AppColors.auroraGradientWithOpacity(0.5),
+          )),
+          const SizedBox(width: 8),
+          Text(title, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
+        ]),
+        const SizedBox(height: 8),
+        Text(desc, style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 12)),
+        const SizedBox(height: 12),
+        // Tags
+        if (tags.isNotEmpty) Wrap(spacing: 8, runSpacing: 8, children: tags.map((tag) => _buildPrefTagChip(tag)).toList()),
+        // Empty placeholder for blocked tags
+        if (showEmpty && tags.isEmpty) Container(
+          height: 64, width: double.infinity,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withOpacity(0.1), width: 1, style: BorderStyle.solid),
+          ),
+          child: Center(child: Text('暂无屏蔽标签', style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 12))),
+        ),
+        if (showEmpty && tags.isEmpty) const SizedBox(height: 12),
+        // Add button
+        if (hasGradientAddButton)
+          // "添加偏好" - rainbow gradient border button
+          Container(
+            width: double.infinity, height: 40,
+            padding: const EdgeInsets.all(0.5),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              gradient: AppColors.auroraGradientWithOpacity(0.6),
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(11),
+                color: AppColors.bgColor,
+              ),
+              child: Center(child: Row(mainAxisSize: MainAxisSize.min, children: [
+                const Icon(Icons.add, color: Colors.white, size: 16),
+                const SizedBox(width: 8),
+                Text(addLabel, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
+              ])),
+            ),
+          )
+        else
+          // "添加屏蔽" - subtle border button
+          Container(
+            width: double.infinity, height: 40,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white.withOpacity(0.2), width: 0.5),
+            ),
+            child: Center(child: Row(mainAxisSize: MainAxisSize.min, children: [
+              Icon(Icons.edit, color: Colors.white.withOpacity(0.7), size: 16),
+              const SizedBox(width: 8),
+              Text(addLabel, style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14, fontWeight: FontWeight.w500)),
+            ])),
+          ),
+      ]),
+    ),
+  );
+}
+
+Widget _buildPrefTagChip(String label) {
+  // Web: px-3 py-1.5 text-xs rounded-full
+  // bg=rgba(255,255,255,0.06), color=#FFFFFF, border=0.5px solid rgba(255,255,255,0.2)
+  // With X remove button
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+    decoration: BoxDecoration(
+      color: const Color(0x0FFFFFFF),  // rgba(255,255,255,0.06)
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: const Color(0x33FFFFFF), width: 0.5),  // rgba(255,255,255,0.2)
+    ),
+    child: Row(mainAxisSize: MainAxisSize.min, children: [
+      Text(label, style: const TextStyle(color: Colors.white, fontSize: 12)),
+      const SizedBox(width: 4),
+      Icon(Icons.close, color: Colors.white.withOpacity(0.6), size: 12),
+    ]),
+  );
 }
 
 Widget _buildSettingsAbout() {
