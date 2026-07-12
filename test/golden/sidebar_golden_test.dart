@@ -134,16 +134,12 @@ void main() {
   });
 }
 
-// ─── History Page ───
+// ─── History Page ─── (aligned with History.tsx - date-grouped items, no star overlay)
 Widget _buildHistory() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
-    body: Stack(children: [
-      // Star decoration layer
-      _buildStarOverlay(),
-      // Content layer
-      Column(children: [
-      // Header: back + title on left, "关闭记录" on right
+    body: Column(children: [
+      // Header: back + title on left, "关闭记录" on right (web: flex items-center justify-between)
       Container(
         decoration: BoxDecoration(
           color: AppColors.headerBg,
@@ -162,7 +158,7 @@ Widget _buildHistory() {
         ),
       ),
       Expanded(child: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(children: [
-        // Clear history button with rainbow border
+        // Clear history button with rainbow border (web: RAINBOW_STYLES.border1px)
         Container(padding: const EdgeInsets.all(1),
           decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: AppColors.auroraGradient),
           child: Container(
@@ -176,19 +172,46 @@ Widget _buildHistory() {
           ),
         ),
         const SizedBox(height: 16),
-        _buildHistoryItem('今天读了一段很有启发的经文', '张三', '2小时前', '基督教'),
-        const SizedBox(height: 8),
-        _buildHistoryItem('禅修日记第30天', '李明', '昨天', '佛教'),
-        const SizedBox(height: 8),
-        _buildHistoryItem('今天的祷告让我感受到了真主的慈悯', '王芳', '2天前', '伊斯兰教'),
-        const SizedBox(height: 8),
-        _buildHistoryItem('道德经研读笔记：上善若水', '陈伟', '3天前', '道教'),
-        const SizedBox(height: 8),
-        _buildHistoryItem('圣经研读心得分享', '赵六', '5天前', '基督教'),
+        // Date group: 今天
+        _buildHistoryDateGroup('今天', 2, [
+          _buildHistoryItem('今天读了一段很有启发的经文', '张三', '2小时前', '基督教'),
+          const SizedBox(height: 8),
+          _buildHistoryItem('今天的祷告让我感受到了真主的慈悯', '王芳', '3小时前', '伊斯兰教'),
+        ]),
+        const SizedBox(height: 16),
+        // Date group: 昨天
+        _buildHistoryDateGroup('昨天', 1, [
+          _buildHistoryItem('禅修日记第30天', '李明', '昨天', '佛教'),
+        ]),
+        const SizedBox(height: 16),
+        // Date group: 3月15日
+        _buildHistoryDateGroup('3月15日', 1, [
+          _buildHistoryItem('道德经研读笔记：上善若水', '陈伟', '3月15日', '道教'),
+        ]),
+        const SizedBox(height: 16),
+        // Date group: 3月12日
+        _buildHistoryDateGroup('3月12日', 1, [
+          _buildHistoryItem('圣经研读心得分享', '赵六', '3月12日', '基督教'),
+        ]),
       ]))),
     ]),
-  ]),
   );
+}
+
+Widget _buildHistoryDateGroup(String label, int count, List<Widget> children) {
+  return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+    Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 8),
+      child: Row(children: [
+        Icon(Icons.access_time, color: AppColors.textSecondary, size: 14),
+        const SizedBox(width: 8),
+        Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w500)),
+        const SizedBox(width: 4),
+        Text('($count)', style: TextStyle(color: AppColors.textWeak.withOpacity(0.5), fontSize: 12)),
+      ]),
+    ),
+    ...children,
+  ]);
 }
 
 Widget _buildHistoryItem(String title, String author, String time, String tag) {
@@ -210,14 +233,14 @@ Widget _buildHistoryItem(String title, String author, String time, String tag) {
       ),
       const SizedBox(width: 12),
       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        // Title + tag on same line
+        // Title + tag on same line (web: flex items-center gap-2)
         Row(children: [
           Expanded(child: Text(title, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500), maxLines: 1, overflow: TextOverflow.ellipsis)),
           const SizedBox(width: 8),
           Text(tag, style: TextStyle(color: Colors.white.withOpacity(0.35), fontSize: 12)),
         ]),
         const SizedBox(height: 4),
-        // Author + time
+        // Author + time (web: text-xs text-secondary)
         Row(children: [
           Text(author, style: const TextStyle(color: AppColors.textWeak, fontSize: 12)),
           const SizedBox(width: 8),
@@ -228,30 +251,22 @@ Widget _buildHistoryItem(String title, String author, String time, String tag) {
   );
 }
 
-// ─── Downloads Page ───
+// ─── Downloads Page (not modified) ───
 Widget _buildDownloads() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
-    body: Stack(children: [
-      // Star decoration layer
-      _buildStarOverlay(),
-      // Content layer
-      Column(children: [
-      _buildSliverHeader('下载管理'),
+    body: Column(children: [
+      _buildSliverHeader('我的下载'),
       // Stats bar
       Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
         decoration: BoxDecoration(
-          color: AppColors.bgSecondary,
-          border: Border(bottom: BorderSide(color: AppColors.borderDefault, width: 1)),
+          color: AppColors.cardBg,
+          border: Border(bottom: BorderSide(color: AppColors.borderDefault, width: 0.5)),
         ),
-        child: Row(children: [
-          _buildStat('0', '已下载书籍'),
-          Container(width: 1, height: 24, color: AppColors.borderDefault),
-          const Padding(padding: EdgeInsets.symmetric(horizontal: 16)),
-          _buildStat('0', '笔记资源'),
-          Container(width: 1, height: 24, color: AppColors.borderDefault),
-          const Padding(padding: EdgeInsets.symmetric(horizontal: 16)),
+        child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
+          _buildStat('0', '书籍'),
+          _buildStat('0', '音频'),
           _buildStat('0 MB', '占用空间'),
         ]),
       ),
@@ -271,7 +286,6 @@ Widget _buildDownloads() {
         Text('浏览书籍时可以离线保存', style: const TextStyle(color: AppColors.textWeak, fontSize: 13)),
       ])))),
     ]),
-  ]),
   );
 }
 
@@ -283,7 +297,7 @@ Widget _buildStat(String value, String label) {
   ]);
 }
 
-// ─── Covenant Page ───
+// ─── Covenant Page ─── (aligned with Covenant.tsx - no star overlay, transparent bg → solid)
 Widget _buildCovenant() {
   const items = [
     {'title': '平等与尊重', 'content': '每一个灵魂都值得被听见。我们尊重所有信仰传统、灵性探索及无神论立场。严禁任何形式的歧视、仇恨言论或宗教排他性攻击。'},
@@ -294,12 +308,23 @@ Widget _buildCovenant() {
   ];
   return Scaffold(
     backgroundColor: AppColors.bgColor,
-    body: Stack(children: [
-      // Star decoration layer
-      _buildStarOverlay(),
-      // Content layer
-      Column(children: [
-      _buildSliverHeader('信仰公约'),
+    body: Column(children: [
+      // Web header: px-4 py-3 border-b flex items-center gap-3
+      Container(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+        decoration: BoxDecoration(
+          color: AppColors.headerBg,
+          border: Border(bottom: BorderSide(color: AppColors.borderColor, width: 1)),
+        ),
+        child: SafeArea(
+          bottom: false,
+          child: Row(children: [
+            const Icon(Icons.arrow_back_ios, color: AppColors.textPrimary, size: 20),
+            const SizedBox(width: 12),
+            const Text('信仰公约', style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
+          ]),
+        ),
+      ),
       Expanded(child: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         // Intro card (web: rounded-2xl p-6, bg=rgba(255,255,255,0.04), border=rgba(255,255,255,0.08))
         Container(
@@ -311,6 +336,7 @@ Widget _buildCovenant() {
           ),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
+              // Shield icon with rainbow border (web: w-12 h-12 rounded-xl, RAINBOW_STYLES.clipBorder1_5px)
               Container(
                 width: 48, height: 48,
                 padding: const EdgeInsets.all(1.5),
@@ -332,12 +358,14 @@ Widget _buildCovenant() {
           ]),
         ),
         const SizedBox(height: 12),
+        // Covenant items (web: space-y-3, rounded-xl p-4, bg=var(--hover-bg-light), border=rgba(255,255,255,0.08))
         ...List.generate(items.length, (i) {
           final item = items[i];
           return Padding(padding: const EdgeInsets.only(bottom: 12), child: Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(color: const Color(0x08FFFFFF), borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0x14FFFFFF))),
+            decoration: BoxDecoration(color: AppColors.hoverBgLight, borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0x14FFFFFF))),
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              // Number badge with rainbow border
               Container(
                 width: 32, height: 32,
                 padding: const EdgeInsets.all(1.5),
@@ -351,12 +379,13 @@ Widget _buildCovenant() {
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(item['title']!, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
-                Text(item['content']!, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, height: 1.6)),
+                Text(item['content']!, style: const TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6)),
               ])),
             ]),
           ));
         }),
         const SizedBox(height: 24),
+        // Bottom tag (web: inline-flex items-center gap-2 px-4 py-2 rounded-full, bg=var(--hover-bg-light))
         Center(child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(color: AppColors.hoverBgLight, borderRadius: BorderRadius.circular(20)),
@@ -368,20 +397,30 @@ Widget _buildCovenant() {
         )),
       ]))),
     ]),
-  ]),
   );
 }
 
-// ─── Scan Page ───
+// ─── Scan Page ─── (aligned with Scan.tsx - no star overlay, solid bg)
 Widget _buildScan() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
-    body: Stack(children: [
-      // Star decoration layer
-      _buildStarOverlay(),
-      // Content layer
-      Column(children: [
-      _buildSliverHeader('扫一扫'),
+    body: Column(children: [
+      // Web header: px-4 py-3 border-b flex items-center gap-3
+      Container(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+        decoration: BoxDecoration(
+          color: AppColors.headerBg,
+          border: Border(bottom: BorderSide(color: AppColors.borderColor, width: 1)),
+        ),
+        child: SafeArea(
+          bottom: false,
+          child: Row(children: [
+            const Icon(Icons.arrow_back_ios, color: AppColors.textPrimary, size: 20),
+            const SizedBox(width: 12),
+            const Text('扫一扫', style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
+          ]),
+        ),
+      ),
       Expanded(child: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(children: [
         Container(
           padding: const EdgeInsets.all(20),
@@ -404,7 +443,6 @@ Widget _buildScan() {
         const Center(child: Text('扫描二维码可以快速添加好友或加入群聊', style: TextStyle(color: AppColors.textSecondary, fontSize: 13))),
       ]))),
     ]),
-  ]),
   );
 }
 
@@ -424,7 +462,7 @@ Widget _buildGradientBtn({required IconData icon, required String label}) {
   );
 }
 
-// ─── Support Page ───
+// ─── Support Page (not modified) ───
 Widget _buildSupport() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
@@ -484,47 +522,130 @@ Widget _buildTicketCard(String title, String status, String time) {
   );
 }
 
-// ─── Gongjing Page ───
+// ─── Gongjing Page ─── (aligned with Gongjing.tsx - 静默同行 tab default view)
 Widget _buildGongjing() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
     body: Stack(children: [
-      // Star decoration layer
+      // Star decoration layer (web has starry background)
       _buildStarOverlay(),
       // Content layer
       Column(children: [
-      // Header
-      Container(
-        decoration: BoxDecoration(color: AppColors.headerBg, border: Border(bottom: BorderSide(color: AppColors.borderSubtle, width: 0.5))),
-        child: SafeArea(bottom: false, child: Column(children: [
-          Padding(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), child: Row(children: [
-            const Icon(Icons.arrow_back_ios, color: AppColors.textSecondary, size: 20),
-            const Spacer(),
-            const Text('共境', style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w500)),
-            const Spacer(),
-            const SizedBox(width: 36),
+        // Header (web: sticky top-0 z-50 backdrop-blur-xl border-b border-white/5)
+        Container(
+          decoration: BoxDecoration(
+            color: AppColors.headerBg,
+            border: Border(bottom: BorderSide(color: AppColors.borderSubtle, width: 0.5)),
+          ),
+          child: SafeArea(bottom: false, child: Column(children: [
+            // Nav row: back | title | spacer
+            Padding(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), child: Row(children: [
+              const Icon(Icons.arrow_back_ios, color: AppColors.textSecondary, size: 20),
+              const Spacer(),
+              const Text('共境', style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w500)),
+              const Spacer(),
+              const SizedBox(width: 36),
+            ])),
+            // Tab row: 4 tabs with gap-2
+            Padding(padding: const EdgeInsets.fromLTRB(16, 0, 16, 12), child: Row(children: [
+              _buildGongjingTab('静默同行', true),
+              const SizedBox(width: 8),
+              _buildGongjingTab('世界呼吸', false),
+              const SizedBox(width: 8),
+              _buildGongjingTab('树洞回声', false),
+              const SizedBox(width: 8),
+              _buildGongjingTab('无界圆桌', false),
+            ])),
           ])),
-          Padding(padding: const EdgeInsets.fromLTRB(16, 0, 16, 12), child: Row(children: [
-            _buildGongjingTab('静默同行', true),
-            const SizedBox(width: 8),
-            _buildGongjingTab('世界呼吸', false),
-            const SizedBox(width: 8),
-            _buildGongjingTab('树洞回声', false),
-            const SizedBox(width: 8),
-            _buildGongjingTab('无界圆桌', false),
-          ])),
-        ])),
-      ),
-      Expanded(child: SingleChildScrollView(padding: const EdgeInsets.fromLTRB(16, 24, 16, 32), child: Column(children: [
-        // Room cards
-        _buildGongjingRoomCard('晨间冥想', '5人正在静默共修', Icons.self_improvement),
-        const SizedBox(height: 12),
-        _buildGongjingRoomCard('圣经研读', '12人正在共修', Icons.menu_book),
-        const SizedBox(height: 12),
-        _buildGongjingRoomCard('静默祷告', '3人正在共修', Icons.church),
-      ]))),
+        ),
+        // Content area (web: px-4 pt-6)
+        Expanded(child: SingleChildScrollView(padding: const EdgeInsets.fromLTRB(16, 24, 16, 32), child: Column(children: [
+          // Title section (web: text-center mb-12)
+          Container(
+            padding: const EdgeInsets.only(bottom: 48),
+            child: Column(children: [
+              // Moon icon (web: w-8 h-8, color=WHITE_COLOR)
+              Container(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: const Icon(Icons.brightness_3, color: Colors.white, size: 32),
+              ),
+              const Text('静默同行', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w300)),
+              const SizedBox(height: 8),
+              Text('一对一安静陪伴', style: TextStyle(color: AppColors.textPlaceholder, fontSize: 12)),
+            ]),
+          ),
+          // Status selection: "此刻你的状态"
+          Text('此刻你的状态', style: TextStyle(color: AppColors.textSecondary, fontSize: 14), textAlign: TextAlign.center),
+          const SizedBox(height: 16),
+          // Status options grid (web: flex flex-wrap justify-center gap-3)
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            alignment: WrapAlignment.center,
+            children: [
+              _buildGongjingStatusOption('安静中', Icons.brightness_3, true),
+              _buildGongjingStatusOption('阅读中', Icons.menu_book, false),
+              _buildGongjingStatusOption('反思中', Icons.favorite, false),
+              _buildGongjingStatusOption('冥想中', Icons.psychology, false),
+              _buildGongjingStatusOption('祈祷时', Icons.pan_tool, false),
+            ],
+          ),
+          const SizedBox(height: 24),
+          // Duration selection: "陪伴时长"
+          Text('陪伴时长', style: TextStyle(color: AppColors.textSecondary, fontSize: 14), textAlign: TextAlign.center),
+          const SizedBox(height: 16),
+          // Duration options (web: flex justify-center gap-4)
+          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            _buildGongjingDurationOption('15分钟', true),
+            const SizedBox(width: 16),
+            _buildGongjingDurationOption('30分钟', false),
+            const SizedBox(width: 16),
+            _buildGongjingDurationOption('1小时', false),
+          ]),
+          const SizedBox(height: 24),
+          // Music upload: "背景音乐（可选）"
+          Text('背景音乐（可选）', style: TextStyle(color: AppColors.textSecondary, fontSize: 14), textAlign: TextAlign.center),
+          const SizedBox(height: 16),
+          // Upload area (web: w-full p-6 rounded-2xl, bg=rgba(255,255,255,0.05), border=1px dashed rgba(255,255,255,0.2))
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white.withOpacity(0.2)),
+              // dashed border simulated with solid in Flutter
+            ),
+            child: Column(children: [
+              Icon(Icons.upload, color: AppColors.textPlaceholder, size: 24),
+              const SizedBox(height: 8),
+              Text('点击上传 MP3 / WAV / AAC', style: TextStyle(color: AppColors.textWeak, fontSize: 14)),
+            ]),
+          ),
+          const SizedBox(height: 24),
+          // Enter button (web: w-full py-5 rounded-2xl, rainbow border)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(1),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              gradient: AppColors.auroraGradient,
+            ),
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(15),
+                color: AppColors.bgColor.withOpacity(0.9),
+              ),
+              child: const Center(child: Text('进入静默同行', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500))),
+            ),
+          ),
+          const SizedBox(height: 64),
+          // Bottom text
+          Text('In silence, we find each other.', style: TextStyle(color: AppColors.textPlaceholder, fontSize: 14, fontStyle: FontStyle.italic), textAlign: TextAlign.center),
+        ]))),
+      ]),
     ]),
-  ]),
   );
 }
 
@@ -540,36 +661,41 @@ Widget _buildGongjingTab(String label, bool active) {
   ));
 }
 
-Widget _buildGongjingRoomCard(String name, String info, IconData icon) {
+Widget _buildGongjingStatusOption(String label, IconData icon, bool active) {
   return Container(
-    padding: const EdgeInsets.all(16),
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
     decoration: BoxDecoration(
-      color: AppColors.cardBg,
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: AppColors.borderColor, width: 0.5),
+      color: active ? Colors.white.withOpacity(0.15) : Colors.white.withOpacity(0.05),
+      borderRadius: BorderRadius.circular(16),
+      border: active ? null : Border.all(color: AppColors.borderColor),
     ),
-    child: Row(children: [
-      Container(width: 48, height: 48, decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: AppColors.auroraGradientWithOpacity(0.3)), child: Icon(icon, color: Colors.white, size: 24)),
-      const SizedBox(width: 12),
-      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(name, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 4),
-        Text(info, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-      ])),
+    child: Column(mainAxisSize: MainAxisSize.min, children: [
+      Icon(icon, color: active ? Colors.white : Colors.white.withOpacity(0.5), size: 24),
+      const SizedBox(height: 4),
+      Text(label, style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 12)),
     ]),
   );
 }
 
-// ─── Privacy Page ─── (aligned with PrivacyPolicyScreen source)
+Widget _buildGongjingDurationOption(String label, bool active) {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+    decoration: BoxDecoration(
+      color: Colors.white.withOpacity(0.05),
+      borderRadius: BorderRadius.circular(24),
+      border: Border.all(color: AppColors.borderColor),
+    ),
+    child: Text(label, style: TextStyle(color: active ? Colors.white : AppColors.textSecondary, fontSize: 14)),
+  );
+}
+
+// ─── Privacy Page ─── (aligned with PrivacyPolicy.tsx - no star overlay, solid bg)
 Widget _buildPrivacy() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
-    body: Stack(children: [
-      // Star decoration layer
-      _buildStarOverlay(),
-      // Content layer
-      Column(children: [
-      // Custom header: back | title | EN toggle (matches web TermsOfService/PrivacyPolicy)
+    body: Column(children: [
+      // Web header: flex items-center justify-between px-4 py-3
+      // bg=rgba(5,8,22,0.95), border-bottom=rgba(255,255,255,0.08)
       Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: const BoxDecoration(
@@ -585,7 +711,7 @@ Widget _buildPrivacy() {
             const Spacer(),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(color: Color(0x14FFFFFF), borderRadius: BorderRadius.circular(8)),
+              decoration: BoxDecoration(color: const Color(0x14FFFFFF), borderRadius: BorderRadius.circular(8)),
               child: const Text('EN', style: TextStyle(color: Color(0x99FFFFFF), fontSize: 12)),
             ),
           ]),
@@ -672,7 +798,6 @@ Widget _buildPrivacy() {
         const SizedBox(height: 32),
       ]))),
     ]),
-  ]),
   );
 }
 Widget _buildPrivacyBullet(String text) {
@@ -685,16 +810,12 @@ Widget _buildPrivacyBullet(String text) {
   );
 }
 
-// ─── Terms Page ─── (aligned with TermsOfServiceScreen source)
+// ─── Terms Page ─── (aligned with TermsOfService.tsx - no star overlay, solid bg)
 Widget _buildTerms() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
-    body: Stack(children: [
-      // Star decoration layer
-      _buildStarOverlay(),
-      // Content layer
-      Column(children: [
-      // Custom header: back | title | EN toggle (matches web TermsOfService)
+    body: Column(children: [
+      // Web header: flex items-center justify-between px-4 py-3
       Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: const BoxDecoration(
@@ -710,7 +831,7 @@ Widget _buildTerms() {
             const Spacer(),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(color: Color(0x14FFFFFF), borderRadius: BorderRadius.circular(8)),
+              decoration: BoxDecoration(color: const Color(0x14FFFFFF), borderRadius: BorderRadius.circular(8)),
               child: const Text('EN', style: TextStyle(color: Color(0x99FFFFFF), fontSize: 12)),
             ),
           ]),
@@ -798,7 +919,6 @@ Widget _buildTerms() {
         const SizedBox(height: 32),
       ]))),
     ]),
-  ]),
   );
 }
 Widget _buildTermsBullet(String text) {
@@ -867,16 +987,16 @@ Widget _buildStarDot(double x, double y, double size, Color color) {
   );
 }
 
-// ─── VIP Page ─── (aligned with VipScreen source)
+// ─── VIP Page ─── (aligned with VipScreen source - keeps star overlay)
 Widget _buildVip() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
     body: Stack(children: [
-      // Star decoration layer
+      // Star decoration layer (web VIP has StarryCanvas)
       _buildStarOverlay(),
       // Content layer
       Column(children: [
-      // Web VIP header: left-aligned back button + title (px-4 py-3)
+      // Web VIP header: px-4 py-3 border-b flex items-center gap-3
       Container(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
         decoration: BoxDecoration(
@@ -929,6 +1049,7 @@ Widget _buildVip() {
         Text('升级VIP，畅享信仰之旅', style: TextStyle(color: AppColors.textWeak, fontSize: 14)),
         const SizedBox(height: 28),
         // Benefits Grid: 3-col × 4-row, matching web grid-cols-3 gap-2.5
+        // Web uses RAINBOW_STYLES.border05px for outer + #050816 inner
         ..._buildVipGridRow([
           {'icon': Icons.visibility, 'label': '加热卡', 'desc': '每月1张+可购买', 'color': AppColors.auroraCyan},
           {'icon': Icons.push_pin, 'label': '置顶卡', 'desc': '首页置顶5分钟', 'color': AppColors.auroraBlue},
@@ -953,7 +1074,7 @@ Widget _buildVip() {
           {'icon': Icons.translate, 'label': '藏书无限AI翻译', 'desc': '无限时长翻译', 'color': AppColors.auroraYellow},
         ]),
         const SizedBox(height: 20),
-        // 开通即享 section
+        // Gift Section (web: rounded-2xl mb-6, RAINBOW_STYLES.border05px, inner rounded-[14px] p-5 bg=#050816)
         Container(
           padding: const EdgeInsets.all(0.5),
           decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), gradient: AppColors.auroraGradientWithOpacity(0.35)),
@@ -961,12 +1082,14 @@ Widget _buildVip() {
             decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), color: AppColors.bgColor),
             padding: const EdgeInsets.all(20),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              // Gift icon + "开通即享" (web: flex items-center gap-2 mb-3)
               Row(children: [
                 Icon(Icons.card_giftcard, color: AppColors.textPrimary, size: 20),
                 const SizedBox(width: 8),
                 const Text('开通即享', style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.bold)),
               ]),
               const SizedBox(height: 12),
+              // Gift items (web: flex flex-wrap gap-3)
               Wrap(spacing: 12, runSpacing: 12, children: [
                 '1张加热卡', '1张置顶卡', '1张回响卡', '1张同行卡', '1张答疑卡', '+500经验',
               ].map((g) => Container(
@@ -982,7 +1105,7 @@ Widget _buildVip() {
           ),
         ),
         const SizedBox(height: 20),
-        // Bottom CTA button
+        // Bottom CTA button (web: w-full py-3.5 rounded-2xl, RAINBOW_STYLES.clipBorder1px)
         Container(
           padding: const EdgeInsets.all(1),
           decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), gradient: AppColors.auroraGradient),
