@@ -756,6 +756,18 @@ Widget _buildVip() {
           {'icon': Icons.chat_bubble_outline, 'label': '答疑卡', 'color': AppColors.auroraGreen},
           {'icon': Icons.workspace_premium, 'label': '专属标识', 'color': AppColors.auroraPurple},
         ]),
+        const SizedBox(height: 10),
+        ..._buildVipGridRow([
+          {'icon': Icons.bolt, 'label': '经验加速', 'color': AppColors.auroraRed},
+          {'icon': Icons.headphones, 'label': '优先客服', 'color': AppColors.auroraRed},
+          {'icon': Icons.star, 'label': '热点翻倍', 'color': AppColors.auroraOrange},
+        ]),
+        const SizedBox(height: 10),
+        ..._buildVipGridRow([
+          {'icon': Icons.groups, 'label': '圆桌主持', 'color': AppColors.auroraGreen},
+          {'icon': Icons.person_add, 'label': '静默同行', 'color': AppColors.auroraCyan},
+          {'icon': Icons.translate, 'label': 'AI翻译', 'color': AppColors.auroraYellow},
+        ]),
         const SizedBox(height: 20),
         // 开通即享 section
         Container(
