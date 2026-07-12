@@ -351,8 +351,7 @@ Widget _buildLogin() {
           ),
         ),
       ),
-    ),
-  );
+    );
 }
 
 // ─── Login/Register Rainbow Border Helpers ───
