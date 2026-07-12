@@ -298,7 +298,7 @@ Widget _buildLogin() {
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: SizedBox(
-            width: 240,
+            width: 384,
             child: _buildLoginRainbowCard(
               borderRadius: 12,
               child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
@@ -317,11 +317,11 @@ Widget _buildLogin() {
                   Container(width: 16, height: 16, decoration: BoxDecoration(borderRadius: BorderRadius.circular(3), border: Border.all(color: Colors.white, width: 0.8)),
                     child: const Icon(Icons.check, color: Colors.white, size: 14)),
                   const SizedBox(width: 8),
-                  Text('记住我（30天）', style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.5))),
+                  Text('记住登录状态（30天）', style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.5))),
                 ]),
                 const SizedBox(height: 14),
                 // Login button - rainbow gradient border + dark bg
-                _buildLoginRainbowBtn('登录', height: 36),
+                _buildLoginRainbowBtn('登录', height: 48),
                 const SizedBox(height: 10),
                 // Forgot password
                 Center(child: Text('忘记密码？', style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.4)))),
