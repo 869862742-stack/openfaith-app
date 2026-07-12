@@ -450,7 +450,10 @@ Widget _buildRegister() {
                     const SizedBox(height: 16),
                     // Faith tag dropdown
                     Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text('身份标签 *', style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 14)),
+                      Text.rich(TextSpan(children: [
+                      const TextSpan(text: '身份标签 ', style: TextStyle(color: Color(0x80FFFFFF), fontSize: 14)),
+                      TextSpan(text: '*', style: TextStyle(fontSize: 14, foreground: Paint()..shader = AppColors.auroraGradient.createShader(const Rect.fromLTWH(0, 0, 10, 14)))),
+                    ])),
                       const SizedBox(height: 4),
                       Container(
                         height: 44,
@@ -469,7 +472,7 @@ Widget _buildRegister() {
                     const SizedBox(height: 12),
                     // Age 13 checkbox
                     Row(children: [
-                      Container(width: 16, height: 16, decoration: BoxDecoration(borderRadius: BorderRadius.circular(3), border: Border.all(color: Colors.white, width: 0.8)),
+                      Container(width: 16, height: 16, decoration: BoxDecoration(borderRadius: BorderRadius.circular(3), color: const Color(0xFF3A86FF)),
                         child: const Icon(Icons.check, color: Colors.white, size: 14)),
                       const SizedBox(width: 6),
                       Expanded(child: Text('我已年满13周岁', style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 11))),
@@ -477,10 +480,15 @@ Widget _buildRegister() {
                     const SizedBox(height: 8),
                     // Terms checkbox
                     Row(children: [
-                      Container(width: 16, height: 16, decoration: BoxDecoration(borderRadius: BorderRadius.circular(3), border: Border.all(color: Colors.white, width: 0.8)),
+                      Container(width: 16, height: 16, decoration: BoxDecoration(borderRadius: BorderRadius.circular(3), color: const Color(0xFF3A86FF)),
                         child: const Icon(Icons.check, color: Colors.white, size: 14)),
                       const SizedBox(width: 6),
-                      Expanded(child: Text('我已阅读并同意 隐私政策 和 用户协议', style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 11))),
+                      Expanded(child: Text.rich(TextSpan(children: [
+                      const TextSpan(text: '我已阅读并同意 ', style: TextStyle(color: Color(0x80FFFFFF), fontSize: 11)),
+                      const TextSpan(text: '隐私政策', style: TextStyle(color: Color(0xFF3A86FF), fontSize: 11, decoration: TextDecoration.underline)),
+                      const TextSpan(text: ' 和 ', style: TextStyle(color: Color(0x80FFFFFF), fontSize: 11)),
+                      const TextSpan(text: '服务条款', style: TextStyle(color: Color(0xFF3A86FF), fontSize: 11, decoration: TextDecoration.underline)),
+                    ]))),
                     ]),
                     const SizedBox(height: 14),
                     // Register button

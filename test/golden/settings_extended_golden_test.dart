@@ -579,17 +579,29 @@ Widget _buildNotifSettingItem({required IconData icon, required String title, St
 }
 
 Widget _buildNotifToggle({required bool enabled}) {
-  return enabled
-    ? Container(width: 48, height: 28, decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), color: const Color(0xFF00E4FF)),
-        padding: const EdgeInsets.all(2),
-        child: Align(alignment: Alignment.centerRight,
-          child: Container(width: 22, height: 22, decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white,
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 4, offset: const Offset(0,1))]))))
-    : Container(width: 48, height: 28, decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), color: const Color(0xFF2A2B35),
-        border: Border.all(color: const Color(0xFF3A3B45), width: 1)),
-        padding: const EdgeInsets.all(2),
-        child: Container(width: 22, height: 22, decoration: BoxDecoration(shape: BoxShape.circle, color: const Color(0xFF6B6C75),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 4, offset: const Offset(0,1))])));
+  // Web style: enabled = rainbow gradient border + dark bg + white knob right; disabled = transparent bg + white knob left
+  return Container(width: 48, height: 28,
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(14),
+      gradient: enabled ? AppColors.auroraGradientWithOpacity(0.6) : null,
+      color: enabled ? null : Colors.white.withOpacity(0.15),
+      border: enabled ? null : Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+    ),
+    padding: const EdgeInsets.all(1.5),
+    child: Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12.5),
+        color: const Color(0xFF0A0E1F),
+      ),
+      padding: const EdgeInsets.all(2),
+      child: Align(
+        alignment: enabled ? Alignment.centerRight : Alignment.centerLeft,
+        child: Container(width: 20, height: 20,
+          decoration: BoxDecoration(shape: BoxShape.circle,
+            color: enabled ? Colors.white : Colors.white.withOpacity(0.4),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 4, offset: const Offset(0,1))]))),
+    ),
+  );
 }
 
 Widget _buildSettingsFont() {
