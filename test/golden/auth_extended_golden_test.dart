@@ -12,21 +12,23 @@ void main() {
 
   group('Auth Extended Golden Tests', () {
     testWidgets('Login page extended view', (WidgetTester tester) async {
+    await setupGoldenSurface(tester);
       await tester.pumpWidget(wrapForGoldenTest(const LoginScreen()));
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
       await expectLater(
-        find.byType(SizedBox).first,
+        find.byType(MaterialApp),
         matchesGoldenFile('goldens/page_login_extended.png'),
       );
     });
 
     testWidgets('Register page extended view', (WidgetTester tester) async {
+    await setupGoldenSurface(tester);
       await tester.pumpWidget(wrapForGoldenTest(const RegisterScreen()));
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
       await expectLater(
-        find.byType(SizedBox).first,
+        find.byType(MaterialApp),
         matchesGoldenFile('goldens/page_register_extended.png'),
       );
     });

@@ -11,13 +11,14 @@ void main() {
 
   group('Rooms Page Golden Tests', () {
     testWidgets('Room list page golden', (WidgetTester tester) async {
+    await setupGoldenSurface(tester);
       await tester.pumpWidget(
         wrapForGoldenTest(const RoomListScreen(standalone: true)),
       );
       await tester.pump();
       await tester.pump(const Duration(seconds: 2));
       await expectLater(
-        find.byType(SizedBox).first,
+        find.byType(MaterialApp),
         matchesGoldenFile('goldens/page_rooms.png'),
       );
     });

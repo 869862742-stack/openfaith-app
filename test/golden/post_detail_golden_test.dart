@@ -10,6 +10,7 @@ void main() {
   });
 
   testWidgets('Post detail page golden', (WidgetTester tester) async {
+    await setupGoldenSurface(tester);
     final mockPost = <String, dynamic>{
       'id': 'test-post-001',
       'title': '今天的灵修分享',
@@ -31,7 +32,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(seconds: 2));
     await expectLater(
-      find.byType(SizedBox).first,
+      find.byType(MaterialApp),
       matchesGoldenFile('goldens/page_post_detail.png'),
     );
   });

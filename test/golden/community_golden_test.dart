@@ -10,11 +10,12 @@ void main() {
   });
 
   testWidgets('Community covenant page golden', (WidgetTester tester) async {
+    await setupGoldenSurface(tester);
     await tester.pumpWidget(wrapForGoldenTest(const CovenantScreen()));
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
     await expectLater(
-      find.byType(SizedBox).first,
+      find.byType(MaterialApp),
       matchesGoldenFile('goldens/page_community_rules.png'),
     );
   });

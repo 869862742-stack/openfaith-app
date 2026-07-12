@@ -6,11 +6,13 @@ import 'package:openfaith_app/widgets/aurora_button.dart';
 import 'package:openfaith_app/widgets/aurora_icon_button.dart';
 import 'package:openfaith_app/widgets/religion_icon.dart';
 import 'package:openfaith_app/widgets/glass_card.dart';
+import 'test_helper.dart';
 
 void main() {
   group('Page Component Golden Tests', () {
     
     testWidgets('AuroraButton renders correctly', (WidgetTester tester) async {
+    await setupGoldenSurface(tester);
       await tester.pumpWidget(
         MaterialApp(
           theme: ThemeData(scaffoldBackgroundColor: AppColors.bgColor),
@@ -46,6 +48,7 @@ void main() {
     });
 
     testWidgets('AuroraIconButton renders correctly', (WidgetTester tester) async {
+    await setupGoldenSurface(tester);
       await tester.pumpWidget(
         MaterialApp(
           theme: ThemeData(scaffoldBackgroundColor: AppColors.bgColor),
@@ -90,6 +93,7 @@ void main() {
     });
 
     testWidgets('AuroraAvatar renders correctly', (WidgetTester tester) async {
+    await setupGoldenSurface(tester);
       await tester.pumpWidget(
         MaterialApp(
           theme: ThemeData(scaffoldBackgroundColor: AppColors.bgColor),
@@ -143,6 +147,7 @@ void main() {
     });
 
     testWidgets('ReligionIconWidget renders correctly', (WidgetTester tester) async {
+    await setupGoldenSurface(tester);
       await tester.pumpWidget(
         MaterialApp(
           theme: ThemeData(scaffoldBackgroundColor: AppColors.bgColor),
@@ -173,6 +178,7 @@ void main() {
     });
 
     testWidgets('Post card mockup renders correctly', (WidgetTester tester) async {
+    await setupGoldenSurface(tester);
       await tester.pumpWidget(
         MaterialApp(
           theme: ThemeData(scaffoldBackgroundColor: AppColors.bgColor),
@@ -202,6 +208,7 @@ void main() {
     });
 
     testWidgets('Profile header mockup renders correctly', (WidgetTester tester) async {
+    await setupGoldenSurface(tester);
       await tester.pumpWidget(
         MaterialApp(
           theme: ThemeData(scaffoldBackgroundColor: AppColors.bgColor),
@@ -289,6 +296,7 @@ void main() {
     });
 
     testWidgets('Search bar renders correctly', (WidgetTester tester) async {
+    await setupGoldenSurface(tester);
       await tester.pumpWidget(
         MaterialApp(
           theme: ThemeData(scaffoldBackgroundColor: AppColors.bgColor),
@@ -326,6 +334,7 @@ void main() {
     });
 
     testWidgets('Tab bar renders correctly', (WidgetTester tester) async {
+    await setupGoldenSurface(tester);
       await tester.pumpWidget(
         MaterialApp(
           theme: ThemeData(scaffoldBackgroundColor: AppColors.bgColor),
@@ -357,6 +366,7 @@ void main() {
     });
 
     testWidgets('Settings list renders correctly', (WidgetTester tester) async {
+    await setupGoldenSurface(tester);
       await tester.pumpWidget(
         MaterialApp(
           theme: ThemeData(scaffoldBackgroundColor: AppColors.bgColor),

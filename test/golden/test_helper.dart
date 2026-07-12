@@ -10,6 +10,20 @@ import 'package:openfaith_app/theme/app_theme.dart';
 /// Standard iPhone 14 screen size for golden tests
 const kGoldenSize = Size(393, 852);
 
+/// Set the test surface/viewport size to 393x852 (iPhone 14 portrait)
+/// so that golden screenshots match a real phone screen.
+/// Must be called inside each testWidgets callback (before pumpWidget).
+Future<void> setupGoldenSurface(WidgetTester tester) async {
+  await tester.binding.setSurfaceSize(kGoldenSize);
+  tester.view.physicalSize = kGoldenSize;
+  tester.view.devicePixelRatio = 1.0;
+  addTearDown(() async {
+    await tester.binding.setSurfaceSize(null);
+    tester.view.resetPhysicalSize();
+    tester.view.resetDevicePixelRatio();
+  });
+}
+
 bool _initialized = false;
 
 /// Mock platform channels that are not available in test environment

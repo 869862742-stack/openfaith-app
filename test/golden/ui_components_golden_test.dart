@@ -4,11 +4,13 @@ import 'package:openfaith_app/theme/app_colors.dart';
 import 'package:openfaith_app/widgets/rainbow_border.dart';
 import 'package:openfaith_app/widgets/glass_card.dart';
 import 'package:openfaith_app/widgets/aurora_button.dart';
+import 'test_helper.dart';
 
 void main() {
   group('UI Component Golden Tests', () {
     
     testWidgets('RainbowBorder renders correctly', (WidgetTester tester) async {
+    await setupGoldenSurface(tester);
       await tester.pumpWidget(
         MaterialApp(
           theme: ThemeData(scaffoldBackgroundColor: AppColors.bgColor),
@@ -34,6 +36,7 @@ void main() {
     });
 
     testWidgets('GlassCard renders correctly', (WidgetTester tester) async {
+    await setupGoldenSurface(tester);
       await tester.pumpWidget(
         MaterialApp(
           theme: ThemeData(scaffoldBackgroundColor: AppColors.bgColor),
@@ -63,6 +66,7 @@ void main() {
     });
 
     testWidgets('Login form layout renders correctly', (WidgetTester tester) async {
+    await setupGoldenSurface(tester);
       final emailController = TextEditingController();
       final passwordController = TextEditingController();
       
@@ -137,6 +141,7 @@ void main() {
     });
 
     testWidgets('Bottom navigation bar renders correctly', (WidgetTester tester) async {
+    await setupGoldenSurface(tester);
       int selectedIndex = 0;
       
       await tester.pumpWidget(

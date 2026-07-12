@@ -10,11 +10,12 @@ void main() {
   });
 
   testWidgets('Discover page golden', (WidgetTester tester) async {
+    await setupGoldenSurface(tester);
     await tester.pumpWidget(wrapForGoldenTest(const DiscoverScreen()));
     await tester.pump();
     await tester.pump(const Duration(seconds: 2));
     await expectLater(
-      find.byType(SizedBox).first,
+      find.byType(MaterialApp),
       matchesGoldenFile('goldens/page_discover.png'),
     );
   });

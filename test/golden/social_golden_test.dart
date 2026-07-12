@@ -12,21 +12,23 @@ void main() {
 
   group('Social Pages Golden Tests', () {
     testWidgets('Add friend page golden', (WidgetTester tester) async {
+    await setupGoldenSurface(tester);
       await tester.pumpWidget(wrapForGoldenTest(const AddFriendScreen()));
       await tester.pump();
       await tester.pump(const Duration(seconds: 2));
       await expectLater(
-        find.byType(SizedBox).first,
+        find.byType(MaterialApp),
         matchesGoldenFile('goldens/page_add_friend.png'),
       );
     });
 
     testWidgets('Add group page golden', (WidgetTester tester) async {
+    await setupGoldenSurface(tester);
       await tester.pumpWidget(wrapForGoldenTest(const AddGroupScreen()));
       await tester.pump();
       await tester.pump(const Duration(seconds: 2));
       await expectLater(
-        find.byType(SizedBox).first,
+        find.byType(MaterialApp),
         matchesGoldenFile('goldens/page_add_group.png'),
       );
     });
