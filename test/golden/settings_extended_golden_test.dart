@@ -493,7 +493,7 @@ Widget _buildSettingsNotification() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
     body: Column(children: [
-      // Web-style header: px-4 py-3 border-b (1px)
+      // Web-style header: px-4 py-3 bg=rgba(5,8,22,0.92) border-bottom=rgba(255,255,255,0.08)
       Container(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
         decoration: BoxDecoration(
@@ -511,72 +511,74 @@ Widget _buildSettingsNotification() {
       ),
       Expanded(child: SingleChildScrollView(padding: const EdgeInsets.symmetric(vertical: 8), child: Column(children: [
         // Notification permission banner - rainbow gradient border matching web
-        Container(margin: const EdgeInsets.fromLTRB(16, 0, 16, 12), padding: const EdgeInsets.all(1),
+        // Web: mx-4 mb-3, outer p-[0.8px] rainbow border rounded-xl, inner p-4 rounded-xl bg=rgba(5,8,22,0.95)
+        Container(margin: const EdgeInsets.fromLTRB(16, 0, 16, 12), padding: const EdgeInsets.all(0.8),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             gradient: AppColors.auroraGradient,
           ),
-          child: Container(padding: const EdgeInsets.all(16),
+          child: Container(padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
               color: const Color.fromRGBO(5, 8, 22, 0.95),
             ),
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
               const Padding(padding: EdgeInsets.only(top: 2), child: Icon(Icons.notifications, color: Color(0xFFFF9F1C), size: 20)),
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 const Text('开启通知权限', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
                 const SizedBox(height: 4),
-                Text('开启后才能收到来电和消息提醒，即使不在聊天页面也不会错过', style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
+                Text('开启后即使不在聊天页面，也能收到消息和来电提醒', style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
               ])),
             ])),
         ),
         // Section 1: 消息通知 (2 toggles)
+        // Web: px-4 pt-4 pb-2 title, mx-4 mb-3 card
         Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Padding(padding: EdgeInsets.only(top: 16, bottom: 8), child: Text('消息通知', style: TextStyle(color: Color(0x66FFFFFF), fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 1.2))),
+          const Padding(padding: EdgeInsets.only(top: 14, bottom: 8), child: Text('消息通知', style: TextStyle(color: Color(0x66FFFFFF), fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 0.6))),
           _buildNotifSectionCard(children: [
             _buildNotifSettingItem(icon: Icons.chat_bubble, title: '新消息通知', desc: '收到新消息时提醒', action: _buildNotifToggle(enabled: true)),
-            Container(height: 1, color: Color(0x0FFFFFFF)),
+            Container(height: 1, color: const Color(0x0FFFFFFF)),
             _buildNotifSettingItem(icon: Icons.call, title: '语音和视频通话通知', desc: '收到通话邀请时响铃提醒', action: _buildNotifToggle(enabled: true)),
           ]),
         ])),
         // Section 2: 通知显示 (1 toggle)
         Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Padding(padding: EdgeInsets.only(top: 16, bottom: 8), child: Text('通知显示', style: TextStyle(color: Color(0x66FFFFFF), fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 1.2))),
+          const Padding(padding: EdgeInsets.only(top: 14, bottom: 8), child: Text('通知显示', style: TextStyle(color: Color(0x66FFFFFF), fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 0.6))),
           _buildNotifSectionCard(children: [
             _buildNotifSettingItem(icon: Icons.visibility, title: '通知显示内容', desc: '显示发送者和消息内容', action: _buildNotifToggle(enabled: true)),
           ]),
         ])),
         // Section 3: 声音与震动 (3 toggles)
         Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Padding(padding: EdgeInsets.only(top: 16, bottom: 8), child: Text('声音与震动', style: TextStyle(color: Color(0x66FFFFFF), fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 1.2))),
+          const Padding(padding: EdgeInsets.only(top: 14, bottom: 8), child: Text('声音与震动', style: TextStyle(color: Color(0x66FFFFFF), fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 0.6))),
           _buildNotifSectionCard(children: [
             _buildNotifSettingItem(icon: Icons.volume_up, title: '消息提示音', desc: '收到新消息时播放提示音', action: _buildNotifToggle(enabled: true)),
-            Container(height: 1, color: Color(0x0FFFFFFF)),
+            Container(height: 1, color: const Color(0x0FFFFFFF)),
             _buildNotifSettingItem(icon: Icons.music_note, title: '通话铃声', desc: '收到通话邀请时播放铃声', action: _buildNotifToggle(enabled: true)),
-            Container(height: 1, color: Color(0x0FFFFFFF)),
+            Container(height: 1, color: const Color(0x0FFFFFFF)),
             _buildNotifSettingItem(icon: Icons.smartphone, title: '聊天界面内提示音', desc: '在聊天页面收到新消息时播放', action: _buildNotifToggle(enabled: true)),
           ]),
         ])),
-        // Section 4: 提示音与铃声 (3 clickable items)
+        // Section 4: 提示音与铃声 (3 clickable items with chevron)
         Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Padding(padding: EdgeInsets.only(top: 16, bottom: 8), child: Text('提示音与铃声', style: TextStyle(color: Color(0x66FFFFFF), fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 1.2))),
+          const Padding(padding: EdgeInsets.only(top: 14, bottom: 8), child: Text('提示音与铃声', style: TextStyle(color: Color(0x66FFFFFF), fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 0.6))),
           _buildNotifSectionCard(children: [
             _buildNotifSettingItem(icon: Icons.chat_bubble, title: '消息提示音', desc: '默认提示音', action: const Icon(Icons.chevron_right, color: AppColors.textWeak, size: 20)),
-            Container(height: 1, color: Color(0x0FFFFFFF)),
+            Container(height: 1, color: const Color(0x0FFFFFFF)),
             _buildNotifSettingItem(icon: Icons.call, title: '来电铃声', desc: '柔和铃声', action: const Icon(Icons.chevron_right, color: AppColors.textWeak, size: 20)),
-            Container(height: 1, color: Color(0x0FFFFFFF)),
+            Container(height: 1, color: const Color(0x0FFFFFFF)),
             _buildNotifSettingItem(icon: Icons.call, title: '呼叫铃声', desc: '经典铃声', action: const Icon(Icons.chevron_right, color: AppColors.textWeak, size: 20)),
           ]),
         ])),
-        const SizedBox(height: 32),
+        const SizedBox(height: 24),
       ]))),
     ]),
   );
 }
 
 Widget _buildNotifSectionCard({required List<Widget> children}) {
-  return Container(margin: const EdgeInsets.only(bottom: 12),
+  return Container(margin: const EdgeInsets.only(bottom: 10),
     decoration: BoxDecoration(
       color: const Color(0x0AFFFFFF),  // web: rgba(255,255,255,0.04)
       borderRadius: BorderRadius.circular(12),
@@ -590,7 +592,7 @@ Widget _buildNotifSettingItem({required IconData icon, required String title, St
     Container(width: 32, height: 32, decoration: BoxDecoration(color: const Color(0x14FFFFFF), borderRadius: BorderRadius.circular(8)),
       child: Icon(icon, color: Colors.white, size: 16)),
     const SizedBox(width: 12),
-    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
       Text(title, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
       if (desc != null) ...[const SizedBox(height: 2), Text(desc, style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12))],
     ])),
@@ -599,9 +601,9 @@ Widget _buildNotifSettingItem({required IconData icon, required String title, St
 }
 
 Widget _buildNotifToggle({required bool enabled}) {
-  // Web style: ToggleSwitch w-12 h-7 rounded-full
-  // Enabled: 1px rainbow gradient border + dark bg + white knob right (translateX 22px)
-  // Disabled: rgba(255,255,255,0.15) bg + rgba(255,255,255,0.1) border + dimmed knob left
+  // Web style: ToggleSwitch w-12 h-7 (48×28) rounded-full
+  // Enabled: 1px rainbow gradient border + dark bg(#050816) + white circular knob(20px) right (translateX 22px)
+  // Disabled: bg=rgba(255,255,255,0.15) + border=rgba(255,255,255,0.1) + dimmed knob left
   if (enabled) {
     return Container(width: 48, height: 28,
       decoration: BoxDecoration(
