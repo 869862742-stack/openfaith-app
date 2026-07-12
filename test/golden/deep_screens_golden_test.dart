@@ -96,12 +96,12 @@ Widget _buildCreatePost() {
               border: Border.all(color: AppColors.borderColor, width: 0.5),
             ),
             child: const TextField(
+              maxLines: null,
               style: TextStyle(color: Colors.white, fontSize: 15, height: 1.5),
               decoration: InputDecoration(
                 hintText: '分享你的想法...\n\n支持文字、经文引用、图片等内容',
                 hintStyle: TextStyle(color: AppColors.textWeak, fontSize: 15),
                 border: InputBorder.none,
-                maxLines: null,
               ),
             ),
           ),
