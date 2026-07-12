@@ -280,65 +280,201 @@ void main() {
 
 // ─── 1. Edit Profile ───
 Widget _buildEditProfile() {
+  // Avatar color picker colors matching the web version
+  const List<Color> avatarColors = [
+    Color(0xFFFF4D6D), // red
+    Color(0xFFFF9F1C), // orange
+    Color(0xFFFFD60A), // yellow
+    Color(0xFF70E000), // green
+    Color(0xFF00E5FF), // cyan
+    Color(0xFF3A86FF), // blue (selected)
+    Color(0xFF9D4EDD), // purple
+  ];
+
   return Scaffold(
     backgroundColor: AppColors.bgColor,
-    body: Column(children: [
-      _buildGlassHeader('编辑资料'),
-      Expanded(child: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(children: [
-        // Avatar area
-        Center(child: Column(children: [
-          Container(
-            width: 80, height: 80,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF3A86FF), Color(0xFF9D4EDD)]),
-            ),
-            child: const Center(child: Text('O', style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold))),
+    body: Stack(children: [
+      // Starfield-like background (decorative dots to simulate stars)
+      Positioned.fill(
+        child: CustomPaint(
+          painter: _EditProfileStarPainter(),
+        ),
+      ),
+      // Semi-transparent overlay (modal backdrop)
+      Positioned.fill(
+        child: Container(color: Colors.black.withOpacity(0.55)),
+      ),
+      // Modal dialog
+      Center(
+        child: Container(
+          width: 353,
+          constraints: const BoxConstraints(maxHeight: 720),
+          margin: const EdgeInsets.symmetric(horizontal: 20),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0D1117),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.borderColor, width: 0.5),
           ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              color: AppColors.auroraBlue,
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            // Modal header: title + close button
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 12, 12),
+              child: Row(children: [
+                const Text('编辑资料', style: TextStyle(color: AppColors.textPrimary, fontSize: 17, fontWeight: FontWeight.w600)),
+                const Spacer(),
+                GestureDetector(
+                  child: const Icon(Icons.close, color: AppColors.textSecondary, size: 22),
+                  onTap: () {},
+                ),
+              ]),
             ),
-            child: const Text('更换头像', style: TextStyle(color: Colors.white, fontSize: 13)),
-          ),
-        ])),
-        const SizedBox(height: 28),
-        // Nickname field
-        _buildFieldRow('昵称', 'OpenFaith'),
-        const SizedBox(height: 16),
-        // Bio field
-        _buildFieldRow('个人简介', '信仰之旅，探索内心的平静', multiLine: true),
-        const SizedBox(height: 16),
-        // Faith tag field
-        _buildFieldRow('信仰标签', '基督教', trailing: Icon(Icons.chevron_right, color: AppColors.textWeak, size: 20)),
-        const SizedBox(height: 32),
-        // Save / Cancel buttons
-        Row(children: [
-          Expanded(child: Container(
-            height: 44,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: AppColors.borderColor),
-              color: AppColors.cardBg,
+            Divider(height: 1, color: AppColors.borderColor),
+            // Scrollable modal content
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+                child: Column(children: [
+                  // Avatar with selection ring
+                  Container(
+                    width: 80, height: 80,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft, end: Alignment.bottomRight,
+                        colors: [Color(0xFF3A86FF), Color(0xFF9D4EDD)],
+                      ),
+                      border: Border.all(color: AppColors.auroraBlue, width: 2.5),
+                    ),
+                    child: const Center(child: Text('O', style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold))),
+                  ),
+                  const SizedBox(height: 14),
+                  // Color picker: 7 colored circles
+                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                    for (int i = 0; i < avatarColors.length; i++)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        child: Container(
+                          width: 24, height: 24,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: avatarColors[i],
+                            border: i == 5 // blue selected
+                                ? Border.all(color: Colors.white, width: 2)
+                                : null,
+                          ),
+                        ),
+                      ),
+                  ]),
+                  const SizedBox(height: 12),
+                  // "使用自定义头像" text button
+                  GestureDetector(
+                    child: const Text('使用自定义头像', style: TextStyle(color: AppColors.auroraBlue, fontSize: 13)),
+                    onTap: () {},
+                  ),
+                  const SizedBox(height: 24),
+                  // Background image section
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('更换背景', style: TextStyle(color: AppColors.textWeak, fontSize: 13)),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    width: double.infinity, height: 80,
+                    decoration: BoxDecoration(
+                      color: AppColors.inputBg,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: AppColors.borderColor, width: 0.5),
+                    ),
+                    child: Row(children: [
+                      const SizedBox(width: 12),
+                      Container(
+                        width: 56, height: 56,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft, end: Alignment.bottomRight,
+                            colors: [Color(0xFF1A1A2E), Color(0xFF16213E)],
+                          ),
+                        ),
+                        child: Icon(Icons.image_outlined, color: AppColors.textWeak, size: 24),
+                      ),
+                      const SizedBox(width: 12),
+                      Text('点击更换背景图片', style: TextStyle(color: AppColors.textWeak, fontSize: 13)),
+                      const Spacer(),
+                      Icon(Icons.chevron_right, color: AppColors.textWeak, size: 20),
+                      const SizedBox(width: 8),
+                    ]),
+                  ),
+                  const SizedBox(height: 24),
+                  // Nickname field
+                  _buildFieldRow('昵称', 'OpenFaith'),
+                  const SizedBox(height: 16),
+                  // Bio / 个性签名 field with character count
+                  Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Row(children: [
+                      Text('个性签名', style: TextStyle(color: AppColors.textWeak, fontSize: 13)),
+                      const Spacer(),
+                      Text('100/100', style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
+                    ]),
+                    const SizedBox(height: 8),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      constraints: const BoxConstraints(minHeight: 80),
+                      decoration: BoxDecoration(
+                        color: AppColors.inputBg,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: AppColors.borderColor, width: 0.5),
+                      ),
+                      child: const Text('信仰之旅，探索内心的平静', style: TextStyle(color: AppColors.textPrimary, fontSize: 14, height: 1.5)),
+                    ),
+                  ]),
+                  const SizedBox(height: 16),
+                  // 身份/信仰标签 dropdown
+                  Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text('身份/信仰标签', style: TextStyle(color: AppColors.textWeak, fontSize: 13)),
+                    const SizedBox(height: 8),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: AppColors.inputBg,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: AppColors.borderColor, width: 0.5),
+                      ),
+                      child: Row(children: [
+                        const Expanded(child: Text('基督教', style: TextStyle(color: AppColors.textPrimary, fontSize: 14))),
+                        Icon(Icons.expand_more, color: AppColors.textWeak, size: 20),
+                      ]),
+                    ),
+                  ]),
+                ]),
+              ),
             ),
-            child: const Center(child: Text('取消', style: TextStyle(color: AppColors.textSecondary, fontSize: 15))),
-          )),
-          const SizedBox(width: 12),
-          Expanded(child: Container(
-            height: 44,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(22),
-              gradient: const LinearGradient(colors: [AppColors.auroraBlue, AppColors.auroraPurple]),
-            ),
-            child: const Center(child: Text('保存', style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600))),
-          )),
-        ]),
-      ]))),
+          ]),
+        ),
+      ),
     ]),
   );
+}
+
+/// Simple star painter for the edit profile modal backdrop
+class _EditProfileStarPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = Colors.white;
+    final rng = List<int>.generate(40, (i) => (i * 7 + 13) % 97);
+    for (int i = 0; i < rng.length; i++) {
+      final x = (rng[i] * 3.97) % size.width;
+      final y = (rng[i] * 8.73) % size.height;
+      final r = 0.5 + (rng[i] % 3) * 0.5;
+      paint.color = Colors.white.withOpacity(0.2 + (rng[i] % 5) * 0.1);
+      canvas.drawCircle(Offset(x, y), r, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 Widget _buildFieldRow(String label, String value, {bool multiLine = false, Widget? trailing}) {
