@@ -897,19 +897,136 @@ Widget _buildTreeHole() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
     body: Column(children: [
-      _buildGlassHeader('树洞'),
-      Expanded(child: ListView(padding: const EdgeInsets.all(16), children: [
-        _buildTreeHoleCard('有时候真的很累，想找个地方倾诉。', '匿名用户', '2小时前', 3),
+      // Header with 4 tabs
+      Container(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+        decoration: BoxDecoration(
+          color: AppColors.headerBg,
+          border: Border(bottom: BorderSide(color: AppColors.borderColor, width: 0.5)),
+        ),
+        child: SafeArea(
+          bottom: false,
+          child: Row(children: [
+            _buildTab('静默同行', false),
+            _buildTab('世界呼吸', false),
+            _buildTreeHoleActiveTab(),
+            _buildTab('无界圆桌', false),
+          ]),
+        ),
+      ),
+      // Title section
+      Padding(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const Text('树洞回声', style: TextStyle(color: AppColors.textPrimary, fontSize: 20, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 4),
+          Text('让人被温柔倾听', style: TextStyle(color: AppColors.textWeak, fontSize: 13)),
+        ]),
+      ),
+      Expanded(child: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(children: [
+        // Post form
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: AppColors.cardBg,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.borderColor, width: 0.5),
+          ),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            // Identity toggle
+            Row(children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.auroraBlue.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text('匿名', style: TextStyle(color: AppColors.auroraBlue, fontSize: 12, fontWeight: FontWeight.w500)),
+              ),
+              const SizedBox(width: 8),
+              const Text('公开', style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
+            ]),
+            const SizedBox(height: 10),
+            // Text area
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.inputBg,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text('在这里说出你的心里话...', style: TextStyle(color: AppColors.textWeak, fontSize: 13)),
+            ),
+            const SizedBox(height: 8),
+            Row(children: [
+              Text('0/200', style: TextStyle(color: AppColors.textWeak, fontSize: 11)),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(14),
+                  gradient: const LinearGradient(colors: [AppColors.auroraBlue, AppColors.auroraPurple]),
+                ),
+                child: const Text('留下回声', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500)),
+              ),
+            ]),
+          ]),
+        ),
+        const SizedBox(height: 16),
+        // Post card with reactions
+        _buildTreeHoleCard(
+          '有时候真的很累，想找个地方倾诉。但是身边没有人可以真正倾听我的声音。',
+          'Anonymous Soul',
+          '2小时前',
+        ),
+        const SizedBox(height: 24),
+        // Footer
+        Center(child: Text(
+          'Share experiences, not arguments.\n这里不是辩论区，而是被倾听的角落',
+          style: TextStyle(color: AppColors.textWeak, fontSize: 11),
+          textAlign: TextAlign.center,
+        )),
         const SizedBox(height: 12),
-        _buildTreeHoleCard('感恩今天遇到的一位好心人，愿世间充满善意。', '匿名用户', '5小时前', 7),
-        const SizedBox(height: 12),
-        _buildTreeHoleCard('祈祷家人平安健康，这是我最大的心愿。', '匿名用户', '昨天', 12),
-      ])),
+      ]))),
     ]),
   );
 }
 
-Widget _buildTreeHoleCard(String content, String author, String time, int echoCount) {
+Widget _buildTab(String label, bool active) {
+  return Expanded(child: Container(
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Center(child: Text(label, style: TextStyle(
+      color: active ? AppColors.textPrimary : AppColors.textWeak,
+      fontSize: 12, fontWeight: active ? FontWeight.w600 : FontWeight.w400,
+    ))),
+  ));
+}
+
+Widget _buildTreeHoleActiveTab() {
+  return Expanded(child: Container(
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(16),
+      gradient: const LinearGradient(colors: [
+        Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A),
+        Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD),
+      ]),
+    ),
+    child: Container(
+      margin: const EdgeInsets.all(1),
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(15),
+        color: AppColors.bgColor,
+      ),
+      child: const Center(child: Text('树洞回声', style: TextStyle(
+        color: AppColors.textPrimary, fontSize: 12, fontWeight: FontWeight.w600,
+      ))),
+    ),
+  ));
+}
+
+Widget _buildTreeHoleCard(String content, String author, String time) {
   return Container(
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
@@ -918,21 +1035,61 @@ Widget _buildTreeHoleCard(String content, String author, String time, int echoCo
       border: Border.all(color: AppColors.borderColor, width: 0.5),
     ),
     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(content, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, height: 1.6)),
-      const SizedBox(height: 12),
       Row(children: [
-        Icon(Icons.person_outline, color: AppColors.textWeak, size: 14),
-        const SizedBox(width: 4),
-        Text(author, style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
-        const SizedBox(width: 16),
-        Icon(Icons.access_time, color: AppColors.textWeak, size: 14),
-        const SizedBox(width: 4),
-        Text(time, style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
-        const Spacer(),
-        Icon(Icons.volume_up_outlined, color: AppColors.textWeak, size: 14),
-        const SizedBox(width: 4),
-        Text('$echoCount', style: const TextStyle(color: AppColors.textWeak, fontSize: 12)),
+        Container(
+          width: 32, height: 32,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: const LinearGradient(colors: [AppColors.auroraPurple, AppColors.auroraBlue]),
+          ),
+          child: const Center(child: Icon(Icons.person_outline, color: Colors.white, size: 16)),
+        ),
+        const SizedBox(width: 8),
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(author, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500)),
+          Text(time, style: TextStyle(color: AppColors.textWeak, fontSize: 11)),
+        ]),
       ]),
+      const SizedBox(height: 12),
+      Text(content, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, height: 1.6)),
+      const SizedBox(height: 14),
+      // Reaction buttons
+      Wrap(spacing: 8, runSpacing: 8, children: [
+        _buildReactionBtn('❤️', '共鸣了'),
+        _buildReactionBtn('🌿', '我懂'),
+        _buildReactionBtn('🤍', '陪着你'),
+        _buildReactionBtn('🌙', '默默支持'),
+      ]),
+      const SizedBox(height: 10),
+      // Comment button
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: AppColors.auroraBlue.withOpacity(0.12),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          const Icon(Icons.chat_bubble_outline, color: AppColors.auroraBlue, size: 13),
+          const SizedBox(width: 4),
+          const Text('留下回声', style: TextStyle(color: AppColors.auroraBlue, fontSize: 12)),
+        ]),
+      ),
+    ]),
+  );
+}
+
+Widget _buildReactionBtn(String emoji, String label) {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+    decoration: BoxDecoration(
+      color: AppColors.inputBg,
+      borderRadius: BorderRadius.circular(14),
+      border: Border.all(color: AppColors.borderColor, width: 0.5),
+    ),
+    child: Row(mainAxisSize: MainAxisSize.min, children: [
+      Text(emoji, style: const TextStyle(fontSize: 13)),
+      const SizedBox(width: 4),
+      Text(label, style: TextStyle(color: AppColors.textSecondary, fontSize: 11)),
     ]),
   );
 }
@@ -1599,55 +1756,78 @@ Widget _buildProfileStat(String value, String label) {
 Widget _buildProfileQrCode() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
-    body: Column(children: [
-      _buildGlassHeader('个人名片'),
-      Expanded(child: Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-        Container(
-          width: 300,
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft, end: Alignment.bottomRight,
-              colors: [AppColors.cardBg, AppColors.bgSecondary],
-            ),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.borderColor, width: 0.5),
+    body: Stack(children: [
+      // Dark semi-transparent overlay
+      Container(color: Colors.black.withOpacity(0.6)),
+      // Modal content
+      Center(child: Container(
+        width: 280,
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft, end: Alignment.bottomRight,
+            colors: [AppColors.cardBg, AppColors.bgSecondary],
           ),
-          child: Column(children: [
-            // User avatar
-            Container(
-              width: 64, height: 64,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF70E000), Color(0xFF00E5FF)]),
-              ),
-              child: const Center(child: Text('O', style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold))),
-            ),
-            const SizedBox(height: 12),
-            const Text('OpenFaith', style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w600)),
-            const SizedBox(height: 4),
-            Text('信仰之旅，探索内心的平静', style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
-            const SizedBox(height: 20),
-            // QR placeholder
-            Container(
-              width: 140, height: 140,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Center(child: Icon(Icons.qr_code_2, color: Colors.black, size: 80)),
-            ),
-            const SizedBox(height: 16),
-            Text('扫码查看我的主页', style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
-          ]),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.borderColor, width: 0.5),
         ),
-        const SizedBox(height: 24),
-        Row(mainAxisSize: MainAxisSize.min, children: [
-          Icon(Icons.share, color: AppColors.auroraBlue, size: 16),
-          const SizedBox(width: 6),
-          const Text('分享名片', style: TextStyle(color: AppColors.auroraBlue, fontSize: 14, fontWeight: FontWeight.w500)),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          // Avatar
+          Container(
+            width: 60, height: 60,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF70E000), Color(0xFF00E5FF)]),
+            ),
+            child: const Center(child: Text('O', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold))),
+          ),
+          const SizedBox(height: 14),
+          const Text('我的二维码', style: TextStyle(color: AppColors.textPrimary, fontSize: 17, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 4),
+          Text('扫码添加我为好友', style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
+          const SizedBox(height: 20),
+          // QR placeholder
+          Container(
+            width: 140, height: 140,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Center(child: Icon(Icons.qr_code_2, color: Colors.black, size: 72)),
+          ),
+          const SizedBox(height: 22),
+          // Save button with rainbow border
+          Container(
+            width: double.infinity, height: 40,
+            padding: const EdgeInsets.all(1),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: const LinearGradient(colors: [
+                Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A),
+                Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD),
+              ]),
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.bgColor,
+                borderRadius: BorderRadius.circular(19),
+              ),
+              child: const Center(child: Text('保存图片', style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500))),
+            ),
+          ),
+          const SizedBox(height: 10),
+          // Close button
+          Container(
+            width: double.infinity, height: 40,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              color: AppColors.inputBg,
+              border: Border.all(color: AppColors.borderColor, width: 0.5),
+            ),
+            child: const Center(child: Text('关闭', style: TextStyle(color: AppColors.textSecondary, fontSize: 14))),
+          ),
         ]),
-      ]))),
+      )),
     ]),
   );
 }
@@ -1682,11 +1862,11 @@ Widget _buildChatAttachMenu() {
           ]),
         ),
       ),
-      // Some chat messages
+      // Chat messages
       Expanded(child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(children: [
-          // Other's message
+          // Call record message
           Align(
             alignment: Alignment.centerLeft,
             child: Container(
@@ -1695,7 +1875,30 @@ Widget _buildChatAttachMenu() {
                 color: AppColors.otherMessage,
                 borderRadius: BorderRadius.circular(12).copyWith(topLeft: Radius.zero),
               ),
-              child: const Text('你好，今天过得怎么样？', style: TextStyle(color: AppColors.textPrimary, fontSize: 14)),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                const Icon(Icons.phone, color: AppColors.auroraGreen, size: 14),
+                const SizedBox(width: 6),
+                Text('通话记录 02:35', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+              ]),
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Voice message
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: AppColors.otherMessage,
+                borderRadius: BorderRadius.circular(12).copyWith(topLeft: Radius.zero),
+              ),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                const Icon(Icons.graphic_eq, color: AppColors.auroraBlue, size: 16),
+                const SizedBox(width: 6),
+                Text('0:15', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+                const SizedBox(width: 4),
+                Icon(Icons.mic, color: AppColors.auroraBlue, size: 12),
+              ]),
             ),
           ),
           const SizedBox(height: 12),
@@ -1712,32 +1915,60 @@ Widget _buildChatAttachMenu() {
             ),
           ),
           const Spacer(),
-          // Attach menu expanded at bottom
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: AppColors.bgSecondary,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-              border: Border(top: BorderSide(color: AppColors.borderColor, width: 0.5)),
-            ),
-            child: Column(children: [
-              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-                _buildAttachItem(Icons.image, '图片', AppColors.auroraBlue),
-                _buildAttachItem(Icons.camera_alt, '拍照', AppColors.auroraGreen),
-                _buildAttachItem(Icons.videocam, '视频', AppColors.auroraOrange),
-                _buildAttachItem(Icons.insert_drive_file, '文件', AppColors.auroraPurple),
-              ]),
-              const SizedBox(height: 16),
-              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-                _buildAttachItem(Icons.location_on, '位置', AppColors.auroraRed),
-                _buildAttachItem(Icons.bookmark, '收藏', AppColors.auroraCyan),
-                _buildAttachItem(Icons.link, '链接', AppColors.auroraYellow),
-                _buildAttachItem(Icons.more_horiz, '更多', AppColors.textWeak),
-              ]),
-            ]),
-          ),
         ]),
       )),
+      // Bottom input bar
+      Container(
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+        decoration: BoxDecoration(
+          color: AppColors.headerBg,
+          border: Border(top: BorderSide(color: AppColors.borderColor, width: 0.5)),
+        ),
+        child: Row(children: [
+          // X button
+          Container(
+            width: 28, height: 28,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.inputBg,
+              border: Border.all(color: AppColors.borderColor, width: 0.5),
+            ),
+            child: const Icon(Icons.close, color: AppColors.textWeak, size: 14),
+          ),
+          const SizedBox(width: 8),
+          // 按住说话 button
+          Expanded(child: Container(
+            height: 34,
+            decoration: BoxDecoration(
+              color: AppColors.inputBg,
+              borderRadius: BorderRadius.circular(17),
+              border: Border.all(color: AppColors.borderColor, width: 0.5),
+            ),
+            child: const Center(child: Text('按住说话', style: TextStyle(color: AppColors.textSecondary, fontSize: 13))),
+          )),
+          const SizedBox(width: 8),
+          // Emoji icon
+          const Icon(Icons.emoji_emotions_outlined, color: AppColors.textWeak, size: 22),
+          const SizedBox(width: 10),
+          // Keyboard icon
+          const Icon(Icons.keyboard_outlined, color: AppColors.textWeak, size: 22),
+        ]),
+      ),
+      // Attachment bottom sheet - 4 items in 1 row
+      Container(
+        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+        decoration: BoxDecoration(
+          color: AppColors.bgSecondary,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+          border: Border(top: BorderSide(color: AppColors.borderColor, width: 0.5)),
+        ),
+        child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+          _buildAttachItem(Icons.photo_library, '相册', AppColors.auroraBlue),
+          _buildAttachItem(Icons.phone, '通话', AppColors.auroraGreen),
+          _buildAttachItem(Icons.note, '分享笔记', AppColors.auroraOrange),
+          _buildAttachItem(Icons.menu_book, '分享经文', AppColors.auroraPurple),
+        ]),
+      ),
     ]),
   );
 }
