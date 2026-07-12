@@ -5,7 +5,8 @@ import 'package:openfaith_app/widgets/glass_card.dart';
 import 'test_helper.dart';
 
 /// Home Page Golden Test - Mock version aligned with web Home.tsx
-/// Replaces real HomeScreen (which needs Supabase) with a static mock
+/// Layout: header (hamburger + search), channel tabs (推荐/关注), hot ranking,
+/// 2-column post grid, bottom nav
 
 void main() {
   setUpAll(() async {
@@ -28,13 +29,13 @@ Widget _buildHome() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
     body: Column(children: [
-      // ── Sticky Header ──
+      // -- Sticky Header --
       Container(
         decoration: BoxDecoration(
           color: AppColors.headerBg,
           border: Border(bottom: BorderSide(color: AppColors.borderColor, width: 0.5)),
         ),
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
         child: SafeArea(
           bottom: false,
           child: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -42,9 +43,8 @@ Widget _buildHome() {
             Row(children: [
               Container(
                 padding: const EdgeInsets.all(8),
-                margin: const EdgeInsets.only(left: 0),
                 decoration: BoxDecoration(
-                  color: AppColors.cardBg,
+                  color: AppColors.bgSecondary,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(Icons.menu, color: AppColors.textPrimary, size: 24),
@@ -65,7 +65,7 @@ Widget _buildHome() {
                 ]),
               )),
             ]),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             // Channel Tabs
             Row(children: [
               _channelTab('推荐', true),
@@ -75,9 +75,9 @@ Widget _buildHome() {
         ),
       ),
 
-      // ── Hot Ranking Section ──
+      // -- Hot Ranking Section --
       Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
         child: Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
@@ -104,7 +104,6 @@ Widget _buildHome() {
               const SizedBox(width: 8),
               const Text('热门排行', style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.bold)),
               const Spacer(),
-              // Tab pills
               _hotTab('本日', true),
               const SizedBox(width: 4),
               _hotTab('本周', false),
@@ -118,11 +117,15 @@ Widget _buildHome() {
             _hotItem(2, '圣经创世记与现代宇宙学的对话', '2.8W'),
             const SizedBox(height: 6),
             _hotItem(3, '佛教禅修入门：如何开始你的冥想之旅', '1.9W'),
+            const SizedBox(height: 6),
+            _hotItem(4, '伊斯兰教的五大功课详解', '1.5W'),
+            const SizedBox(height: 6),
+            _hotItem(5, '道教养生之道的现代解读', '1.2W'),
           ]),
         ),
       ),
 
-      // ── Post Grid (2 columns) ──
+      // -- Post Grid (2 columns) --
       Expanded(child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
         child: Column(children: [
@@ -165,16 +168,36 @@ Widget _buildHome() {
               comments: 15,
             )),
           ]),
+          const SizedBox(height: 12),
+          Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Expanded(child: _postCard(
+              title: '印度教的轮回与解脱',
+              cover: Icons.wb_sunny,
+              author: '拉吉',
+              faithTag: '印度教',
+              likes: 63,
+              comments: 11,
+            )),
+            const SizedBox(width: 12),
+            Expanded(child: _postCard(
+              title: '犹太教安息日的意义',
+              cover: Icons.star,
+              author: '大卫',
+              faithTag: '犹太教',
+              likes: 52,
+              comments: 9,
+            )),
+          ]),
         ]),
       )),
     ]),
-    // ── Bottom Nav ──
+    // -- Bottom Nav --
     bottomNavigationBar: Container(
       decoration: BoxDecoration(
         color: AppColors.headerBg,
         border: Border(top: BorderSide(color: AppColors.borderColor, width: 0.5)),
       ),
-      padding: EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 8),
       child: SafeArea(
         top: false,
         child: Row(children: [
@@ -261,7 +284,7 @@ Widget _postCard({
     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       // Cover area
       Container(
-        height: 100,
+        height: 110,
         width: double.infinity,
         decoration: BoxDecoration(
           color: AppColors.hoverBg,
@@ -275,11 +298,11 @@ Widget _postCard({
         Row(children: [
           Container(
             width: 18, height: 18,
-            decoration: BoxDecoration(shape: BoxShape.circle, gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [AppColors.auroraCyan, AppColors.auroraBlue])),
+            decoration: BoxDecoration(shape: BoxShape.circle, gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [AppColors.auroraCyan, AppColors.auroraBlue])),
             child: Center(child: Text(author[0], style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold))),
           ),
           const SizedBox(width: 4),
-          Expanded(child: Text(author, style: const TextStyle(color: AppColors.textWeak, fontSize: 11), overflow: TextOverflow.ellipsis)),
+          Expanded(child: Text(author, style: TextStyle(color: AppColors.textWeak, fontSize: 11), overflow: TextOverflow.ellipsis)),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
             decoration: BoxDecoration(gradient: AppColors.auroraGradientWithOpacity(0.3), borderRadius: BorderRadius.circular(4)),

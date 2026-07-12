@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:openfaith_app/theme/app_colors.dart';
-import 'package:openfaith_app/widgets/glass_card.dart';
 import 'test_helper.dart';
 
 /// Learn Page Golden Test - Mock version aligned with web Learn.tsx
-/// Replaces real LearnScreen (which needs Supabase) with a static mock
+/// Layout: header (search + 3 tabs), encyclopedia tab (2-col religion grid), bottom nav
 
 void main() {
   setUpAll(() async {
@@ -28,7 +27,7 @@ Widget _buildLearn() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
     body: SafeArea(child: Column(children: [
-      // ── Header: Search + Tabs ──
+      // -- Header: Search + Tabs --
       Container(
         decoration: BoxDecoration(
           color: AppColors.headerBg,
@@ -48,14 +47,14 @@ Widget _buildLearn() {
                 SizedBox(width: 12),
                 Icon(Icons.search, color: AppColors.iconColorWeak, size: 18),
                 SizedBox(width: 8),
-                Expanded(child: Text('搜索宗教、经典、节日...', style: TextStyle(color: AppColors.textPlaceholder, fontSize: 14))),
+                Expanded(child: Text('搜索宗教...', style: TextStyle(color: AppColors.textPlaceholder, fontSize: 14))),
                 SizedBox(width: 12),
               ]),
             ),
           ),
           // Main tabs
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
             child: Row(children: [
               _learnTab(Icons.menu_book, '百科', true),
               const SizedBox(width: 8),
@@ -64,82 +63,52 @@ Widget _buildLearn() {
               _learnTab(Icons.calendar_today, '日历', false),
             ]),
           ),
-          const SizedBox(height: 8),
         ]),
       ),
 
-      // ── Encyclopedia Tab Content ──
+      // -- Encyclopedia Tab Content: 2-col religion grid --
       Expanded(child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          // Section title
-          const Text('世界主要宗教', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 12),
-          // Religion cards grid (2 columns)
+        child: Column(children: [
           Row(children: [
-            Expanded(child: _religionCard(Icons.church, '基督教', '24亿信徒', AppColors.auroraBlue)),
+            Expanded(child: _religionCard(Icons.church, '基督教', '约24亿信徒')),
             const SizedBox(width: 12),
-            Expanded(child: _religionCard(Icons.mosque, '伊斯兰教', '19亿信徒', AppColors.auroraGreen)),
+            Expanded(child: _religionCard(Icons.mosque, '伊斯兰教', '约19亿信徒')),
           ]),
           const SizedBox(height: 12),
           Row(children: [
-            Expanded(child: _religionCard(Icons.self_improvement, '佛教', '5亿信徒', AppColors.auroraOrange)),
+            Expanded(child: _religionCard(Icons.self_improvement, '佛教', '约5亿信徒')),
             const SizedBox(width: 12),
-            Expanded(child: _religionCard(Icons.star, '印度教', '12亿信徒', AppColors.auroraRed)),
+            Expanded(child: _religionCard(Icons.star, '印度教', '约12亿信徒')),
           ]),
           const SizedBox(height: 12),
           Row(children: [
-            Expanded(child: _religionCard(Icons.menu_book, '犹太教', '1500万信徒', AppColors.auroraYellow)),
+            Expanded(child: _religionCard(Icons.menu_book, '犹太教', '约1500万信徒')),
             const SizedBox(width: 12),
-            Expanded(child: _religionCard(Icons.auto_stories, '道教', '1200万信徒', AppColors.auroraCyan)),
+            Expanded(child: _religionCard(Icons.auto_stories, '道教', '约1200万信徒')),
           ]),
           const SizedBox(height: 12),
           Row(children: [
-            Expanded(child: _religionCard(Icons.wb_sunny, '锡克教', '3000万信徒', AppColors.auroraPurple)),
+            Expanded(child: _religionCard(Icons.wb_sunny, '锡克教', '约3000万信徒')),
             const SizedBox(width: 12),
-            Expanded(child: _religionCard(Icons.public, '巴哈伊教', '800万信徒', AppColors.auroraGreen)),
+            Expanded(child: _religionCard(Icons.public, '巴哈伊教', '约800万信徒')),
           ]),
-
-          const SizedBox(height: 24),
-          // Section title for popular books
-          const Text('热门经典', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
-          // Book cards
-          _bookCard('圣经', '基督教', '基督教的核心经典，包含旧约和新约两大部分'),
-          const SizedBox(height: 8),
-          _bookCard('古兰经', '伊斯兰教', '伊斯兰教的根本经典，穆斯林信仰的最高权威'),
-          const SizedBox(height: 8),
-          _bookCard('金刚经', '佛教', '大乘佛教重要经典，阐述般若空性思想'),
+          Row(children: [
+            Expanded(child: _religionCard(Icons.favorite, '耆那教', '约400万信徒')),
+            const SizedBox(width: 12),
+            Expanded(child: _religionCard(Icons.nature, '神道教', '约400万信徒')),
+          ]),
+          const SizedBox(height: 12),
+          Row(children: [
+            Expanded(child: _religionCard(Icons.local_fire_department, '琐罗亚斯德教', '约20万信徒')),
+            const SizedBox(width: 12),
+            Expanded(child: _religionCard(Icons.landscape, '万物有灵论', '约2亿信徒')),
+          ]),
         ]),
       )),
 
-      // ── Contribution Footer ──
-      Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Center(
-          child: Container(
-            padding: const EdgeInsets.all(1.5),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              gradient: AppColors.auroraGradientWithOpacity(0.5),
-            ),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(18.5),
-                color: AppColors.bgColor,
-              ),
-              child: const Row(mainAxisSize: MainAxisSize.min, children: [
-                Icon(Icons.chat_bubble, color: AppColors.textPrimary, size: 14),
-                SizedBox(width: 4),
-                Text('参与共建', style: TextStyle(color: AppColors.textPrimary, fontSize: 12, fontWeight: FontWeight.w500)),
-              ]),
-            ),
-          ),
-        ),
-      ),
-
-      // ── Bottom Nav ──
+      // -- Bottom Nav --
       Container(
         decoration: BoxDecoration(
           color: AppColors.headerBg,
@@ -189,55 +158,29 @@ Widget _learnTab(IconData icon, String label, bool active) {
   );
 }
 
-Widget _religionCard(IconData icon, String name, String scale, Color color) {
-  return Container(
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: AppColors.hoverBgLight,
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: AppColors.borderDefault),
-    ),
-    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Container(
-        width: 36, height: 36,
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.12),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Icon(icon, color: color, size: 20),
-      ),
-      const SizedBox(height: 10),
-      Text(name, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600)),
-      const SizedBox(height: 2),
-      Text(scale, style: const TextStyle(color: AppColors.textWeak, fontSize: 12)),
-    ]),
-  );
-}
-
-Widget _bookCard(String title, String religion, String desc) {
+Widget _religionCard(IconData icon, String name, String scale) {
   return Container(
     padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(
-      color: AppColors.cardBg,
+      color: const Color(0x0DFFFFFF), // rgba(255,255,255,0.05)
       borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: AppColors.borderColor, width: 0.5),
+      border: Border.all(color: const Color(0x1AFFFFFF)), // rgba(255,255,255,0.1)
     ),
-    child: Row(children: [
-      Container(
-        width: 40, height: 40,
-        decoration: BoxDecoration(
-          color: AppColors.hoverBg,
-          borderRadius: BorderRadius.circular(10),
+    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Row(children: [
+        Container(
+          width: 28, height: 28,
+          decoration: BoxDecoration(
+            color: AppColors.auroraCyan.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Icon(icon, color: AppColors.auroraCyan, size: 16),
         ),
-        child: const Center(child: Icon(Icons.auto_stories, color: AppColors.textPrimary, size: 20)),
-      ),
-      const SizedBox(width: 12),
-      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(title, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 2),
-        Text('$religion · $desc', style: const TextStyle(color: AppColors.textWeak, fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
-      ])),
-      const Icon(Icons.chevron_right, color: AppColors.textWeak, size: 18),
+        const SizedBox(width: 8),
+        Expanded(child: Text(name, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis)),
+      ]),
+      const SizedBox(height: 6),
+      Text(scale, style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
     ]),
   );
 }

@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:openfaith_app/theme/app_colors.dart';
-import 'package:openfaith_app/widgets/glass_card.dart';
 import 'test_helper.dart';
 
 /// Learn Extended 2 Golden Tests
 /// Covers: religion_detail, room_list
 
-// ─── Common Helpers ───
+// --- Common Helpers ---
 Widget _buildGlassHeader(String title) {
   return Container(
     padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
@@ -45,183 +44,311 @@ void main() {
   });
 }
 
-// ─── Religion Detail Page ───
+// --- Religion Detail Page --- (aligned with web ReligionDetail.tsx)
 Widget _buildReligionDetail() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
     body: Column(children: [
-      _buildGlassHeader('基督教'),
-      Expanded(child: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        // Hero section
-        Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            gradient: AppColors.auroraGradientWithOpacity(0.15),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.borderColor, width: 0.5),
+      // -- Aurora gradient header with stats --
+      Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppColors.auroraRed.withOpacity(0.3),
+              AppColors.auroraOrange.withOpacity(0.2),
+              AppColors.auroraBlue.withOpacity(0.2),
+              AppColors.auroraPurple.withOpacity(0.3),
+            ],
           ),
+        ),
+        child: SafeArea(
+          bottom: false,
           child: Column(children: [
-            Container(
-              width: 64, height: 64,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [AppColors.auroraBlue, AppColors.auroraPurple]),
-              ),
-              child: const Center(child: Icon(Icons.church, color: Colors.white, size: 32)),
+            // Top bar
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: Row(children: [
+                Container(
+                  width: 40, height: 40,
+                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
+                  child: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(child: Text('基督教', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold))),
+                Container(
+                  width: 36, height: 36,
+                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.1), borderRadius: BorderRadius.circular(18)),
+                  child: const Icon(Icons.share, color: Color(0xB3FFFFFF), size: 16),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  width: 36, height: 36,
+                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.1), borderRadius: BorderRadius.circular(18)),
+                  child: const Icon(Icons.chat_bubble, color: Color(0xB3FFFFFF), size: 16),
+                ),
+              ]),
             ),
-            const SizedBox(height: 12),
-            const Text('基督教', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 4),
-            Text('全球约24亿信徒', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
-            const SizedBox(height: 12),
-            const Text('基督教是世界最大的宗教之一，以耶稣基督为核心，信仰上帝（天父）创造和救赎的爱。', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.5, shadows: []), textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            // Quick stats: type + followers
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Row(children: [
+                Expanded(child: _statCard('宗教类型', '亚伯拉罕宗教')),
+                const SizedBox(width: 12),
+                Expanded(child: _statCard('全球信徒', '约24亿')),
+              ]),
+            ),
           ]),
         ),
-        const SizedBox(height: 24),
-        // Section: Key texts
-        _buildDetailSection('核心经典', [
-          _buildBookChip('圣经'),
-          _buildBookChip('旧约'),
-          _buildBookChip('新约'),
+      ),
+
+      // -- Content --
+      Expanded(child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          // Basic Info card
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(color: AppColors.cardBg, borderRadius: BorderRadius.circular(12)),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              _cardTitle(Icons.public, '基本信息'),
+              const SizedBox(height: 12),
+              _infoRow(Icons.location_on, '起源地区', '中东地区（以色列/巴勒斯坦）'),
+              const SizedBox(height: 12),
+              _infoRow(Icons.access_time, '起源时间', '公元1世纪'),
+              const SizedBox(height: 12),
+              _infoRow(Icons.public, '分布地区', '欧洲、美洲、大洋洲、非洲南部'),
+            ]),
+          ),
+          const SizedBox(height: 16),
+
+          // Core Belief card with gradient left border
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0A0A1A),
+              borderRadius: BorderRadius.circular(12),
+              border: const Border(left: BorderSide(
+                width: 4,
+                color: AppColors.auroraBlue,
+              )),
+            ),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              const Row(children: [
+                Icon(Icons.star, color: Colors.white, size: 20),
+                SizedBox(width: 8),
+                Text('核心信仰', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+              ]),
+              const SizedBox(height: 12),
+              const Text('信仰上帝（天父）为万物的创造者，信仰耶稣基督为上帝的儿子、救世主。相信耶稣基督的降生、受难、复活和升天，为全人类的罪做了赎罪祭，使信他的人获得永生。', style: TextStyle(color: AppColors.textPrimary, fontSize: 14, height: 1.5, fontWeight: FontWeight.w500)),
+            ]),
+          ),
+          const SizedBox(height: 16),
+
+          // Introduction card
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(color: AppColors.cardBg, borderRadius: BorderRadius.circular(12)),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              _cardTitle(Icons.menu_book, '简介'),
+              const SizedBox(height: 12),
+              const Text('基督教是世界上最大的宗教之一，以耶稣基督的教导为核心。主要分为天主教、东正教和新教三大分支。', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.5)),
+            ]),
+          ),
+          const SizedBox(height: 16),
+
+          // Related Books card
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(color: AppColors.cardBg, borderRadius: BorderRadius.circular(12)),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              _cardTitle(Icons.menu_book, '相关藏书'),
+              const SizedBox(height: 12),
+              _relatedBook('圣经研读指南', '基督教核心经典的系统解读与注释'),
+              const SizedBox(height: 12),
+              _relatedBook('基督教要义', '加尔文的系统神学巨著'),
+              const SizedBox(height: 12),
+              _relatedBook('圣经历史背景', '深入了解圣经时代的历史文化'),
+            ]),
+          ),
+          const SizedBox(height: 24),
         ]),
-        const SizedBox(height: 20),
-        // Section: Practices
-        _buildDetailSection('主要宗派', [
-          _buildBookChip('天主教'),
-          _buildBookChip('新教'),
-          _buildBookChip('东正教'),
-        ]),
-        const SizedBox(height: 20),
-        // Section: Books
-        _buildDetailSection('推荐书籍', [
-          _buildBookCard('圣经研读指南', '张牧师', 4.8),
-          const SizedBox(height: 8),
-          _buildBookCard('基督教要义', '加尔文', 4.9),
-        ]),
-        const SizedBox(height: 24),
-        // Follow button
-        Container(
-          width: double.infinity, height: 48,
-          decoration: BoxDecoration(gradient: AppColors.auroraGradient, borderRadius: BorderRadius.circular(24)),
-          child: const Center(child: Text('+ 关注', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold))),
-        ),
-      ]))),
+      )),
     ]),
   );
 }
 
-Widget _buildDetailSection(String title, List<Widget> children) {
-  return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-    Text(title, style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
-    const SizedBox(height: 12),
-    ...children,
+Widget _statCard(String label, String value) {
+  return Container(
+    padding: const EdgeInsets.all(2),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(16),
+      gradient: AppColors.auroraGradient,
+    ),
+    child: Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        color: AppColors.bgColor,
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(label, style: TextStyle(color: const Color(0x99FFFFFF), fontSize: 12)),
+        const SizedBox(height: 4),
+        Text(value, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+      ]),
+    ),
+  );
+}
+
+Widget _cardTitle(IconData icon, String title) {
+  return Row(children: [
+    Container(
+      padding: const EdgeInsets.all(1.5),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), gradient: AppColors.auroraGradient),
+      child: Container(
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(6.5), color: AppColors.cardBg),
+        child: Icon(icon, color: Colors.white, size: 16),
+      ),
+    ),
+    const SizedBox(width: 8),
+    Text(title, style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
   ]);
 }
 
-Widget _buildBookChip(String label) {
-  return Padding(
-    padding: const EdgeInsets.only(right: 8),
-    child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        gradient: AppColors.auroraGradientWithOpacity(0.2),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(label, style: const TextStyle(color: Colors.white, fontSize: 13)),
+Widget _infoRow(IconData icon, String label, String value) {
+  return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+    Container(
+      width: 32, height: 32,
+      decoration: BoxDecoration(color: const Color(0x14FFFFFF), borderRadius: BorderRadius.circular(8)),
+      child: Icon(icon, color: Colors.white, size: 16),
     ),
-  );
+    const SizedBox(width: 12),
+    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text(label, style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+      const SizedBox(height: 2),
+      Text(value, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500)),
+    ])),
+  ]);
 }
 
-Widget _buildBookCard(String title, String author, double rating) {
+Widget _relatedBook(String title, String desc) {
   return Container(
-    padding: const EdgeInsets.all(14),
+    padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
-      color: AppColors.cardBg,
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: AppColors.borderColor, width: 0.5),
+      color: AppColors.bgSecondary,
+      borderRadius: BorderRadius.circular(8),
+      border: Border(left: BorderSide(color: const Color(0x4DFFFFFF), width: 3)),
     ),
-    child: Row(children: [
-      Container(
-        width: 48, height: 48,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          gradient: AppColors.auroraGradientWithOpacity(0.3),
-        ),
-        child: const Icon(Icons.menu_book, color: Colors.white, size: 24),
-      ),
-      const SizedBox(width: 12),
-      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(title, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
-        const SizedBox(height: 4),
-        Text(author, style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
-      ])),
-      Row(mainAxisSize: MainAxisSize.min, children: [
-        const Icon(Icons.star, color: AppColors.auroraYellow, size: 16),
-        const SizedBox(width: 4),
-        Text('$rating', style: const TextStyle(color: Colors.white, fontSize: 13)),
-      ]),
+    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text(title, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500)),
+      const SizedBox(height: 8),
+      Text(desc, style: TextStyle(color: AppColors.textSecondary, fontSize: 12, height: 1.5)),
     ]),
   );
 }
 
-// ─── Room List Page ───
+// --- Room List Page --- (aligned with web RoomList.tsx)
 Widget _buildRoomList() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
-    body: Column(children: [
+    body: SafeArea(child: Column(children: [
       _buildGlassHeader('共修房间'),
       // Search bar
-      Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          decoration: BoxDecoration(color: AppColors.inputBg, borderRadius: BorderRadius.circular(12)),
-          child: const Row(children: [
-            Icon(Icons.search, color: AppColors.textPlaceholder, size: 20),
-            SizedBox(width: 8),
-            Expanded(child: Text('搜索房间...', style: TextStyle(color: AppColors.textPlaceholder, fontSize: 14))),
-          ]),
-        ),
+      Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+        child: Row(children: [
+          Expanded(child: Container(
+            height: 44,
+            decoration: BoxDecoration(
+              color: AppColors.bgSecondary,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.borderColor),
+            ),
+            child: const Row(children: [
+              SizedBox(width: 12),
+              Icon(Icons.search, color: AppColors.textPlaceholder, size: 20),
+              SizedBox(width: 8),
+              Expanded(child: Text('搜索房间名或房间ID...', style: TextStyle(color: AppColors.textPlaceholder, fontSize: 14))),
+              SizedBox(width: 12),
+            ]),
+          )),
+          const SizedBox(width: 8),
+          Container(
+            height: 44,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              gradient: AppColors.auroraGradient,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Row(mainAxisSize: MainAxisSize.min, children: [
+              Icon(Icons.add, color: Colors.white, size: 18),
+              SizedBox(width: 4),
+              Text('创建', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+            ]),
+          ),
+        ]),
       ),
       Expanded(child: SingleChildScrollView(padding: const EdgeInsets.symmetric(horizontal: 16), child: Column(children: [
-        _buildRoomListItem('晨间冥想', '5人在线', '冥想', Icons.self_improvement),
-        const SizedBox(height: 8),
-        _buildRoomListItem('圣经研读', '12人在线', '读书', Icons.menu_book),
-        const SizedBox(height: 8),
-        _buildRoomListItem('静默祷告', '3人在线', '祈祷', Icons.church),
-        const SizedBox(height: 8),
-        _buildRoomListItem('佛法共修', '8人在线', '禅修', Icons.self_improvement),
-        const SizedBox(height: 8),
-        _buildRoomListItem('古兰经学习', '6人在线', '学习', Icons.school),
-        const SizedBox(height: 8),
-        _buildRoomListItem('道德经研读', '4人在线', '读书', Icons.auto_stories),
+        _buildRoomListItem('晨间冥想', '12856', '安静冥想，感受内心的平静', 5, Icons.self_improvement, '雨声', Icons.cloud),
+        const SizedBox(height: 12),
+        _buildRoomListItem('圣经研读', '34521', '一起研读圣经创世记', 12, Icons.menu_book, '钢琴', Icons.piano),
+        const SizedBox(height: 12),
+        _buildRoomListItem('静默祷告', '78903', '在静默中与神对话', 3, Icons.church, null, null),
+        const SizedBox(height: 12),
+        _buildRoomListItem('佛法共修', '45672', '金刚经共读与讨论', 8, Icons.self_improvement, '森林', Icons.forest),
+        const SizedBox(height: 12),
+        _buildRoomListItem('古兰经学习', '56104', '古兰经基础学习小组', 6, Icons.school, '海浪', Icons.water),
+        const SizedBox(height: 12),
+        _buildRoomListItem('道德经研读', '91235', '道德经逐章精读', 4, Icons.auto_stories, '风声', Icons.air),
       ]))),
-    ]),
+    ])),
   );
 }
 
-Widget _buildRoomListItem(String name, String info, String tag, IconData icon) {
-  return GlassCard(
-    child: Padding(
-      padding: const EdgeInsets.all(16),
-      child: Row(children: [
-        Container(
-          width: 48, height: 48,
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: AppColors.auroraGradientWithOpacity(0.3)),
-          child: Icon(icon, color: Colors.white, size: 24),
-        ),
-        const SizedBox(width: 12),
-        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(name, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600)),
-          const SizedBox(height: 4),
-          Text(info, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-        ])),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(gradient: AppColors.auroraGradientWithOpacity(0.3), borderRadius: BorderRadius.circular(12)),
-          child: const Text('加入', style: TextStyle(color: Colors.white, fontSize: 12)),
-        ),
-      ]),
+Widget _buildRoomListItem(String name, String code, String desc, int users, IconData icon, String? sound, IconData? soundIcon) {
+  return Container(
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: AppColors.bgSecondary,
+      borderRadius: BorderRadius.circular(12),
     ),
+    child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Container(
+        width: 48, height: 48,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: AppColors.auroraPurple.withOpacity(0.1),
+        ),
+        child: Icon(icon, color: AppColors.auroraPurple, size: 24),
+      ),
+      const SizedBox(width: 12),
+      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Expanded(child: Text(name, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis)),
+          ShaderMask(
+            shaderCallback: (bounds) => AppColors.auroraGradient.createShader(bounds),
+            blendMode: BlendMode.srcIn,
+            child: Text('ID: $code', style: const TextStyle(color: Colors.white, fontSize: 12)),
+          ),
+        ]),
+        const SizedBox(height: 4),
+        Text(desc, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
+        const SizedBox(height: 8),
+        Row(children: [
+          Icon(Icons.people, color: AppColors.textWeak, size: 14),
+          const SizedBox(width: 4),
+          Text('$users人在', style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
+          if (sound != null && soundIcon != null) ...[
+            const SizedBox(width: 12),
+            Icon(soundIcon, color: AppColors.textWeak, size: 14),
+            const SizedBox(width: 4),
+            Text(sound, style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
+          ],
+        ]),
+      ])),
+    ]),
   );
 }
