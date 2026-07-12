@@ -518,7 +518,7 @@ Widget _buildSettingsNotification() {
           ),
           child: Container(padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(11),
+              borderRadius: BorderRadius.circular(12),
               color: const Color.fromRGBO(5, 8, 22, 0.95),
             ),
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -533,7 +533,7 @@ Widget _buildSettingsNotification() {
         ),
         // Section 1: 消息通知 (2 toggles)
         Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Padding(padding: EdgeInsets.only(top: 16, bottom: 8), child: Text('消息通知', style: TextStyle(color: Color(0x66FFFFFF), fontSize: 12, fontWeight: FontWeight.w500))),
+          const Padding(padding: EdgeInsets.only(top: 16, bottom: 8), child: Text('消息通知', style: TextStyle(color: Color(0x66FFFFFF), fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 1.2))),
           _buildNotifSectionCard(children: [
             _buildNotifSettingItem(icon: Icons.chat_bubble, title: '新消息通知', desc: '收到新消息时提醒', action: _buildNotifToggle(enabled: true)),
             Container(height: 1, color: Color(0x0FFFFFFF)),
@@ -542,14 +542,14 @@ Widget _buildSettingsNotification() {
         ])),
         // Section 2: 通知显示 (1 toggle)
         Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Padding(padding: EdgeInsets.only(top: 16, bottom: 8), child: Text('通知显示', style: TextStyle(color: Color(0x66FFFFFF), fontSize: 12, fontWeight: FontWeight.w500))),
+          const Padding(padding: EdgeInsets.only(top: 16, bottom: 8), child: Text('通知显示', style: TextStyle(color: Color(0x66FFFFFF), fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 1.2))),
           _buildNotifSectionCard(children: [
             _buildNotifSettingItem(icon: Icons.visibility, title: '通知显示内容', desc: '显示发送者和消息内容', action: _buildNotifToggle(enabled: true)),
           ]),
         ])),
         // Section 3: 声音与震动 (3 toggles)
         Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Padding(padding: EdgeInsets.only(top: 16, bottom: 8), child: Text('声音与震动', style: TextStyle(color: Color(0x66FFFFFF), fontSize: 12, fontWeight: FontWeight.w500))),
+          const Padding(padding: EdgeInsets.only(top: 16, bottom: 8), child: Text('声音与震动', style: TextStyle(color: Color(0x66FFFFFF), fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 1.2))),
           _buildNotifSectionCard(children: [
             _buildNotifSettingItem(icon: Icons.volume_up, title: '消息提示音', desc: '收到新消息时播放提示音', action: _buildNotifToggle(enabled: true)),
             Container(height: 1, color: Color(0x0FFFFFFF)),
@@ -560,7 +560,7 @@ Widget _buildSettingsNotification() {
         ])),
         // Section 4: 提示音与铃声 (3 clickable items)
         Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Padding(padding: EdgeInsets.only(top: 16, bottom: 8), child: Text('提示音与铃声', style: TextStyle(color: Color(0x66FFFFFF), fontSize: 12, fontWeight: FontWeight.w500))),
+          const Padding(padding: EdgeInsets.only(top: 16, bottom: 8), child: Text('提示音与铃声', style: TextStyle(color: Color(0x66FFFFFF), fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 1.2))),
           _buildNotifSectionCard(children: [
             _buildNotifSettingItem(icon: Icons.chat_bubble, title: '消息提示音', desc: '默认提示音', action: const Icon(Icons.chevron_right, color: AppColors.textWeak, size: 20)),
             Container(height: 1, color: Color(0x0FFFFFFF)),

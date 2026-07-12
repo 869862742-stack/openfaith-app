@@ -138,7 +138,11 @@ void main() {
 Widget _buildHistory() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
-    body: Column(children: [
+    body: Stack(children: [
+      // Star decoration layer
+      _buildStarOverlay(),
+      // Content layer
+      Column(children: [
       // Header: back + title on left, "关闭记录" on right
       Container(
         decoration: BoxDecoration(
@@ -227,7 +231,11 @@ Widget _buildHistoryItem(String title, String author, String time, String tag) {
 Widget _buildDownloads() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
-    body: Column(children: [
+    body: Stack(children: [
+      // Star decoration layer
+      _buildStarOverlay(),
+      // Content layer
+      Column(children: [
       _buildSliverHeader('下载管理'),
       // Stats bar
       Container(
@@ -284,7 +292,11 @@ Widget _buildCovenant() {
   ];
   return Scaffold(
     backgroundColor: AppColors.bgColor,
-    body: Column(children: [
+    body: Stack(children: [
+      // Star decoration layer
+      _buildStarOverlay(),
+      // Content layer
+      Column(children: [
       _buildSliverHeader('信仰公约'),
       Expanded(child: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         // Intro card (web: rounded-2xl p-6, bg=rgba(255,255,255,0.04), border=rgba(255,255,255,0.08))
@@ -361,7 +373,11 @@ Widget _buildCovenant() {
 Widget _buildScan() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
-    body: Column(children: [
+    body: Stack(children: [
+      // Star decoration layer
+      _buildStarOverlay(),
+      // Content layer
+      Column(children: [
       _buildSliverHeader('扫一扫'),
       Expanded(child: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(children: [
         Container(
@@ -408,7 +424,11 @@ Widget _buildGradientBtn({required IconData icon, required String label}) {
 Widget _buildSupport() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
-    body: Column(children: [
+    body: Stack(children: [
+      // Star decoration layer
+      _buildStarOverlay(),
+      // Content layer
+      Column(children: [
       _buildGlassHeader('欢迎联系'),
       // Tab bar
       Container(
@@ -463,7 +483,11 @@ Widget _buildTicketCard(String title, String status, String time) {
 Widget _buildGongjing() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
-    body: Column(children: [
+    body: Stack(children: [
+      // Star decoration layer
+      _buildStarOverlay(),
+      // Content layer
+      Column(children: [
       // Header
       Container(
         decoration: BoxDecoration(color: AppColors.headerBg, border: Border(bottom: BorderSide(color: AppColors.borderSubtle, width: 0.5))),
@@ -534,7 +558,11 @@ Widget _buildGongjingRoomCard(String name, String info, IconData icon) {
 Widget _buildPrivacy() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
-    body: Column(children: [
+    body: Stack(children: [
+      // Star decoration layer
+      _buildStarOverlay(),
+      // Content layer
+      Column(children: [
       // Custom header: back | title | EN toggle (matches web TermsOfService/PrivacyPolicy)
       Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -654,7 +682,11 @@ Widget _buildPrivacyBullet(String text) {
 Widget _buildTerms() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
-    body: Column(children: [
+    body: Stack(children: [
+      // Star decoration layer
+      _buildStarOverlay(),
+      // Content layer
+      Column(children: [
       // Custom header: back | title | EN toggle (matches web TermsOfService)
       Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -771,11 +803,71 @@ Widget _buildTermsBullet(String text) {
   );
 }
 
+
+// Decorative stars to match web StarryCanvas
+Widget _buildStarOverlay() {
+  return Positioned.fill(
+    child: Stack(children: [
+      // Large glow stars (visible halo)
+      _buildGlowStar(60, 120, 3.0, const Color(0xFFFF4D6D)),
+      _buildGlowStar(320, 200, 2.5, const Color(0xFFFF9F1C)),
+      _buildGlowStar(100, 400, 2.0, const Color(0xFF70E000)),
+      _buildGlowStar(280, 550, 3.0, const Color(0xFF00E5FF)),
+      _buildGlowStar(50, 650, 2.5, const Color(0xFF9D4EDD)),
+      _buildGlowStar(350, 750, 2.0, const Color(0xFFFFD60A)),
+      // Small colored dots
+      _buildStarDot(200, 80, 1.5, const Color(0xFF3A86FF)),
+      _buildStarDot(150, 300, 1.0, const Color(0xFFFF4D6D)),
+      _buildStarDot(340, 450, 1.5, const Color(0xFFFFD60A)),
+      _buildStarDot(30, 500, 1.0, const Color(0xFF70E000)),
+      _buildStarDot(200, 600, 1.5, const Color(0xFFFF9F1C)),
+      _buildStarDot(370, 100, 1.0, const Color(0xFF9D4EDD)),
+      _buildStarDot(180, 750, 1.5, const Color(0xFF00E5FF)),
+      _buildStarDot(300, 350, 1.0, const Color(0xFFFF4D6D)),
+      _buildStarDot(80, 200, 1.5, const Color(0xFF3A86FF)),
+      _buildStarDot(360, 650, 1.0, const Color(0xFFFFD60A)),
+    ]),
+  );
+}
+
+Widget _buildGlowStar(double x, double y, double size, Color color) {
+  return Positioned(
+    left: x, top: y,
+    child: Container(
+      width: size * 3, height: size * 3,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color.withOpacity(0.15),
+      ),
+      child: Center(
+        child: Container(
+          width: size, height: size,
+          decoration: BoxDecoration(shape: BoxShape.circle, color: color.withOpacity(0.8)),
+        ),
+      ),
+    ),
+  );
+}
+
+Widget _buildStarDot(double x, double y, double size, Color color) {
+  return Positioned(
+    left: x, top: y,
+    child: Container(
+      width: size, height: size,
+      decoration: BoxDecoration(shape: BoxShape.circle, color: color.withOpacity(0.6)),
+    ),
+  );
+}
+
 // ─── VIP Page ─── (aligned with VipScreen source)
 Widget _buildVip() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
-    body: Column(children: [
+    body: Stack(children: [
+      // Star decoration layer
+      _buildStarOverlay(),
+      // Content layer
+      Column(children: [
       // Web VIP header: left-aligned back button + title (px-4 py-3)
       Container(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
@@ -909,7 +1001,8 @@ Widget _buildVip() {
         Text('一次性付费 · 永久享受', style: TextStyle(color: AppColors.textPlaceholder, fontSize: 12), textAlign: TextAlign.center),
         const SizedBox(height: 16),
       ]))),
-    ]),
+    ],),  // Column
+    ],),  // Stack
   );
 }
 
