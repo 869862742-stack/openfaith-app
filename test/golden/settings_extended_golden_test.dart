@@ -481,37 +481,56 @@ Widget _buildSettingsNotification() {
     body: Column(children: [
       _buildHeader('通知设置'),
       Expanded(child: SingleChildScrollView(padding: const EdgeInsets.symmetric(vertical: 8), child: Column(children: [
-        // Notification permission banner with gradient border
-        Container(margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), padding: const EdgeInsets.all(1),
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: AppColors.auroraGradient),
-          child: Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(borderRadius: BorderRadius.circular(11), color: AppColors.overlayBg),
-            child: Row(children: [
-              const Icon(Icons.notifications_active, color: AppColors.auroraOrange, size: 20),
-              const SizedBox(width: 12),
-              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                const Text('通知权限', style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600)),
-                Text('允许发送通知以接收消息提醒', style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
-              ])),
-              TextButton(onPressed: () {}, child: const Text('去开启', style: TextStyle(color: AppColors.auroraBlue, fontWeight: FontWeight.w600))),
-            ]))),
-        // Section 1: 通知开关 (3 toggles matching notification_settings_screen.dart)
+        // Notification permission banner - warm background matching web
+        Container(margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            color: const Color.fromRGBO(255, 197, 15, 0.12),
+            border: Border.all(color: const Color.fromRGBO(255, 197, 15, 0.3), width: 0.5),
+          ),
+          child: Row(children: [
+            const Icon(Icons.notifications_active, color: Color.fromRGBO(255, 197, 15, 0.8), size: 24),
+            const SizedBox(width: 12),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              const Text('开启通知权限', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+              Text('允许发送通知以接收消息提醒', style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 12)),
+            ])),
+            TextButton(onPressed: () {}, child: const Text('去开启', style: TextStyle(color: Color.fromRGBO(255, 197, 15, 1.0), fontWeight: FontWeight.w600))),
+          ])),
+        // Section 1: 消息通知 (2 toggles)
         Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Padding(padding: EdgeInsets.only(top: 16, bottom: 8), child: Text('通知开关', style: TextStyle(color: AppColors.textWeak, fontSize: 12, fontWeight: FontWeight.w500))),
+          const Padding(padding: EdgeInsets.only(top: 16, bottom: 8), child: Text('消息通知', style: TextStyle(color: AppColors.textWeak, fontSize: 12, fontWeight: FontWeight.w500))),
           _buildNotifSectionCard(children: [
-            _buildNotifSettingItem(icon: Icons.phone_android, title: '来电提醒', desc: '接收语音/视频通话提醒', action: _buildNotifToggle(enabled: true)),
+            _buildNotifSettingItem(icon: Icons.chat_bubble_outline, title: '新消息通知', desc: '接收新消息通知', action: _buildNotifToggle(enabled: true)),
             Container(height: 1, color: AppColors.borderColor),
-            _buildNotifSettingItem(icon: Icons.chat_bubble_outline, title: '消息通知', desc: '接收新消息通知', action: _buildNotifToggle(enabled: true)),
-            Container(height: 1, color: AppColors.borderColor),
-            _buildNotifSettingItem(icon: Icons.volume_up, title: '声音', desc: '开启提示音', action: _buildNotifToggle(enabled: true)),
+            _buildNotifSettingItem(icon: Icons.phone_android, title: '语音和视频通话通知', desc: '接收语音/视频通话提醒', action: _buildNotifToggle(enabled: true)),
           ]),
         ])),
-        // Section 2: 声音设置 (2 clickable items matching notification_settings_screen.dart)
+        // Section 2: 通知显示 (1 toggle)
         Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Padding(padding: EdgeInsets.only(top: 16, bottom: 8), child: Text('声音设置', style: TextStyle(color: AppColors.textWeak, fontSize: 12, fontWeight: FontWeight.w500))),
+          const Padding(padding: EdgeInsets.only(top: 16, bottom: 8), child: Text('通知显示', style: TextStyle(color: AppColors.textWeak, fontSize: 12, fontWeight: FontWeight.w500))),
           _buildNotifSectionCard(children: [
+            _buildNotifSettingItem(icon: Icons.visibility_outlined, title: '通知显示内容', desc: '在通知中显示消息详情', action: _buildNotifToggle(enabled: true)),
+          ]),
+        ])),
+        // Section 3: 声音与震动 (2 toggles)
+        Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const Padding(padding: EdgeInsets.only(top: 16, bottom: 8), child: Text('声音与震动', style: TextStyle(color: AppColors.textWeak, fontSize: 12, fontWeight: FontWeight.w500))),
+          _buildNotifSectionCard(children: [
+            _buildNotifSettingItem(icon: Icons.volume_up, title: '消息提示音', desc: '开启提示音', action: _buildNotifToggle(enabled: true)),
+            Container(height: 1, color: AppColors.borderColor),
+            _buildNotifSettingItem(icon: Icons.vibration, title: '通话铃声', desc: '开启通话铃声', action: _buildNotifToggle(enabled: true)),
+          ]),
+        ])),
+        // Section 4: 提示音与铃声 (3 clickable items)
+        Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const Padding(padding: EdgeInsets.only(top: 16, bottom: 8), child: Text('提示音与铃声', style: TextStyle(color: AppColors.textWeak, fontSize: 12, fontWeight: FontWeight.w500))),
+          _buildNotifSectionCard(children: [
+            _buildNotifSettingItem(icon: Icons.music_note, title: '消息提示音', desc: '默认提示音', action: const Icon(Icons.chevron_right, color: AppColors.textWeak, size: 20)),
+            Container(height: 1, color: AppColors.borderColor),
             _buildNotifSettingItem(icon: Icons.music_note, title: '来电铃声', desc: '柔和铃声', action: const Icon(Icons.chevron_right, color: AppColors.textWeak, size: 20)),
             Container(height: 1, color: AppColors.borderColor),
-            _buildNotifSettingItem(icon: Icons.volume_up, title: '消息提示音', desc: '默认提示音', action: const Icon(Icons.chevron_right, color: AppColors.textWeak, size: 20)),
+            _buildNotifSettingItem(icon: Icons.music_note, title: '呼叫铃声', desc: '经典铃声', action: const Icon(Icons.chevron_right, color: AppColors.textWeak, size: 20)),
           ]),
         ])),
         const SizedBox(height: 32),
@@ -520,7 +539,6 @@ Widget _buildSettingsNotification() {
   );
 }
 
-// Notification-specific helpers matching real screen widget patterns
 Widget _buildNotifSectionCard({required List<Widget> children}) {
   return Container(margin: const EdgeInsets.only(bottom: 12),
     decoration: BoxDecoration(color: AppColors.hoverBgLight, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.borderSubtle)),
