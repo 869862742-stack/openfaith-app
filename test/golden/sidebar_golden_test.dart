@@ -640,6 +640,7 @@ Widget _buildPrivacy() {
       ]))),
     ]),
   );
+}
 Widget _buildPrivacyBullet(String text) {
   return Padding(
     padding: const EdgeInsets.only(bottom: 4),
@@ -761,6 +762,7 @@ Widget _buildTerms() {
       ]))),
     ]),
   );
+}
 Widget _buildTermsBullet(String text) {
   return Padding(
     padding: const EdgeInsets.only(bottom: 4),

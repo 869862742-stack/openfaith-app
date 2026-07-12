@@ -42,7 +42,7 @@ Widget _buildHome() {
             Row(children: [
               Container(
                 padding: const EdgeInsets.all(8),
-                margin: const EdgeInsets.only(left: -4),
+                margin: const EdgeInsets.only(left: 0),
                 decoration: BoxDecoration(
                   color: AppColors.cardBg,
                   borderRadius: BorderRadius.circular(12),
