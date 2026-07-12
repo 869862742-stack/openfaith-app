@@ -872,26 +872,71 @@ Widget _buildSettingsAbout() {
 }
 
 Widget _buildSettingsPrivacy() {
+  // Web版是"隐私政策"法律文档页面，不是"隐私设置"页面
+  // 修改mock UI结构使其更接近web版
   return Scaffold(
     backgroundColor: AppColors.bgColor,
     body: Column(children: [
-      _buildHeader('隐私设置'),
-      Expanded(child: ListView(padding: const EdgeInsets.all(16), children: [
-        _buildToggleCard('允许陌生人查看我的主页', true),
-        const SizedBox(height: 4),
-        _buildToggleCard('允许搜索到我的账号', true),
-        const SizedBox(height: 4),
-        _buildToggleCard('显示在线状态', false),
-        const SizedBox(height: 4),
-        _buildToggleCard('显示阅读记录', true),
-        const SizedBox(height: 24),
-        _buildSettingsCard(Icons.block, '黑名单管理'),
-        const SizedBox(height: 4),
-        _buildSettingsCard(Icons.report_outlined, '举报记录'),
-        const SizedBox(height: 4),
-        _buildSettingsCard(Icons.delete_outline, '清除缓存'),
-      ])),
+      _buildHeader('隐私政策'),
+      Expanded(child: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('最后更新：2026年6月7日', style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
+          const SizedBox(height: 24),
+          Text('1. 概述', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 12),
+          Text('OpenFaith（以下简称"我们"）深知个人信息对您的重要性，我们将按照法律法规的规定，保护您的个人信息及隐私安全。本隐私政策适用于 OpenFaith 移动应用及网站（openfaithhub.com）提供的所有服务。', style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14, height: 1.6)),
+          const SizedBox(height: 8),
+          Text('我们制定本隐私政策旨在帮助您了解：我们如何收集、使用、存储和保护您的个人信息；您如何管理您的个人信息。', style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14, height: 1.6)),
+          const SizedBox(height: 24),
+          Text('2. 我们收集的信息', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 12),
+          Text('2.1 您主动提供的信息', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
+          const SizedBox(height: 8),
+          _buildBulletPoint('注册信息：邮箱地址、昵称、身份标签'),
+          _buildBulletPoint('内容信息：您发布的笔记、评论、问答等用户生成内容'),
+          _buildBulletPoint('社交信息：关注关系、好友请求、私信内容'),
+          _buildBulletPoint('支付信息：VIP购买记录（支付处理由第三方完成，我们不存储银行卡信息）'),
+          const SizedBox(height: 12),
+          Text('2.2 自动收集的信息', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
+          const SizedBox(height: 8),
+          _buildBulletPoint('设备信息：设备型号、操作系统版本'),
+          _buildBulletPoint('使用数据：访问页面、功能使用频率、阅读时长'),
+          _buildBulletPoint('Cookie 及类似技术：用于维护登录状态、偏好设置'),
+          const SizedBox(height: 24),
+          Text('3. 我们如何使用信息', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 12),
+          _buildBulletPoint('提供、维护和改进我们的服务'),
+          _buildBulletPoint('个性化推荐内容（基于您的身份标签和阅读偏好）'),
+          _buildBulletPoint('处理交易和管理 VIP 会员权益'),
+          _buildBulletPoint('发送服务通知（系统消息、互动提醒）'),
+          _buildBulletPoint('安全防护和欺诈检测'),
+          _buildBulletPoint('遵守法律法规要求'),
+          const SizedBox(height: 24),
+          Text('4. 信息共享', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 12),
+          Text('我们不会出售您的个人信息。仅在以下情况下我们可能共享您的信息：', style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14, height: 1.6)),
+          const SizedBox(height: 8),
+          _buildBulletPoint('获得您的明确同意后'),
+          _buildBulletPoint('与受信任的服务提供商合作（如支付处理、云存储）'),
+          _buildBulletPoint('遵守法律法规要求或响应司法程序'),
+          const SizedBox(height: 48),
+        ],
+      ))),
     ]),
+  );
+}
+
+Widget _buildBulletPoint(String text) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 6),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('• ', style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 14)),
+        Expanded(child: Text(text, style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14, height: 1.5))),
+      ],
+    ),
   );
 }
 

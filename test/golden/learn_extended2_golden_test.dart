@@ -50,66 +50,111 @@ void main() {
 
 // ─── Religion Detail Page ───
 Widget _buildReligionDetail() {
+  // Web版是"基督教（新教）"详情页面，包含基本信息、核心信仰、简介等
+  // 修改mock UI结构使其更接近web版
   return Scaffold(
     backgroundColor: AppColors.bgColor,
     body: Column(children: [
-      _buildGlassHeader('基督教'),
+      _buildGlassHeader('基督教（新教）'),
       Expanded(child: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        // Hero section
+        // Two info cards with rainbow border
+        Row(children: [
+          Expanded(child: _buildRainbowCard('宗教类型', '一神教', Icons.public)),
+          const SizedBox(width: 8),
+          Expanded(child: _buildRainbowCard('全球信徒', '约9亿', Icons.people)),
+        ]),
+        const SizedBox(height: 16),
+        // Basic info card
         Container(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            gradient: AppColors.auroraGradientWithOpacity(0.15),
-            borderRadius: BorderRadius.circular(16),
+            color: AppColors.cardBg,
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(color: AppColors.borderColor, width: 0.5),
           ),
-          child: Column(children: [
-            Container(
-              width: 64, height: 64,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [AppColors.auroraBlue, AppColors.auroraPurple]),
-              ),
-              child: const Center(child: Icon(Icons.church, color: Colors.white, size: 32)),
-            ),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const Text('基本信息', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
             const SizedBox(height: 12),
-            const Text('基督教', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 4),
-            Text('全球约24亿信徒', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
-            const SizedBox(height: 12),
-            const Text('基督教是世界最大的宗教之一，以耶稣基督为核心，信仰上帝（天父）创造和救赎的爱。', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.5, shadows: []), textAlign: TextAlign.center),
+            _buildInfoRow(Icons.location_on, '起源地区', '欧洲德国、瑞士、英国等地'),
+            const SizedBox(height: 8),
+            _buildInfoRow(Icons.access_time, '起源时间', '16世纪（1517年马丁·路德发表《九十五条论纲》）'),
+            const SizedBox(height: 8),
+            _buildInfoRow(Icons.map, '分布地区', '北欧五国、德国、瑞士、英国、美国、加拿大、澳大利亚'),
           ]),
         ),
-        const SizedBox(height: 24),
-        // Section: Key texts
-        _buildDetailSection('核心经典', [
-          _buildBookChip('圣经'),
-          _buildBookChip('旧约'),
-          _buildBookChip('新约'),
-        ]),
-        const SizedBox(height: 20),
-        // Section: Practices
-        _buildDetailSection('主要宗派', [
-          _buildBookChip('天主教'),
-          _buildBookChip('新教'),
-          _buildBookChip('东正教'),
-        ]),
-        const SizedBox(height: 20),
-        // Section: Books
-        _buildDetailSection('推荐书籍', [
-          _buildBookCard('圣经研读指南', '张牧师', 4.8),
-          const SizedBox(height: 8),
-          _buildBookCard('基督教要义', '加尔文', 4.9),
-        ]),
-        const SizedBox(height: 24),
-        // Follow button
+        const SizedBox(height: 16),
+        // Core beliefs card
         Container(
-          width: double.infinity, height: 48,
-          decoration: BoxDecoration(gradient: AppColors.auroraGradient, borderRadius: BorderRadius.circular(24)),
-          child: const Center(child: Text('+ 关注', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold))),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: AppColors.auroraGradientWithOpacity(0.15),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.borderColor, width: 0.5),
+          ),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const Text('核心信仰', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 12),
+            Text('因信称义、信徒皆祭司、圣经为信仰最高权威，强调个人直接与上帝相通，简化圣事礼仪', style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14, height: 1.5)),
+          ]),
+        ),
+        const SizedBox(height: 16),
+        // Introduction card
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.cardBg,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.borderColor, width: 0.5),
+          ),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const Text('简介', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 12),
+            Text('新教是基督教三大主流分支之一，于16世纪欧洲宗教改革运动中脱离罗马天主教而形成。新教不承认罗马教宗的权威，主张《圣经》为信仰的唯一最高准则，强调信徒个人可直接与上帝沟通而无须神职中介。', style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14, height: 1.5)),
+          ]),
         ),
       ]))),
     ]),
+  );
+}
+
+Widget _buildRainbowCard(String label, String value, IconData icon) {
+  return Container(
+    padding: const EdgeInsets.all(1.5),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(12),
+      gradient: AppColors.auroraGradient,
+    ),
+    child: Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10.5),
+        color: AppColors.bgColor,
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Icon(icon, color: AppColors.textSecondary, size: 16),
+          const SizedBox(width: 8),
+          Text(label, style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+        ]),
+        const SizedBox(height: 6),
+        Text(value, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
+      ]),
+    ),
+  );
+}
+
+Widget _buildInfoRow(IconData icon, String label, String value) {
+  return Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Icon(icon, color: AppColors.textSecondary, size: 18),
+      const SizedBox(width: 8),
+      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(label, style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+        const SizedBox(height: 2),
+        Text(value, style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 13, height: 1.4)),
+      ])),
+    ],
   );
 }
 
