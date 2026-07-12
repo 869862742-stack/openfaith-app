@@ -77,7 +77,7 @@ Widget _buildSwitchAccount() {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: const Color(0xFFFEF2F2),
+            color: AppColors.background,
             borderRadius: BorderRadius.circular(15),
           ),
           child: Row(children: [
@@ -105,7 +105,7 @@ Widget _buildSwitchAccount() {
             const SizedBox(width: 12),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
-                const Text('OpenFaith', style: TextStyle(color: Color(0xFF1E293B), fontSize: 15, fontWeight: FontWeight.bold)),
+                const Text('OpenFaith', style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
                 const SizedBox(width: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -117,7 +117,7 @@ Widget _buildSwitchAccount() {
                 ),
               ]),
               const SizedBox(height: 4),
-              const Text('869862742@qq.com', style: TextStyle(color: Color(0xFF64748B), fontSize: 12)),
+              Text('user@openfaithhub.com', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
             ])),
           ]),
         ),
@@ -140,16 +140,16 @@ Widget _buildSwitchAccount() {
       // Security notice card
       Container(
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(color: const Color(0xFFFEF2F2), borderRadius: BorderRadius.circular(12)),
+        decoration: BoxDecoration(color: AppColors.cardBg, borderRadius: BorderRadius.circular(12)),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            Icon(Icons.shield_outlined, color: const Color(0xFF3A86FF), size: 16),
+            Icon(Icons.shield_outlined, color: AppColors.auroraBlue, size: 16),
             const SizedBox(width: 8),
-            Text('账号安全提示', style: const TextStyle(color: Color(0xFF3A86FF), fontSize: 14, fontWeight: FontWeight.bold)),
+            Text('账号安全提示', style: TextStyle(color: AppColors.auroraBlue, fontSize: 14, fontWeight: FontWeight.bold)),
           ]),
           const SizedBox(height: 8),
           Text('切换账号功能方便您在多个身份间快速跳转。请确保所有关联账号均为本人使用，以保护您的灵性成长数据与个人隐私。',
-              style: TextStyle(color: const Color(0xFF64748B), fontSize: 12, height: 1.5)),
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 12, height: 1.5)),
         ]),
       ),
     ])),
