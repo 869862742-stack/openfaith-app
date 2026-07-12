@@ -143,7 +143,6 @@ Widget _buildHistory() {
     backgroundColor: AppColors.bgColor,
     body: Stack(children: [
       // Star decoration layer
-      _buildStarOverlay(),
       // Content layer
       Column(children: [
       // Header: back + title on left, "关闭记录" on right
@@ -704,7 +703,6 @@ Widget _buildTerms() {
     backgroundColor: AppColors.bgColor,
     body: Stack(children: [
       // Star decoration layer
-      _buildStarOverlay(),
       // Content layer
       Column(children: [
       // Custom header: back | title | EN toggle (matches web TermsOfService)
