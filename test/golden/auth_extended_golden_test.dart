@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:openfaith_app/theme/app_colors.dart';
 import 'package:openfaith_app/widgets/glass_card.dart';
 import 'package:openfaith_app/widgets/aurora_button.dart';
+import 'test_helper.dart';
 
 
 /// Auth Pages Extended Golden Tests
@@ -277,13 +278,15 @@ void main() {
   group('Auth Extended Golden Tests', () {
 
     testWidgets('Login page full render', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(theme: ThemeData(scaffoldBackgroundColor: AppColors.bgColor), home: _buildLogin()));
+      await setupGoldenSurface(tester);
+      await tester.pumpWidget(wrapForGoldenTest(_buildLogin()));
       await tester.pumpAndSettle();
       await expectLater(find.byType(Scaffold), matchesGoldenFile('goldens/page_login.png'));
     });
 
     testWidgets('Register page full render', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(theme: ThemeData(scaffoldBackgroundColor: AppColors.bgColor), home: _buildRegister()));
+      await setupGoldenSurface(tester);
+      await tester.pumpWidget(wrapForGoldenTest(_buildRegister()));
       await tester.pumpAndSettle();
       await expectLater(find.byType(Scaffold), matchesGoldenFile('goldens/page_register.png'));
     });

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:openfaith_app/theme/app_colors.dart';
+import 'test_helper.dart';
 
 /// Messages Extended Golden Tests
 /// Covers: group_chat_detail, private_chat
@@ -31,13 +32,15 @@ Widget _buildChatHeader(String title, {String? subtitle}) {
 void main() {
   group('Messages Extended Golden Tests', () {
     testWidgets('group_chat_detail page renders correctly', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(theme: ThemeData(scaffoldBackgroundColor: AppColors.bgColor), home: _buildGroupChatDetail()));
+      await setupGoldenSurface(tester);
+      await tester.pumpWidget(wrapForGoldenTest(_buildGroupChatDetail()));
       await tester.pumpAndSettle();
       await expectLater(find.byType(Scaffold), matchesGoldenFile('goldens/page_group_chat_detail.png'));
     });
 
     testWidgets('private_chat page renders correctly', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(theme: ThemeData(scaffoldBackgroundColor: AppColors.bgColor), home: _buildPrivateChat()));
+      await setupGoldenSurface(tester);
+      await tester.pumpWidget(wrapForGoldenTest(_buildPrivateChat()));
       await tester.pumpAndSettle();
       await expectLater(find.byType(Scaffold), matchesGoldenFile('goldens/page_private_chat.png'));
     });

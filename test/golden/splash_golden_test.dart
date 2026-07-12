@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:openfaith_app/theme/app_colors.dart';
+import 'test_helper.dart';
 
 /// Splash Screen Golden Test
 /// Covers: splash
@@ -8,10 +9,8 @@ import 'package:openfaith_app/theme/app_colors.dart';
 void main() {
   group('Splash Golden Test', () {
     testWidgets('splash page renders correctly', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(
-        theme: ThemeData(scaffoldBackgroundColor: AppColors.bgColor),
-        home: _buildSplash(),
-      ));
+      await setupGoldenSurface(tester);
+      await tester.pumpWidget(wrapForGoldenTest(_buildSplash()));
       await tester.pumpAndSettle();
       await expectLater(find.byType(Scaffold), matchesGoldenFile('goldens/page_splash.png'));
     });

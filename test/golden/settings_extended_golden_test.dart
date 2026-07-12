@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:openfaith_app/theme/app_colors.dart';
 import 'package:openfaith_app/widgets/glass_card.dart';
 import 'package:openfaith_app/widgets/aurora_button.dart';
+import 'test_helper.dart';
 
 
 /// Settings Extended Pages Golden Tests
@@ -277,55 +278,64 @@ void main() {
   group('Settings Extended Golden Tests', () {
 
     testWidgets('Settings main page', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(theme: ThemeData(scaffoldBackgroundColor: AppColors.bgColor), home: _buildSettings()));
+      await setupGoldenSurface(tester);
+      await tester.pumpWidget(wrapForGoldenTest(_buildSettings()));
       await tester.pumpAndSettle();
       await expectLater(find.byType(Scaffold), matchesGoldenFile('goldens/page_settings.png'));
     });
 
     testWidgets('Settings - Profile edit', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(theme: ThemeData(scaffoldBackgroundColor: AppColors.bgColor), home: _buildSettingsProfile()));
+      await setupGoldenSurface(tester);
+      await tester.pumpWidget(wrapForGoldenTest(_buildSettingsProfile()));
       await tester.pumpAndSettle();
       await expectLater(find.byType(Scaffold), matchesGoldenFile('goldens/page_settings_profile.png'));
     });
 
     testWidgets('Settings - Account security', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(theme: ThemeData(scaffoldBackgroundColor: AppColors.bgColor), home: _buildSettingsAccount()));
+      await setupGoldenSurface(tester);
+      await tester.pumpWidget(wrapForGoldenTest(_buildSettingsAccount()));
       await tester.pumpAndSettle();
       await expectLater(find.byType(Scaffold), matchesGoldenFile('goldens/page_settings_account.png'));
     });
 
     testWidgets('Settings - Notification', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(theme: ThemeData(scaffoldBackgroundColor: AppColors.bgColor), home: _buildSettingsNotification()));
+      await setupGoldenSurface(tester);
+      await tester.pumpWidget(wrapForGoldenTest(_buildSettingsNotification()));
       await tester.pumpAndSettle();
       await expectLater(find.byType(Scaffold), matchesGoldenFile('goldens/page_settings_notification.png'));
     });
 
     testWidgets('Settings - Font/Display', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(theme: ThemeData(scaffoldBackgroundColor: AppColors.bgColor), home: _buildSettingsFont()));
+      await setupGoldenSurface(tester);
+      await tester.pumpWidget(wrapForGoldenTest(_buildSettingsFont()));
       await tester.pumpAndSettle();
       await expectLater(find.byType(Scaffold), matchesGoldenFile('goldens/page_settings_font.png'));
     });
 
     testWidgets('Settings - Language', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(theme: ThemeData(scaffoldBackgroundColor: AppColors.bgColor), home: _buildSettingsLanguage()));
+      await setupGoldenSurface(tester);
+      await tester.pumpWidget(wrapForGoldenTest(_buildSettingsLanguage()));
       await tester.pumpAndSettle();
       await expectLater(find.byType(Scaffold), matchesGoldenFile('goldens/page_settings_language.png'));
     });
 
     testWidgets('Settings - Content preferences', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(theme: ThemeData(scaffoldBackgroundColor: AppColors.bgColor), home: _buildSettingsPreferences()));
+      await setupGoldenSurface(tester);
+      await tester.pumpWidget(wrapForGoldenTest(_buildSettingsPreferences()));
       await tester.pumpAndSettle();
       await expectLater(find.byType(Scaffold), matchesGoldenFile('goldens/page_settings_preferences.png'));
     });
 
     testWidgets('Settings - About', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(theme: ThemeData(scaffoldBackgroundColor: AppColors.bgColor), home: _buildSettingsAbout()));
+      await setupGoldenSurface(tester);
+      await tester.pumpWidget(wrapForGoldenTest(_buildSettingsAbout()));
       await tester.pumpAndSettle();
       await expectLater(find.byType(Scaffold), matchesGoldenFile('goldens/page_settings_about.png'));
     });
 
     testWidgets('Settings - Privacy', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(theme: ThemeData(scaffoldBackgroundColor: AppColors.bgColor), home: _buildSettingsPrivacy()));
+      await setupGoldenSurface(tester);
+      await tester.pumpWidget(wrapForGoldenTest(_buildSettingsPrivacy()));
       await tester.pumpAndSettle();
       await expectLater(find.byType(Scaffold), matchesGoldenFile('goldens/page_settings_privacy.png'));
     });

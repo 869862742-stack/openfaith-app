@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:openfaith_app/theme/app_colors.dart';
 import 'package:openfaith_app/widgets/glass_card.dart';
+import 'test_helper.dart';
 
 /// Learn Extended 2 Golden Tests
 /// Covers: religion_detail, room_list
@@ -29,13 +30,15 @@ Widget _buildGlassHeader(String title) {
 void main() {
   group('Learn Extended 2 Golden Tests', () {
     testWidgets('religion_detail page renders correctly', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(theme: ThemeData(scaffoldBackgroundColor: AppColors.bgColor), home: _buildReligionDetail()));
+      await setupGoldenSurface(tester);
+      await tester.pumpWidget(wrapForGoldenTest(_buildReligionDetail()));
       await tester.pumpAndSettle();
       await expectLater(find.byType(Scaffold), matchesGoldenFile('goldens/page_religion_detail.png'));
     });
 
     testWidgets('room_list page renders correctly', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(theme: ThemeData(scaffoldBackgroundColor: AppColors.bgColor), home: _buildRoomList()));
+      await setupGoldenSurface(tester);
+      await tester.pumpWidget(wrapForGoldenTest(_buildRoomList()));
       await tester.pumpAndSettle();
       await expectLater(find.byType(Scaffold), matchesGoldenFile('goldens/page_room_list.png'));
     });

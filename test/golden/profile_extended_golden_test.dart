@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:openfaith_app/theme/app_colors.dart';
+import 'test_helper.dart';
 
 /// Profile Extended Golden Tests
 /// Covers: switch_account, heating_records, my_posts
@@ -28,19 +29,22 @@ Widget _buildGlassHeader(String title) {
 void main() {
   group('Profile Extended Golden Tests', () {
     testWidgets('switch_account page renders correctly', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(theme: ThemeData(scaffoldBackgroundColor: AppColors.bgColor), home: _buildSwitchAccount()));
+      await setupGoldenSurface(tester);
+      await tester.pumpWidget(wrapForGoldenTest(_buildSwitchAccount()));
       await tester.pumpAndSettle();
       await expectLater(find.byType(Scaffold), matchesGoldenFile('goldens/page_switch_account.png'));
     });
 
     testWidgets('heating_records page renders correctly', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(theme: ThemeData(scaffoldBackgroundColor: AppColors.bgColor), home: _buildHeatingRecords()));
+      await setupGoldenSurface(tester);
+      await tester.pumpWidget(wrapForGoldenTest(_buildHeatingRecords()));
       await tester.pumpAndSettle();
       await expectLater(find.byType(Scaffold), matchesGoldenFile('goldens/page_heating_records.png'));
     });
 
     testWidgets('my_posts page renders correctly', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(theme: ThemeData(scaffoldBackgroundColor: AppColors.bgColor), home: _buildMyPosts()));
+      await setupGoldenSurface(tester);
+      await tester.pumpWidget(wrapForGoldenTest(_buildMyPosts()));
       await tester.pumpAndSettle();
       await expectLater(find.byType(Scaffold), matchesGoldenFile('goldens/page_my_posts.png'));
     });

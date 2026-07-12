@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:openfaith_app/theme/app_colors.dart';
+import 'test_helper.dart';
 
 /// Publish Extended Golden Tests
 /// Covers: publish_video, publish_plan, drafts
@@ -53,28 +54,22 @@ Widget _buildInputField(String hint, {int maxLines = 1}) {
 void main() {
   group('Publish Extended Golden Tests', () {
     testWidgets('publish_video page renders correctly', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(
-        theme: ThemeData(scaffoldBackgroundColor: AppColors.bgColor),
-        home: _buildPublishVideo(),
-      ));
+      await setupGoldenSurface(tester);
+      await tester.pumpWidget(wrapForGoldenTest(_buildPublishVideo()));
       await tester.pumpAndSettle();
       await expectLater(find.byType(Scaffold), matchesGoldenFile('goldens/page_publish_video.png'));
     });
 
     testWidgets('publish_plan page renders correctly', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(
-        theme: ThemeData(scaffoldBackgroundColor: AppColors.bgColor),
-        home: _buildPublishPlan(),
-      ));
+      await setupGoldenSurface(tester);
+      await tester.pumpWidget(wrapForGoldenTest(_buildPublishPlan()));
       await tester.pumpAndSettle();
       await expectLater(find.byType(Scaffold), matchesGoldenFile('goldens/page_publish_plan.png'));
     });
 
     testWidgets('drafts page renders correctly', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(
-        theme: ThemeData(scaffoldBackgroundColor: AppColors.bgColor),
-        home: _buildDrafts(),
-      ));
+      await setupGoldenSurface(tester);
+      await tester.pumpWidget(wrapForGoldenTest(_buildDrafts()));
       await tester.pumpAndSettle();
       await expectLater(find.byType(Scaffold), matchesGoldenFile('goldens/page_drafts.png'));
     });
