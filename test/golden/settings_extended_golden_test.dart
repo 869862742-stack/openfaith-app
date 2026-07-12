@@ -531,13 +531,15 @@ Widget _buildSettingsNotification() {
             _buildNotifSettingItem(icon: Icons.visibility, title: '通知显示内容', desc: '显示发送者和消息内容', action: _buildNotifToggle(enabled: true)),
           ]),
         ])),
-        // Section 3: 声音与震动 (2 toggles)
+        // Section 3: 声音与震动 (3 toggles)
         Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const Padding(padding: EdgeInsets.only(top: 16, bottom: 8), child: Text('声音与震动', style: TextStyle(color: AppColors.textWeak, fontSize: 12, fontWeight: FontWeight.w500))),
           _buildNotifSectionCard(children: [
             _buildNotifSettingItem(icon: Icons.volume_up, title: '消息提示音', desc: '收到新消息时播放提示音', action: _buildNotifToggle(enabled: true)),
             Container(height: 1, color: AppColors.borderColor),
-            _buildNotifSettingItem(icon: Icons.vibration, title: '通话铃声', desc: '收到通话邀请时播放铃声', action: _buildNotifToggle(enabled: true)),
+            _buildNotifSettingItem(icon: Icons.music_note, title: '通话铃声', desc: '收到通话邀请时播放铃声', action: _buildNotifToggle(enabled: true)),
+            Container(height: 1, color: AppColors.borderColor),
+            _buildNotifSettingItem(icon: Icons.smartphone, title: '聊天界面内提示音', desc: '在聊天页面收到新消息时播放', action: _buildNotifToggle(enabled: true)),
           ]),
         ])),
         // Section 4: 提示音与铃声 (3 clickable items)
