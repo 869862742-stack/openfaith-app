@@ -54,19 +54,19 @@ void main() {
 // ─── Switch Account Page ─── (aligned with SwitchAccountScreen source)
 Widget _buildSwitchAccount() {
   return Scaffold(
-    backgroundColor: AppColors.bgColor,
+    backgroundColor: const Color(0xFF0E0E22),
     appBar: AppBar(
-      backgroundColor: AppColors.bgColor,
+      backgroundColor: const Color(0xFF0E0E22),
       elevation: 0,
       leading: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
       title: const Text('切换账号', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600)),
     ),
     body: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text('当前及已关联账号', style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
+      Text('当前及已关联账号', style: TextStyle(color: AppColors.textWeak, fontSize: 14)),
       const SizedBox(height: 12),
       // Current account card with rainbow border
       Container(
-        padding: const EdgeInsets.all(1),
+        padding: const EdgeInsets.all(2),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           gradient: const LinearGradient(colors: [
@@ -77,7 +77,7 @@ Widget _buildSwitchAccount() {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.background,
+            color: const Color(0xFFFEF2F2),
             borderRadius: BorderRadius.circular(15),
           ),
           child: Row(children: [
@@ -105,42 +105,55 @@ Widget _buildSwitchAccount() {
             const SizedBox(width: 12),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
-                const Text('OpenFaith', style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
+                const Text('OpenFaith', style: TextStyle(color: Color(0xFF1E293B), fontSize: 15, fontWeight: FontWeight.bold)),
                 const SizedBox(width: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(4),
-                    gradient: const LinearGradient(colors: [Color(0xFF3A86FF), Color(0xFF9D4EDD)]),
+                    color: const Color(0x0DFFFFFF),
                   ),
-                  child: const Text('CURRENT', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600)),
+                  child: ShaderMask(
+                    shaderCallback: (bounds) => AppColors.auroraGradient.createShader(bounds),
+                    blendMode: BlendMode.srcIn,
+                    child: const Text('CURRENT', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600)),
+                  ),
                 ),
               ]),
               const SizedBox(height: 4),
-              Text('user@openfaithhub.com', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+              Text('user@openfaithhub.com', style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
             ])),
           ]),
         ),
       ),
       const SizedBox(height: 24),
       // Add account button (outlined style)
-      Container(
-        width: double.infinity, height: 56,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.textMuted.withOpacity(0.5), width: 1),
+      CustomPaint(
+        painter: _DashedBorderPainter(
+          borderRadius: 12,
+          color: const Color(0xFFCBD5E1),
+          strokeWidth: 2,
+          dashLength: 6,
+          gapLength: 4,
         ),
-        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Icon(Icons.person_add_outlined, color: AppColors.textSecondary, size: 20),
-          const SizedBox(width: 8),
-          Text('添加新账号', style: TextStyle(color: AppColors.textSecondary, fontSize: 14, fontWeight: FontWeight.w500)),
-        ]),
+        child: Container(
+          width: double.infinity, height: 56,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            color: const Color(0xFFFEF2F2),
+          ),
+          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Icon(Icons.person_add_outlined, color: AppColors.textWeak, size: 20),
+            const SizedBox(width: 8),
+            Text('添加新账号', style: TextStyle(color: AppColors.textWeak, fontSize: 14, fontWeight: FontWeight.w500)),
+          ]),
+        ),
       ),
       const SizedBox(height: 24),
       // Security notice card
       Container(
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(color: AppColors.cardBg, borderRadius: BorderRadius.circular(12)),
+        decoration: BoxDecoration(color: const Color(0xFFFEF2F2), borderRadius: BorderRadius.circular(12)),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
             Icon(Icons.shield_outlined, color: AppColors.auroraBlue, size: 16),
@@ -149,7 +162,7 @@ Widget _buildSwitchAccount() {
           ]),
           const SizedBox(height: 8),
           Text('切换账号功能方便您在多个身份间快速跳转。请确保所有关联账号均为本人使用，以保护您的灵性成长数据与个人隐私。',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 12, height: 1.5)),
+              style: TextStyle(color: AppColors.textWeak, fontSize: 12, height: 1.5)),
         ]),
       ),
     ])),
@@ -314,4 +327,50 @@ Widget _buildMyPostCard({required String title, required String content, require
       ]),
     ]),
   );
+}
+
+
+// ─── Dashed Border Painter ───
+class _DashedBorderPainter extends CustomPainter {
+  final double borderRadius;
+  final Color color;
+  final double strokeWidth;
+  final double dashLength;
+  final double gapLength;
+
+  _DashedBorderPainter({
+    required this.borderRadius,
+    required this.color,
+    required this.strokeWidth,
+    required this.dashLength,
+    required this.gapLength,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke;
+
+    final rect = Rect.fromLTWH(0, 0, size.width, size.height);
+    final rrect = RRect.fromRectAndRadius(rect, Radius.circular(borderRadius));
+
+    final path = Path()..addRRect(rrect);
+    final metrics = path.computeMetrics();
+    for (final metric in metrics) {
+      double distance = 0;
+      while (distance < metric.length) {
+        final end = (distance + dashLength).clamp(0.0, metric.length);
+        final extract = metric.extractPath(distance, end);
+        canvas.drawPath(extract, paint);
+        distance += dashLength + gapLength;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_DashedBorderPainter oldDelegate) {
+    return color != oldDelegate.color || borderRadius != oldDelegate.borderRadius;
+  }
 }

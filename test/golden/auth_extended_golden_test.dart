@@ -428,7 +428,7 @@ Widget _buildRegister() {
                 decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), gradient: AppColors.auroraGradient),
                 child: Container(
                   padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), color: const Color(0xFF0A0E1F)),
+                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), color: const Color(0xFF12141E)),
                   child: Column(mainAxisSize: MainAxisSize.min, children: [
                     // "注册" title
                     Center(
@@ -493,14 +493,18 @@ Widget _buildRegister() {
                     const SizedBox(height: 14),
                     // Register button
                     _buildLoginRainbowBtn('获取验证码', height: 42),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 24),
                     // Login link
                     Text('已有账号？', style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 12)),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-                      decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.white.withOpacity(0.15), width: 1)),
-                      child: const Text('立即登录', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500)),
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: AppColors.auroraGradient),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: const Color(0xFF12141E)),
+                        child: const Text('立即登录', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500)),
+                      ),
                     ),
                   ]),
                 ),
