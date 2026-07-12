@@ -540,20 +540,55 @@ Widget _buildLevelInfo() {
     body: Column(children: [
       _buildGlassHeader('等级信息'),
       Expanded(child: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(children: [
-        // Level icon
+        // User profile context header
         Container(
-          width: 80, height: 80,
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFFFFD60A), Color(0xFFFF9F1C)]),
-            boxShadow: [BoxShadow(color: Color(0xFFFFD60A).withOpacity(0.3), blurRadius: 20)],
+            color: AppColors.cardBg,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.borderColor, width: 0.5),
           ),
-          child: const Center(child: Text('Lv.5', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold))),
+          child: Column(children: [
+            Row(children: [
+              // Avatar
+              Container(
+                width: 48, height: 48,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF70E000), Color(0xFF00E5FF)]),
+                ),
+                child: const Center(child: Text('O', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold))),
+              ),
+              const SizedBox(width: 12),
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Row(children: [
+                  const Text('OpenFaith', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      gradient: AppColors.auroraGradientWithOpacity(0.3),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Text('管理员', style: TextStyle(color: Colors.white, fontSize: 10)),
+                  ),
+                ]),
+                const SizedBox(height: 4),
+                Text('ID: OF_20260607', style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
+              ])),
+            ]),
+            const SizedBox(height: 12),
+            // User stats
+            Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+              _buildLevelStat('1.2k', '粉丝'),
+              _buildLevelStat('256', '关注'),
+              _buildLevelStat('8476', '热值'),
+              _buildLevelStat('12', '热点'),
+            ]),
+          ]),
         ),
-        const SizedBox(height: 12),
-        const Text('探索者', style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 20),
-        // XP progress bar
+        const SizedBox(height: 16),
+        // Level badge with progress
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -563,38 +598,162 @@ Widget _buildLevelInfo() {
           ),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
-              const Text('经验值', style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(colors: [Color(0xFFFFD60A), Color(0xFFFF9F1C)]),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text('LV.3 思耕者', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+              ),
+              const SizedBox(width: 8),
+              const Icon(Icons.arrow_drop_down, color: AppColors.textSecondary, size: 20),
               const Spacer(),
-              const Text('2450 / 3000', style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500)),
+              Text('22%', style: TextStyle(color: AppColors.auroraOrange, fontSize: 14, fontWeight: FontWeight.w500)),
             ]),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             ClipRRect(
               borderRadius: BorderRadius.circular(4),
               child: LinearProgressIndicator(
-                value: 0.817,
+                value: 0.22,
                 backgroundColor: AppColors.inputBg,
-                valueColor: const AlwaysStoppedAnimation(AppColors.auroraBlue),
-                minHeight: 8,
+                valueColor: const AlwaysStoppedAnimation(Color(0xFFFF9F1C)),
+                minHeight: 6,
               ),
             ),
+          ]),
+        ),
+        const SizedBox(height: 16),
+        // Current level privileges
+        Align(alignment: Alignment.centerLeft, child: const Text('当前等级特权', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600))),
+        const SizedBox(height: 12),
+        _buildPrivilegeItem(Icons.chat_bubble, '1 个群聊'),
+        const SizedBox(height: 8),
+        _buildPrivilegeItem(Icons.visibility, '曝光 2 小时', subtitle: '任选 1 篇'),
+        const SizedBox(height: 16),
+        // Next level unlock
+        Align(alignment: Alignment.centerLeft, child: const Text('升到 LV.4 笃行者 解锁', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600))),
+        const SizedBox(height: 12),
+        _buildPrivilegeItem(Icons.chat_bubble, '2 个群聊', badge: '+可创建 2 个群聊'),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppColors.cardBg,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: AppColors.borderColor, width: 0.5),
+          ),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('还需 15524 经验升级', style: TextStyle(color: AppColors.textWeak, fontSize: 13)),
             const SizedBox(height: 8),
-            Text('还需 550 经验升级至 Lv.6', style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
+            Text('9476 / 25000', style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500)),
           ]),
         ),
         const SizedBox(height: 20),
-        // Level benefits
-        Align(alignment: Alignment.centerLeft, child: const Text('等级特权', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600))),
+        // VIP privileges
+        Align(alignment: Alignment.centerLeft, child: const Text('VIP 专属特权', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600))),
         const SizedBox(height: 12),
-        _buildBenefitItem('每日加热卡 +1', '可加热自己的帖子', true),
-        const SizedBox(height: 8),
-        _buildBenefitItem('自定义头像框', '使用专属头像装饰', true),
-        const SizedBox(height: 8),
-        _buildBenefitItem('高级表情包', '解锁专属表情', true),
-        const SizedBox(height: 8),
-        _buildBenefitItem('创建圆桌话题', 'Lv.3 已解锁', true),
-        const SizedBox(height: 8),
-        _buildBenefitItem('匿名树洞特权', 'Lv.3 已解锁', true),
+        GridView.count(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisCount: 2,
+          mainAxisSpacing: 8,
+          crossAxisSpacing: 8,
+          children: [
+            _buildVipPrivilege(Icons.trending_up, '经验 ×2'),
+            _buildVipPrivilege(Icons.person_outline, '动态头像'),
+            _buildVipPrivilege(Icons.palette, '自定义主题'),
+            _buildVipPrivilege(Icons.download, '离线下载'),
+            _buildVipPrivilege(Icons.visibility, '曝光特权'),
+            _buildVipPrivilege(Icons.push_pin, '置顶卡'),
+          ],
+        ),
+        const SizedBox(height: 16),
       ]))),
+      // Bottom tab bar
+      Container(
+        decoration: BoxDecoration(
+          color: AppColors.headerBg,
+          border: Border(top: BorderSide(color: AppColors.borderColor, width: 0.5)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Row(children: [
+            Expanded(child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              decoration: const BoxDecoration(border: Border(top: BorderSide(color: AppColors.auroraBlue, width: 2))),
+              child: const Center(child: Text('笔记', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600))),
+            )),
+            Expanded(child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: const Center(child: Text('计划', style: TextStyle(color: AppColors.textSecondary, fontSize: 14))),
+            )),
+            Expanded(child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: const Center(child: Text('珍藏', style: TextStyle(color: AppColors.textSecondary, fontSize: 14))),
+            )),
+          ]),
+        ),
+      ),
+    ]),
+  );
+}
+
+Widget _buildLevelStat(String value, String label) {
+  return Column(children: [
+    Text(value, style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+    const SizedBox(height: 2),
+    Text(label, style: TextStyle(color: AppColors.textWeak, fontSize: 11)),
+  ]);
+}
+
+Widget _buildPrivilegeItem(IconData icon, String title, {String? subtitle, String? badge}) {
+  return Container(
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: AppColors.cardBg,
+      borderRadius: BorderRadius.circular(10),
+      border: Border.all(color: AppColors.borderColor, width: 0.5),
+    ),
+    child: Row(children: [
+      Icon(icon, color: AppColors.auroraOrange, size: 20),
+      const SizedBox(width: 12),
+      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Text(title, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500)),
+          if (subtitle != null) ...[
+            const SizedBox(width: 8),
+            Text(subtitle, style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
+          ],
+        ]),
+        if (badge != null) ...[
+          const SizedBox(height: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              gradient: AppColors.auroraGradientWithOpacity(0.2),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(badge, style: TextStyle(color: AppColors.auroraOrange, fontSize: 11)),
+          ),
+        ],
+      ])),
+    ]),
+  );
+}
+
+Widget _buildVipPrivilege(IconData icon, String title) {
+  return Container(
+    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+    decoration: BoxDecoration(
+      color: AppColors.cardBg,
+      borderRadius: BorderRadius.circular(10),
+      border: Border.all(color: AppColors.auroraOrange.withOpacity(0.2), width: 0.5),
+    ),
+    child: Column(mainAxisSize: MainAxisSize.min, children: [
+      Icon(icon, color: AppColors.auroraOrange, size: 24),
+      const SizedBox(height: 8),
+      Text(title, style: const TextStyle(color: AppColors.textPrimary, fontSize: 13, fontWeight: FontWeight.w500)),
     ]),
   );
 }
