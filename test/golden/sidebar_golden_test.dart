@@ -141,10 +141,7 @@ void main() {
 Widget _buildHistory() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
-    body: Stack(children: [
-      // Star decoration layer
-      // Content layer
-      Column(children: [
+    body: Column(children: [
       // Header: back + title on left, "关闭记录" on right
       Container(
         decoration: BoxDecoration(
@@ -576,11 +573,7 @@ Widget _buildGongjingRoomCard(String name, String info, IconData icon) {
 Widget _buildPrivacy() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
-    body: Stack(children: [
-      // Star decoration layer
-      _buildStarOverlay(),
-      // Content layer
-      Column(children: [
+    body: Column(children: [
       // Custom header: back | title | EN toggle (matches web TermsOfService/PrivacyPolicy)
       Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -701,10 +694,7 @@ Widget _buildPrivacyBullet(String text) {
 Widget _buildTerms() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
-    body: Stack(children: [
-      // Star decoration layer
-      // Content layer
-      Column(children: [
+    body: Column(children: [
       // Custom header: back | title | EN toggle (matches web TermsOfService)
       Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
