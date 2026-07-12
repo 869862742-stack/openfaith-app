@@ -110,15 +110,15 @@ Widget _buildPrivateChat() {
         reverse: true,
         padding: const EdgeInsets.all(16),
         child: Column(children: [
-          _buildReceivedMessage('你好！看到你在社区分享的感悟，很有共鸣。', '14:20'),
+          _buildReceivedMessage('你好！看到你在社区分享的感悟，很有共鸣。', '好友', '14:20'),
           const SizedBox(height: 16),
           _buildSentMessage('谢谢！很高兴能引起共鸣。你平时也读经吗？', '14:22'),
           const SizedBox(height: 16),
-          _buildReceivedMessage('是的，每天早晨都会读一段。最近在读诗篇，很有感触。', '14:25'),
+          _buildReceivedMessage('是的，每天早晨都会读一段。最近在读诗篇，很有感触。', '好友', '14:25'),
           const SizedBox(height: 16),
           _buildSentMessage('诗篇确实很美。推荐你 also 看看箴言，也很有智慧。', '14:27'),
           const SizedBox(height: 16),
-          _buildReceivedMessage('好的，谢谢推荐！有空一起交流。', '14:30'),
+          _buildReceivedMessage('好的，谢谢推荐！有空一起交流。', '好友', '14:30'),
         ]),
       )),
       // Input bar
