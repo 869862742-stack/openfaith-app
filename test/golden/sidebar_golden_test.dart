@@ -927,10 +927,8 @@ Widget _buildVip() {
         const Text('解锁专属权益', style: TextStyle(color: AppColors.textPrimary, fontSize: 24, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         Text('升级VIP，畅享信仰之旅', style: TextStyle(color: AppColors.textWeak, fontSize: 14)),
-        const SizedBox(height: 32),
-        // VIP 专属权益 section (3-col grid, show first 2 rows = 6 items)
-        Align(alignment: Alignment.centerLeft, child: Text('VIP 专属权益', style: TextStyle(color: AppColors.textWeak, fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 1.2))),
-        const SizedBox(height: 12),
+        const SizedBox(height: 28),
+        // Benefits Grid: 3-col × 4-row, matching web grid-cols-3 gap-2.5
         ..._buildVipGridRow([
           {'icon': Icons.visibility, 'label': '加热卡', 'desc': '每月1张+可购买', 'color': AppColors.auroraCyan},
           {'icon': Icons.push_pin, 'label': '置顶卡', 'desc': '首页置顶5分钟', 'color': AppColors.auroraBlue},
@@ -969,7 +967,7 @@ Widget _buildVip() {
                 const Text('开通即享', style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.bold)),
               ]),
               const SizedBox(height: 12),
-              Wrap(spacing: 8, runSpacing: 8, children: [
+              Wrap(spacing: 12, runSpacing: 12, children: [
                 '1张加热卡', '1张置顶卡', '1张回响卡', '1张同行卡', '1张答疑卡', '+500经验',
               ].map((g) => Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -1029,15 +1027,16 @@ List<Widget> _buildVipGridRow(List<Map<String, dynamic>> items) {
           decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: AppColors.auroraGradientWithOpacity(0.35)),
           child: Container(
             decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: AppColors.bgColor),
-            padding: const EdgeInsets.symmetric(vertical: 12),
+            padding: const EdgeInsets.all(12),
             child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
               Container(
                 width: 36, height: 36,
-                decoration: BoxDecoration(color: color.withOpacity(0.08), borderRadius: BorderRadius.circular(8)),
+                decoration: BoxDecoration(color: color.withOpacity(0.15), borderRadius: BorderRadius.circular(8)),
                 child: Icon(icon, color: color, size: 18),
               ),
               const SizedBox(height: 8),
               Text(label, style: const TextStyle(color: AppColors.textPrimary, fontSize: 12, fontWeight: FontWeight.w500), textAlign: TextAlign.center),
+              const SizedBox(height: 2),
               if (desc.isNotEmpty) Text(desc, style: TextStyle(color: AppColors.textPlaceholder, fontSize: 10), textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis),
             ]),
           ),
