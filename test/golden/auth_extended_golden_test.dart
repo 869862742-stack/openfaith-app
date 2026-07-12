@@ -295,7 +295,7 @@ void main() {
 
 Widget _buildLogin() {
   return Scaffold(
-    backgroundColor: const Color(0xFF0A0E1F),
+    backgroundColor: const Color(0xFF050816),
     body: SafeArea(
       child: Center(
         child: SingleChildScrollView(
@@ -313,23 +313,23 @@ Widget _buildLogin() {
               ),
               const SizedBox(height: 32),
               // Email input
-              Text('邮箱', style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 14)),
+              Text('邮箱', style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
               const SizedBox(height: 8),
               _buildLoginInput('请输入邮箱...'),
               const SizedBox(height: 20),
               // Password input
-              Text('密码', style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 14)),
+              Text('密码', style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
               const SizedBox(height: 8),
               _buildLoginInput('请输入密码...', obscure: true),
               const SizedBox(height: 20),
                 // Remember me checkbox
                 Row(children: [
-                  Container(width: 16, height: 16, decoration: BoxDecoration(borderRadius: BorderRadius.circular(3), border: Border.all(color: Colors.white.withOpacity(0.3), width: 1)),
-                    child: const Icon(Icons.check, color: Colors.white, size: 12)),
+                  Container(width: 16, height: 16, decoration: BoxDecoration(borderRadius: BorderRadius.circular(3), border: Border.all(color: Colors.white, width: 0.8)),
+                    child: const Icon(Icons.check, color: Colors.white, size: 14)),
                   const SizedBox(width: 8),
-                  Text('记住登录状态（30天）', style: TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.6))),
+                  Text('记住登录状态（30天）', style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.5))),
                 ]),
-                const SizedBox(height: 20),
+                const SizedBox(height: 14),
                 // Login button - rainbow gradient border + dark bg
                 _buildLoginRainbowBtn('登录', height: 48),
                 const SizedBox(height: 24),
@@ -343,7 +343,11 @@ Widget _buildLogin() {
                 Center(child: Column(children: [
                   Text('还没有账号？', style: TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.4))),
                   const SizedBox(height: 12),
-                  _buildLoginRainbowBtn('立即注册', height: 36),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(7), border: Border.all(color: Colors.white.withOpacity(0.15), width: 1)),
+                    child: const Text('立即注册', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w500)),
+                  ),
                 ])),
               ]),
             ),
@@ -360,7 +364,7 @@ Widget _buildLoginRainbowCard({required double borderRadius, required Widget chi
     decoration: BoxDecoration(borderRadius: BorderRadius.circular(borderRadius), gradient: AppColors.auroraGradient),
     child: Container(
       padding: const EdgeInsets.all(32),
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(borderRadius - 2), color: const Color.fromRGBO(10, 14, 31, 0.97)),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(borderRadius - 2), color: const Color(0xFF0A0E1F)),
       child: child,
     ),
   );
@@ -368,11 +372,11 @@ Widget _buildLoginRainbowCard({required double borderRadius, required Widget chi
 
 Widget _buildLoginInput(String hint, {bool obscure = false}) {
   return Container(
-    height: 48,
+    height: 40,
     decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: Colors.white.withOpacity(0.12), width: 1),
-      color: Colors.white.withOpacity(0.06),
+      borderRadius: BorderRadius.circular(8),
+      border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+      color: const Color(0xFF0A0E1F),
     ),
     child: TextField(
       enabled: false,
@@ -380,9 +384,9 @@ Widget _buildLoginInput(String hint, {bool obscure = false}) {
       style: const TextStyle(color: Colors.white, fontSize: 14),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: TextStyle(color: Colors.white.withOpacity(0.35), fontSize: 14),
+        hintStyle: TextStyle(color: Colors.white.withOpacity(0.25), fontSize: 14),
         border: InputBorder.none,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         isDense: true,
       ),
     ),
@@ -395,7 +399,7 @@ Widget _buildLoginRainbowBtn(String label, {required double height}) {
     decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: AppColors.auroraGradient),
     child: Container(
       height: height,
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: const Color.fromRGBO(10, 14, 31, 0.95)),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: const Color(0xFF0A0E1F)),
       child: Center(child: Text(label, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500))),
     ),
   );
@@ -403,7 +407,7 @@ Widget _buildLoginRainbowBtn(String label, {required double height}) {
 
 Widget _buildRegister() {
   return Scaffold(
-    backgroundColor: const Color(0xFF0A0E1F),
+    backgroundColor: const Color(0xFF0a0a15),
     body: SafeArea(
       child: Center(
         child: SingleChildScrollView(
@@ -411,14 +415,8 @@ Widget _buildRegister() {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // "OpenFaith" title at top with aurora gradient
-              Center(
-                child: ShaderMask(
-                  shaderCallback: (bounds) => AppColors.auroraGradient.createShader(bounds),
-                  blendMode: BlendMode.srcIn,
-                  child: const Text('OpenFaith', style: TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.bold)),
-                ),
-              ),
+              // "OpenFaith" title at top (invisible - matches web where aurora CSS var is undefined)
+              const Text('OpenFaith', style: TextStyle(color: Colors.transparent, fontSize: 30, fontWeight: FontWeight.bold)),
               const SizedBox(height: 32),
               // Card with rainbow gradient border (2px)
               Container(
@@ -426,31 +424,27 @@ Widget _buildRegister() {
                 decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), gradient: AppColors.auroraGradient),
                 child: Container(
                   padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), color: const Color(0xFF0A0E1F)),
+                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), color: const Color(0xFF12141E)),
                   child: Column(mainAxisSize: MainAxisSize.min, children: [
-                    // "注册" title with aurora gradient
-                    Center(
-                      child: ShaderMask(
-                        shaderCallback: (bounds) => AppColors.auroraGradient.createShader(bounds),
-                        blendMode: BlendMode.srcIn,
-                        child: const Text('注册', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600)),
-                      ),
+                    // "注册" title (invisible - matches web)
+                    const Center(
+                      child: Text('注册', style: TextStyle(color: Colors.transparent, fontSize: 20, fontWeight: FontWeight.w600)),
                     ),
                     const SizedBox(height: 24),
                     // Email
                     _buildRegisterInput(label: '邮箱', hint: '请输入邮箱...'),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                     // Password
                     _buildRegisterInput(label: '密码', hint: '请输入密码（至少8位）...', obscure: true),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                     // Nickname
                     _buildRegisterInput(label: '昵称', hint: '请输入昵称...'),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                     // Faith tag dropdown
                     Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       Text.rich(TextSpan(children: [
                       const TextSpan(text: '身份标签 ', style: TextStyle(color: Color(0x80FFFFFF), fontSize: 14)),
-                      const TextSpan(text: '*', style: TextStyle(color: Color(0xFFFF4D6D), fontSize: 14, fontWeight: FontWeight.bold)),
+                      const TextSpan(text: '*', style: TextStyle(color: Colors.transparent, fontSize: 14)),
                     ])),
                       const SizedBox(height: 4),
                       Container(
@@ -467,35 +461,43 @@ Widget _buildRegister() {
                         ]),
                       ),
                     ]),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 4),
                     // Age 13 checkbox
                     Row(children: [
                       Container(width: 16, height: 16, decoration: BoxDecoration(borderRadius: BorderRadius.circular(3), color: const Color(0xFF3A86FF)),
-                        child: const Icon(Icons.check, color: Colors.white, size: 12)),
-                      const SizedBox(width: 8),
+                        child: const Icon(Icons.check, color: Colors.white, size: 14)),
+                      const SizedBox(width: 6),
                       Expanded(child: Text('我已年满13周岁', style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 11))),
                     ]),
                     const SizedBox(height: 8),
                     // Terms checkbox
                     Row(children: [
                       Container(width: 16, height: 16, decoration: BoxDecoration(borderRadius: BorderRadius.circular(3), color: const Color(0xFF3A86FF)),
-                        child: const Icon(Icons.check, color: Colors.white, size: 12)),
-                      const SizedBox(width: 8),
+                        child: const Icon(Icons.check, color: Colors.white, size: 14)),
+                      const SizedBox(width: 6),
                       Expanded(child: Text.rich(TextSpan(children: [
                       const TextSpan(text: '我已阅读并同意 ', style: TextStyle(color: Color(0x80FFFFFF), fontSize: 11)),
-                      const TextSpan(text: '隐私政策', style: TextStyle(color: Color(0xCC3A86FF), fontSize: 11, decoration: TextDecoration.underline)),
+                      const TextSpan(text: '隐私政策', style: TextStyle(color: Color(0xFF3A86FF), fontSize: 11, decoration: TextDecoration.underline)),
                       const TextSpan(text: ' 和 ', style: TextStyle(color: Color(0x80FFFFFF), fontSize: 11)),
-                      const TextSpan(text: '服务条款', style: TextStyle(color: Color(0xCC3A86FF), fontSize: 11, decoration: TextDecoration.underline)),
+                      const TextSpan(text: '服务条款', style: TextStyle(color: Color(0xFF3A86FF), fontSize: 11, decoration: TextDecoration.underline)),
                     ]))),
                     ]),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
                     // Register button
-                    _buildLoginRainbowBtn('获取验证码', height: 44),
+                    _buildLoginRainbowBtn('获取验证码', height: 42),
                     const SizedBox(height: 24),
                     // Login link
-                    Text('已有账号？', style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 14)),
+                    Text('已有账号？', style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 12)),
                     const SizedBox(height: 8),
-                    _buildLoginRainbowBtn('立即登录', height: 36),
+                    Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: AppColors.auroraGradient),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: const Color(0xFF12141E)),
+                        child: const Text('立即登录', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500)),
+                      ),
+                    ),
                   ]),
                 ),
               ),

@@ -6,7 +6,7 @@ import 'test_helper.dart';
 /// Profile Extended Golden Tests
 /// Covers: switch_account, heating_records, my_posts
 
-// --- Common Helpers ---
+// ─── Common Helpers ───
 Widget _buildGlassHeader(String title) {
   return Container(
     padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
@@ -51,12 +51,12 @@ void main() {
   });
 }
 
-// --- Switch Account Page --- (aligned with web SwitchAccount.tsx)
+// ─── Switch Account Page ─── (aligned with SwitchAccountScreen source)
 Widget _buildSwitchAccount() {
   return Scaffold(
-    backgroundColor: AppColors.bgColor,
+    backgroundColor: const Color(0xFF0E0E22),
     appBar: AppBar(
-      backgroundColor: AppColors.bgColor,
+      backgroundColor: const Color(0xFF0E0E22),
       elevation: 0,
       leading: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
       title: const Text('切换账号', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600)),
@@ -64,26 +64,29 @@ Widget _buildSwitchAccount() {
     body: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text('当前及已关联账号', style: TextStyle(color: AppColors.textWeak, fontSize: 14)),
       const SizedBox(height: 12),
-      // Current account card with rainbow border and light tint background
+      // Current account card with rainbow border
       Container(
         padding: const EdgeInsets.all(2),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          gradient: AppColors.auroraGradient,
+          gradient: const LinearGradient(colors: [
+            Color(0xFFFF4D6D), Color(0xFFFF9F1C), Color(0xFFFFD60A),
+            Color(0xFF70E000), Color(0xFF00E5FF), Color(0xFF3A86FF), Color(0xFF9D4EDD),
+          ]),
         ),
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: const Color(0xFFFEF2F2),
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(15),
           ),
           child: Row(children: [
             Stack(clipBehavior: Clip.none, children: [
               Container(
                 width: 48, height: 48,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   shape: BoxShape.circle,
-                  gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF3A86FF), Color(0xFF9D4EDD)]),
+                  gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF3A86FF), Color(0xFF9D4EDD)]),
                 ),
                 child: const Center(child: Text('O', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold))),
               ),
@@ -118,13 +121,13 @@ Widget _buildSwitchAccount() {
                 ),
               ]),
               const SizedBox(height: 4),
-              const Text('user@openfaithhub.com', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12)),
+              Text('user@openfaithhub.com', style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
             ])),
           ]),
         ),
       ),
       const SizedBox(height: 24),
-      // Add account button (dashed border, light pink bg)
+      // Add account button (outlined style)
       CustomPaint(
         painter: _DashedBorderPainter(
           borderRadius: 12,
@@ -153,17 +156,9 @@ Widget _buildSwitchAccount() {
         decoration: BoxDecoration(color: const Color(0xFFFEF2F2), borderRadius: BorderRadius.circular(12)),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            ShaderMask(
-              shaderCallback: (bounds) => AppColors.auroraGradient.createShader(bounds),
-              blendMode: BlendMode.srcIn,
-              child: const Icon(Icons.shield_outlined, color: Colors.white, size: 16),
-            ),
+            Icon(Icons.shield_outlined, color: AppColors.auroraBlue, size: 16),
             const SizedBox(width: 8),
-            ShaderMask(
-              shaderCallback: (bounds) => AppColors.auroraGradient.createShader(bounds),
-              blendMode: BlendMode.srcIn,
-              child: const Text('账号安全提示', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
-            ),
+            Text('账号安全提示', style: TextStyle(color: AppColors.auroraBlue, fontSize: 14, fontWeight: FontWeight.bold)),
           ]),
           const SizedBox(height: 8),
           Text('切换账号功能方便您在多个身份间快速跳转。请确保所有关联账号均为本人使用，以保护您的灵性成长数据与个人隐私。',
@@ -174,7 +169,7 @@ Widget _buildSwitchAccount() {
   );
 }
 
-// --- Heating Records Page ---
+// ─── Heating Records Page ───
 Widget _buildHeatingRecords() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
@@ -251,7 +246,7 @@ Widget _buildHeatingRecordCard(String title, String time, String views, String s
   );
 }
 
-// --- My Posts Page ---
+// ─── My Posts Page ───
 Widget _buildMyPosts() {
   return Scaffold(
     backgroundColor: AppColors.bgColor,
@@ -335,7 +330,7 @@ Widget _buildMyPostCard({required String title, required String content, require
 }
 
 
-// --- Dashed Border Painter ---
+// ─── Dashed Border Painter ───
 class _DashedBorderPainter extends CustomPainter {
   final double borderRadius;
   final Color color;
