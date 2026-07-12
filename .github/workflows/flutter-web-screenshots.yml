@@ -1,0 +1,45 @@
+name: Flutter Web Full Page Screenshots
+
+on:
+  workflow_dispatch:
+
+jobs:
+  screenshots:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.5'
+          channel: 'stable'
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Build Flutter Web
+        run: flutter build web --release --base-href="/"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Playwright
+        run: |
+          npm init -y
+          npm install playwright
+          npx playwright install chromium
+          npx playwright install-deps chromium
+
+      - name: Run Screenshot Script
+        run: node scripts/flutter_web_screenshots.js
+
+      - name: Upload Flutter Screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: flutter-web-screenshots
+          path: screenshots/flutter-mobile/*.png
+          retention-days: 30
