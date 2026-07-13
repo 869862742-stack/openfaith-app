@@ -83,7 +83,6 @@ const List<String> _fallbackFaithTags = [
   '高台教', '宗教研究者', '经文爱好者', '寻求者'
 ];
 
-import '../../components/sidebar.dart';
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -200,38 +199,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         setState(() {
           _postCount = (postsResp as List).length;
         });
-      }
-
-      // Calculate followers count from follows table
-      try {
-        final followersResp = await _supabase
-            .from('follows')
-            .select('id')
-            .eq('following_id', userId)
-            .eq('status', 'active');
-        if (followersResp != null && mounted) {
-          setState(() {
-            _followersCount = (followersResp as List).length;
-          });
-        }
-      } catch (e) {
-        debugPrint('Error fetching followers count: $e');
-      }
-
-      // Calculate following count from follows table
-      try {
-        final followingResp = await _supabase
-            .from('follows')
-            .select('id')
-            .eq('follower_id', userId)
-            .eq('status', 'active');
-        if (followingResp != null && mounted) {
-          setState(() {
-            _followingCount = (followingResp as List).length;
-          });
-        }
-      } catch (e) {
-        debugPrint('Error fetching following count: $e');
       }
     } catch (e) {
       debugPrint('Profile load error: $e');
@@ -356,11 +323,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final rawBgUrl = _profile?['background_url'] as String?;
     final backgroundUrl = (rawBgUrl != null && rawBgUrl.trim().isNotEmpty) ? rawBgUrl : _getDefaultBackgroundUrl(_userId ?? 'default');
 
-    return Stack(
-      children: [
-        Scaffold(
-          backgroundColor: AppColors.bgColor,
-          body: CustomScrollView(
+    return Scaffold(
+      backgroundColor: AppColors.bgColor,
+      body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
             child: _buildProfileHeader(
@@ -377,15 +342,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 80)),
         ],
-        ),
-        // Sidebar overlay
-        if (_showSidebar)
-          Sidebar(
-            onClose: _closeSidebar,
-            onMenuItemTap: _handleSidebarMenuItem,
-            key: const ValueKey('profile_sidebar'),
-          ),
-      ],
+      ),
     );
   }
 
@@ -455,7 +412,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         // 菜单按钮（网页版: w-10 h-10 rounded-full bg-hoverBg）
                         _buildCircleButton(
                           icon: Icons.menu,
-                          onTap: _openSidebar,
+                          onTap: () {
+                            // 打开侧边栏
+                          },
                         ),
                         const Spacer(),
                         // 分享按钮
@@ -575,11 +534,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   child: Container(
                                     padding: const EdgeInsets.all(1),
                                     decoration: BoxDecoration(
-
                                       borderRadius: BorderRadius.circular(13),
-
-                                      border: Border.all(color: AppColors.rainbowEnd, width: 1),
-
+                                      gradient: AppColors.auroraGradient,
                                     ),
                                     child: Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 23, vertical: 11),
@@ -915,11 +871,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(1), // border width
       decoration: BoxDecoration(
-
         borderRadius: BorderRadius.circular(12),
-
-        border: Border.all(color: AppColors.rainbowEnd, width: 1),
-
+        gradient: AppColors.auroraGradientWithOpacity(0.5),
       ),
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -1080,9 +1033,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 _buildShareItem(Icons.person, '好友'),
                 _buildShareItem(Icons.group, '群聊'),
-                _buildShareItem(Icons.share, '更多', onTap: _copyProfileLink),
-                _buildShareItem(Icons.link, '复制链接', onTap: _copyProfileLink),
+                _buildShareItem(Icons.share, '更多'),
+                _buildShareItem(Icons.link, '复制链接'),
               ],
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              '点击"更多"可分享到微信、QQ、微博等应用',
+              style: TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 12,
+              ),
             ),
             const SizedBox(height: 16),
             GestureDetector(
@@ -1100,48 +1061,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-
-  void _copyProfileLink() {
-    final userId = _profile?['id'] ?? '';
-    final profileUrl = 'https://openfaithhub.com/#/profile/' + userId;
-    Clipboard.setData(ClipboardData(text: profileUrl));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('链接已复制到剪贴板')),
-    );
-  }
-  // ═══════════════════════════════════════════════════════
-  // Sidebar
-  // ═══════════════════════════════════════════════════════
-  
-  void _openSidebar() {
-    setState(() => _showSidebar = true);
-  }
-
-  void _closeSidebar() {
-    setState(() => _showSidebar = false);
-  }
-
-  void _handleSidebarMenuItem(String menuItemId) {
-    // Handle sidebar menu items - navigate to different pages
-    // For now, just close the sidebar
-    _closeSidebar();
-  }
-
-
-  Widget _buildShareItem(IconData icon, String label, {VoidCallback? onTap}) {
-
+  Widget _buildShareItem(IconData icon, String label) {
     return Column(
       children: [
-        GestureDetector(
-          onTap: onTap,
+        Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: AppColors.auroraGradientWithOpacity(0.5),
+          ),
           child: Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: AppColors.auroraGradientWithOpacity(0.5),
-            ),
-            child: Container(
             margin: const EdgeInsets.all(1),
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
