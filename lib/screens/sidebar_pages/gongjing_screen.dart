@@ -505,20 +505,10 @@ class _GongjingScreenState extends State<GongjingScreen> {
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            gradient: isActive ? AppColors.auroraGradientWithOpacity(0.8) : null,
-            color: isActive ? null : AppColors.hoverBgLight,
-            boxShadow: isActive
-                ? [
-                    BoxShadow(
-                      color: AppColors.auroraRed.withOpacity(0.3),
-                      blurRadius: 8,
-                    ),
-                    BoxShadow(
-                      color: AppColors.auroraCyan.withOpacity(0.2),
-                      blurRadius: 16,
-                    ),
-                  ]
+            border: isActive 
+                ? Border.all(color: AppColors.rainbowEnd, width: 1)
                 : null,
+            color: AppColors.hoverBgLight,
           ),
           child: Container(
             decoration: isActive
