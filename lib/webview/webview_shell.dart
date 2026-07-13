@@ -38,7 +38,8 @@ class _WebViewShellState extends State<WebViewShell> {
       },
       child: Scaffold(
         backgroundColor: const Color(0xFF050816),
-        body: Stack(
+        body: SafeArea(
+          child: Stack(
           children: [
             // WebView 主体
             InAppWebView(
@@ -109,6 +110,7 @@ class _WebViewShellState extends State<WebViewShell> {
               ),
           ],
         ),
+      ), // SafeArea
       ),
     );
   }
