@@ -7,7 +7,18 @@ class ReligiousHoliday {
   final String detail;
   final String yi;
   final String ji;
-  const ReligiousHoliday({required this.month, required this.day, required this.name, required this.religion, required this.desc, required this.detail, required this.yi, required this.ji});
+  final bool isLunar;
+  const ReligiousHoliday({
+    required this.month, 
+    required this.day, 
+    required this.name, 
+    required this.religion, 
+    required this.desc, 
+    required this.detail, 
+    required this.yi, 
+    required this.ji,
+    this.isLunar = false,
+  });
 }
 
 const List<ReligiousHoliday> religiousHolidays = [
@@ -20,7 +31,7 @@ const List<ReligiousHoliday> religiousHolidays = [
   ReligiousHoliday(month: 2, day: 1, name: '伊玛目马赫迪诞辰', religion: '伊斯兰教', desc: '什叶派第十二伊玛目的诞辰。', detail: '纪念什叶派第十二任伊玛目穆罕默德·马赫迪的诞生。什叶派认为马赫迪处于隐遁状态，将在末日重返人间。', yi: '祈祷、诵经、分享食物', ji: '避免喧哗和不敬行为'),
   ReligiousHoliday(month: 2, day: 2, name: '圣烛节', religion: '基督教', desc: '纪念耶稣在圣殿被献与主的节日。', detail: '圣烛节纪念耶稣出生后40天被带到圣殿献给上帝。教堂在这天祝圣蜡烛，象征基督是世界之光。', yi: '点烛祈祷、参加礼拜、祝福蜡烛', ji: '无特殊禁忌'),
   ReligiousHoliday(month: 2, day: 3, name: '节分祭', religion: '神道教', desc: '立春前一天，进行"撒豆驱鬼"仪式。', detail: '节分祭在日本各地神社举行"撒豆"仪式，喊"鬼出去，福进来"，驱除厄运招来福气。也吃与年龄同数的豆子祈求健康。', yi: '撒豆驱鬼、吃惠方卷、参拜神社', ji: '避免说不吉利的话'),
-  ReligiousHoliday(month: 2, day: 10, name: '春节', religion: '传统', desc: '中国农历新年，是最重要的传统节日。', detail: '春节是中国及东亚地区最重要的传统节日。习俗包括除夕夜全家团聚吃年夜饭、守岁迎新；正月初一拜年、发红包；舞龙舞狮、放鞭炮。2024年起春节被列为联合国假日。', yi: '团圆、拜年、祭祖、发红包、祈福', ji: '忌说不吉利的话、忌打破器物、忌扫地倒垃圾'),
+  ReligiousHoliday(month: 1, day: 1, name: '春节', religion: '传统', desc: '中国农历新年，是最重要的传统节日。农历正月初一。', detail: '春节是中国及东亚地区最重要的传统节日。习俗包括除夕夜全家团聚吃年夜饭、守岁迎新；正月初一拜年、发红包；舞龙舞狮、放鞭炮。2024年起春节被列为联合国假日。每年农历正月初一庆祝。', yi: '团圆、拜年、祭祖、发红包、祈福', ji: '忌说不吉利的话、忌打破器物、忌扫地倒垃圾', isLunar: true),
   ReligiousHoliday(month: 2, day: 14, name: '圣灰星期三', religion: '基督教', desc: '大斋期的开始，信徒会在额头上涂抹灰烬。', detail: '圣灰星期三是大斋期的第一天。牧师用灰烬在信徒额头上画十字，说"你本是尘土，仍要归于尘土"。大斋期持续40天，信徒通过禁食、祈祷和施舍预备心灵。', yi: '忏悔、祈祷、禁食、施舍', ji: '避免宴乐、过度饮食'),
   ReligiousHoliday(month: 2, day: 15, name: '涅槃节', religion: '佛教', desc: '纪念佛陀在拘尸那迦入灭（涅槃）的日子。', detail: '涅槃节是大乘佛教纪念释迦牟尼佛入灭的日子。佛教徒在这天诵念《大般涅槃经》，反思无常与生死，部分寺庙举行供灯和禅修。', yi: '诵经、供灯、禅修、反思无常', ji: '避免杀生、喧哗娱乐'),
   ReligiousHoliday(month: 2, day: 26, name: '湿婆之夜', religion: '印度教', desc: '纪念湿婆神的盛大节日，信徒彻夜祈祷。', detail: '湿婆之夜是印度教最盛大的节日之一。信徒整夜不眠，在湿婆神庙中诵经祈祷、献上牛奶和Bel叶，禁食冥想。', yi: '禁食、彻夜祈祷、献供、冥想', ji: '避免睡眠、进食、娱乐'),
@@ -48,7 +59,7 @@ const List<ReligiousHoliday> religiousHolidays = [
   ReligiousHoliday(month: 6, day: 17, name: '伊斯兰新年', religion: '伊斯兰教', desc: '希吉来历新年的第一天。', detail: '伊斯兰新年纪念公元622年先知穆罕默德迁徙。这是一个安静、反思的日子。', yi: '反思、祈祷、静修', ji: '不宜庆祝宴乐'),
   ReligiousHoliday(month: 6, day: 21, name: '夏至', religion: '传统', desc: '北半球白昼最长的一天，许多文化都有庆祝活动。', detail: '夏至北半球白昼最长。英国巨石阵观赏夏至日出；北欧庆祝仲夏节；中国有"冬至饺子夏至面"的传统。', yi: '祭祀、祈福、吃面', ji: '无特殊禁忌'),
   ReligiousHoliday(month: 6, day: 21, name: '毛利新年', religion: '毛利宗教', desc: '昴宿星团升起标志新年开始。', detail: '毛利新年（Matariki）在6-7月昴宿星团升起时，2022年起成为新西兰法定公共假期。象征缅怀逝者、庆祝丰收、规划未来。', yi: '燃火祭祀、供奉食物、歌舞', ji: '避免在仪式中喧哗'),
-  ReligiousHoliday(month: 7, day: 7, name: '七夕', religion: '传统', desc: '中国传统情人节，纪念牛郎织女相会。', detail: '七夕节源于牛郎织女传说。古代女子"乞巧"，向织女祈求灵巧技艺和美好姻缘。2006年被列入非遗名录。', yi: '乞巧、赏星、祈愿姻缘', ji: '无特殊禁忌'),
+  ReligiousHoliday(month: 7, day: 7, name: '七夕', religion: '传统', desc: '中国传统情人节，纪念牛郎织女相会。农历七月初七。', detail: '七夕节源于牛郎织女传说。古代女子"乞巧"，向织女祈求灵巧技艺和美好姻缘。2006年被列入非遗名录。每年农历七月初七庆祝。', yi: '乞巧、赏星、祈愿姻缘', ji: '无特殊禁忌', isLunar: true),
   ReligiousHoliday(month: 7, day: 9, name: '巴孛殉教日', religion: '巴哈伊教', desc: '纪念1850年巴孛在大不里士被处决。', detail: '巴孛殉教日纪念1850年巴孛被处决。巴哈伊教信徒在中午停止工作，诵读巴孛的经文。', yi: '祈祷、诵读经文、停止工作', ji: '此日为圣日，停止工作'),
   ReligiousHoliday(month: 7, day: 17, name: '阿舒拉节', religion: '伊斯兰教', desc: '什叶派纪念侯赛因殉难的重要节日。', detail: '阿舒拉节是什叶派最悲痛的纪念日，纪念侯赛因在卡尔巴拉殉难。什叶派穿黑衣、捶胸痛哭。逊尼派则纪念摩西渡过红海。', yi: '祈祷、反思、斋戒', ji: '什叶派不宜庆祝宴乐'),
   ReligiousHoliday(month: 7, day: 21, name: '甘露节', religion: '锡克教', desc: '锡克教庆祝胡里节后一天的武士节日。', detail: '甘露节展示锡克教武士的军事传统和勇武精神。信徒举行武术表演、骑术比赛、诗歌朗诵和集体祈祷。', yi: '武术表演、祈祷、免费供餐', ji: '禁止饮酒吸烟'),

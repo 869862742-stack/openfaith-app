@@ -1393,7 +1393,10 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
               const SizedBox(height: 12),
               Row(children: [
                 Text(context.tr('learn_date'), style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
-                Text('${holiday.month}/${holiday.day}', style: const TextStyle(color: AppColors.textPrimary, fontSize: 13)),
+                Text(
+                  holiday.isLunar ? '农历${holiday.month}月${holiday.day}日' : '${holiday.month}月${holiday.day}日',
+                  style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
+                ),
               ]),
               const SizedBox(height: 8),
               Row(children: [
