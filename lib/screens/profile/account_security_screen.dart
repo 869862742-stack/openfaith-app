@@ -359,7 +359,7 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    gradient: AppColors.auroraGradient,
+                    border: Border.all(color: AppColors.rainbowEnd, width: 1),
                   ),
                   child: TextButton(
                     onPressed: () {
@@ -516,7 +516,7 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    gradient: AppColors.auroraGradient,
+                    border: Border.all(color: AppColors.rainbowEnd, width: 1),
                   ),
                   child: TextButton(
                     onPressed: () {
@@ -696,7 +696,7 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    gradient: AppColors.auroraGradient,
+                    border: Border.all(color: AppColors.rainbowEnd, width: 1),
                   ),
                   child: TextButton(
                     onPressed: () {
@@ -815,9 +815,9 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
           Expanded(
             child: DecoratedBox(
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                gradient: AppColors.auroraGradient,
-              ),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.rainbowEnd, width: 1),
+                  ),
               child: TextButton(
                 onPressed: () {
                   Navigator.pop(ctx);

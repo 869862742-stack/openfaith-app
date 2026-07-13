@@ -350,9 +350,9 @@ class _PublishNoteScreenState extends State<PublishNoteScreen> {
                           child: Container(
                             padding: const EdgeInsets.all(1),
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(16),
-                              gradient: AppColors.auroraGradient,
-                            ),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.rainbowEnd, width: 1),
+                  ),
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
                               decoration: BoxDecoration(
@@ -429,9 +429,9 @@ class _PublishNoteScreenState extends State<PublishNoteScreen> {
                         ),
                         child: Container(
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(11),
-                            gradient: AppColors.auroraGradient,
-                          ),
+                    borderRadius: BorderRadius.circular(11),
+                    border: Border.all(color: AppColors.rainbowEnd, width: 1),
+                  ),
                           padding: const EdgeInsets.all(1.5),
                           child: Container(
                             decoration: BoxDecoration(
@@ -1032,9 +1032,9 @@ class _PublishNoteScreenState extends State<PublishNoteScreen> {
               return Container(
                 padding: const EdgeInsets.all(1),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  gradient: AppColors.auroraGradient,
-                ),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.rainbowEnd, width: 1),
+                  ),
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
                   decoration: BoxDecoration(
