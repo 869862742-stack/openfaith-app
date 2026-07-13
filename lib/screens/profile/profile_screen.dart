@@ -8,6 +8,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/auth_service.dart';
 import 'heating_records_screen.dart';
 import 'widgets/edit_profile_dialog.dart';
+import 'widgets/sidebar.dart';
 import '../../theme/colors.dart';
 import '../../utils/format_utils.dart';
 import '../../utils/api_cache.dart';
@@ -91,6 +92,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  bool _showSidebar = false;
   // ══════ 业务逻辑状态（全部保留）══════
   Map<String, dynamic>? _profile;
   int _followersCount = 0;
@@ -301,6 +303,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // ═══════════════════════════════════════════════════════
   // BUILD
   // ═══════════════════════════════════════════════════════
+  void _openSidebar() {
+    setState(() => _showSidebar = true);
+  }
+
+  void _closeSidebar() {
+    setState(() => _showSidebar = false);
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_loading) {
