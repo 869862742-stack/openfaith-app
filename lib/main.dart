@@ -2,18 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shorebird_code_push/shorebird_code_push.dart';
-import 'theme/app_theme.dart';
-import 'screens/auth/login_screen.dart';
-import 'screens/splash/splash_screen.dart';
-import 'screens/discover/discover_screen.dart';
-import 'navigation/bottom_nav.dart';
-import 'screens/gongjing/room_list_screen.dart';
-import 'screens/gongjing/create_room_screen.dart';
-import 'screens/gongjing/silent_room_screen.dart';
-import 'screens/publish/publish_note_screen.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'i18n/app_localizations.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'webview/webview_shell.dart';
 
 const supabaseUrl = 'https://rdhwmeittgdosmkxtpak.supabase.co';
 const supabaseAnonKey = 'sb_publishable_Sch6yDRuc1N0w7M61-U29A_ZP0J-9xe';
@@ -22,8 +12,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Shorebird OTA 热更新检查
-  final updater = ShorebirdUpdater();
   try {
+    final updater = ShorebirdUpdater();
     final status = await updater.checkForUpdate();
     if (status == UpdateStatus.outdated) {
       debugPrint('[Shorebird] New patch available, downloading...');
@@ -33,26 +23,25 @@ void main() async {
       debugPrint('[Shorebird] No new patches available');
     }
   } catch (e) {
-    debugPrint('[Shorebird] Update check failed: $e');
+    debugPrint('[Shorebird] Update check skipped: $e');
   }
 
+  // Supabase 初始化（为未来原生模块准备）
   await Supabase.initialize(
     url: supabaseUrl,
     publishableKey: supabaseAnonKey,
   );
-  debugPrint('[Auth] Supabase initialized');
 
-  // Sentry 错误监控初始化
+  // Sentry 错误监控
   await SentryFlutter.init(
     (options) {
       options.dsn = 'YOUR_SENTRY_DSN_HERE';
       options.environment = kReleaseMode ? 'production' : 'development';
       options.tracesSampleRate = kReleaseMode ? 1.0 : 0.5;
-      options.enableAutoSessionTracking = true;
-      options.attachStacktrace = true;
     },
-    appRunner: () => runApp(const OpenFaithApp()),
   );
+
+  runApp(const OpenFaithApp());
 }
 
 class OpenFaithApp extends StatelessWidget {
@@ -60,54 +49,18 @@ class OpenFaithApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 全局错误处理 - 捕获 Widget 构建错误并上报到 Sentry
-    ErrorWidget.builder = (FlutterErrorDetails details) {
-      Sentry.captureException(details.exception, stackTrace: details.stack);
-      return const SizedBox.shrink();
-    };
-    
     return MaterialApp(
       title: 'OpenFaith',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('zh'),
-      initialRoute: '/splash',
-      routes: {
-        '/splash': (context) => const SplashScreen(),
-        '/login': (context) => const LoginScreen(),
-        '/home': (context) => const BottomNavScreen(),
-        '/discover': (context) => const DiscoverScreen(),
-        '/room-list': (context) => const RoomListScreen(),
-        '/create-room': (context) => const CreateRoomScreen(),
-        '/publish-note': (context) => const PublishNoteScreen(),
-      },
-      onGenerateRoute: (settings) {
-        if (settings.name == '/silent-room') {
-          final args = settings.arguments as Map<String, dynamic>?;
-          final roomId = args?['room_id']?.toString() ?? '';
-          if (roomId.isNotEmpty) {
-            return MaterialPageRoute(
-              builder: (context) => SilentRoomScreen(roomId: roomId),
-            );
-          }
-        }
-        // Handle /room/:roomId path format
-        final uri = Uri.tryParse(settings.name ?? '');
-        if (uri != null && uri.pathSegments.length == 2 && uri.pathSegments[0] == 'room') {
-          final roomId = uri.pathSegments[1];
-          return MaterialPageRoute(
-            builder: (_) => SilentRoomScreen(roomId: roomId),
-          );
-        }
-        return null;
-      },
+      theme: ThemeData(
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: const Color(0xFF050816),
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFF9D4EDD),
+          surface: Color(0xFF050816),
+        ),
+      ),
+      home: const WebViewShell(),
     );
   }
 }
