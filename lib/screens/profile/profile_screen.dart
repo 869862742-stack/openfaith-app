@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:share_plus/share_plus.dart';
 import 'dart:ui';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
@@ -83,6 +84,7 @@ const List<String> _fallbackFaithTags = [
   '高台教', '宗教研究者', '经文爱好者', '寻求者'
 ];
 
+import '../../components/sidebar.dart';
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -323,9 +325,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final rawBgUrl = _profile?['background_url'] as String?;
     final backgroundUrl = (rawBgUrl != null && rawBgUrl.trim().isNotEmpty) ? rawBgUrl : _getDefaultBackgroundUrl(_userId ?? 'default');
 
-    return Scaffold(
-      backgroundColor: AppColors.bgColor,
-      body: CustomScrollView(
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: AppColors.bgColor,
+          body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
             child: _buildProfileHeader(
@@ -342,7 +346,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 80)),
         ],
-      ),
+        ),
+        // Sidebar overlay
+        if (_showSidebar)
+          Sidebar(
+            onClose: _closeSidebar,
+            onMenuItemTap: _handleSidebarMenuItem,
+            key: const ValueKey('profile_sidebar'),
+          ),
+      ],
     );
   }
 
@@ -412,9 +424,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         // 菜单按钮（网页版: w-10 h-10 rounded-full bg-hoverBg）
                         _buildCircleButton(
                           icon: Icons.menu,
-                          onTap: () {
-                            // 打开侧边栏
-                          },
+                          onTap: _openSidebar,
                         ),
                         const Spacer(),
                         // 分享按钮
@@ -1039,17 +1049,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 _buildShareItem(Icons.person, '好友'),
                 _buildShareItem(Icons.group, '群聊'),
-                _buildShareItem(Icons.share, '更多'),
-                _buildShareItem(Icons.link, '复制链接'),
+                _buildShareItem(Icons.share, '更多', onTap: _shareWithSystem),
+                _buildShareItem(Icons.link, '复制链接', onTap: _copyProfileLink),
               ],
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              '点击"更多"可分享到微信、QQ、微博等应用',
-              style: TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 12,
-              ),
             ),
             const SizedBox(height: 16),
             GestureDetector(
@@ -1067,17 +1069,56 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildShareItem(IconData icon, String label) {
+  void _shareWithSystem() {
+    final userId = _profile?['id'] ?? '';
+    final nickname = _profile?['nickname'] ?? 'OpenFaith';
+    final shareText = '来看看 $nickname 在 OpenFaith 的主页：https://openfaithhub.com/#/profile/$userId';
+    
+    // Use system share to show all available apps
+    Share.share(shareText, subject: 'OpenFaith 用户分享');
+  }
+
+  void _copyProfileLink() {
+    final userId = _profile?['id'] ?? '';
+    final profileUrl = 'https://openfaithhub.com/#/profile/$userId';
+    Clipboard.setData(ClipboardData(text: profileUrl));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('链接已复制到剪贴板')),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // Sidebar
+  // ═══════════════════════════════════════════════════════
+  
+  void _openSidebar() {
+    setState(() => _showSidebar = true);
+  }
+
+  void _closeSidebar() {
+    setState(() => _showSidebar = false);
+  }
+
+  void _handleSidebarMenuItem(String menuItemId) {
+    // Handle sidebar menu items - navigate to different pages
+    // For now, just close the sidebar
+    _closeSidebar();
+  }
+
+
+  Widget _buildShareItem(IconData icon, String label, {VoidCallback? onTap}) {
     return Column(
       children: [
-        Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: AppColors.auroraGradientWithOpacity(0.5),
-          ),
+        GestureDetector(
+          onTap: onTap,
           child: Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: AppColors.auroraGradientWithOpacity(0.5),
+            ),
+            child: Container(
             margin: const EdgeInsets.all(1),
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
