@@ -1,5 +1,4 @@
 import 'dart:math';
-import 'package:share_plus/share_plus.dart';
 import 'dart:ui';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
@@ -1106,8 +1105,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final nickname = _profile?['nickname'] ?? 'OpenFaith';
     final shareText = '来看看 $nickname 在 OpenFaith 的主页：https://openfaithhub.com/#/profile/$userId';
     
-    // Use system share to show all available apps
-    Share.share(shareText, subject: 'OpenFaith 用户分享');
+    // Copy to clipboard as fallback
+    Clipboard.setData(ClipboardData(text: shareText));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('分享链接已复制到剪贴板'),
+        duration: Duration(seconds: 2),
+        backgroundColor: AppColors.success,
+      ),
+    );
   }
 
   void _copyProfileLink() {
