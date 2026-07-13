@@ -911,43 +911,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildCheckinBanner() {
+    // Hide check-in banner after successful check-in
     if (_checkedInToday) {
-      return Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          decoration: BoxDecoration(
-            color: AppColors.auroraGreen.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.auroraGreen.withOpacity(0.2)),
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.check_circle, color: AppColors.auroraGreen, size: 18),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  context.tr('checkin_done'),
-                  style: TextStyle(color: AppColors.auroraGreen, fontSize: 13, fontWeight: FontWeight.w600),
-                ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const HeatingRecordsScreen()));
-                },
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(context.tr('view_records'), style: const TextStyle(color: AppColors.auroraGreen, fontSize: 12)),
-                    SizedBox(width: 2),
-                    Icon(Icons.chevron_right, color: AppColors.auroraGreen, size: 14),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
+      return const SizedBox.shrink();
     }
 
     return Padding(
