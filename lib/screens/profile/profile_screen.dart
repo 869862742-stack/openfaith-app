@@ -202,7 +202,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _postCount = (postsResp as List).length;
         });
       }
-    }
 
       // Calculate followers count from follows table
       try {
@@ -234,7 +233,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         }
       } catch (e) {
         debugPrint('Error fetching following count: $e');
-      } catch (e) {
+      }
+    } catch (e) {
       debugPrint('Profile load error: $e');
     }
 
