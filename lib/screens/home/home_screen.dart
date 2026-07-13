@@ -499,11 +499,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(14),
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,colors: AppColors.rainbowColors),
-                          ),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: AppColors.rainbowEnd, width: 1),
+                        ),
                           child: Row(mainAxisSize: MainAxisSize.min, children: [
                             Text(tag, style: const TextStyle(color: AppColors.textPrimary, fontSize: 12)),
                             const SizedBox(width: 4),
@@ -581,9 +579,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           padding: const EdgeInsets.symmetric(vertical: 10),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(20),
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,colors: AppColors.rainbowColors),
+                            border: Border.all(color: AppColors.rainbowEnd, width: 1),
                           ),
                           child: Center(child: Text(context.tr('confirm'), style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600))),
                         ),
