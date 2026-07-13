@@ -8,7 +8,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/auth_service.dart';
 import 'heating_records_screen.dart';
 import 'widgets/edit_profile_dialog.dart';
-import 'widgets/sidebar.dart';
+import '../../components/sidebar.dart';
 import '../../theme/colors.dart';
 import '../../utils/format_utils.dart';
 import '../../utils/api_cache.dart';

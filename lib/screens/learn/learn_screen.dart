@@ -82,6 +82,10 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
   List<Map<String, dynamic>> _readingHistory = [];
   List<Map<String, dynamic>> _notes = [];
   Map<String, Map<String, dynamic>> _readingProgress = {};
+  String _selectedContributionType = '';
+  String _contributionSource = '';
+  String _contributionContent = '';
+  final _supabase = Supabase.instance.client;
 
   @override
   void initState() {
