@@ -1080,7 +1080,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 _buildShareItem(Icons.person, '好友'),
                 _buildShareItem(Icons.group, '群聊'),
-                _buildShareItem(Icons.share, '更多', onTap: _shareWithSystem),
+                _buildShareItem(Icons.share, '更多', onTap: _copyProfileLink),
                 _buildShareItem(Icons.link, '复制链接', onTap: _copyProfileLink),
               ],
             ),
@@ -1097,31 +1097,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       ),
-    );
-  }
-
-  void _shareWithSystem() {
-    final userId = _profile?['id'] ?? '';
-    final nickname = _profile?['nickname'] ?? 'OpenFaith';
-    final shareText = '来看看 $nickname 在 OpenFaith 的主页：https://openfaithhub.com/#/profile/$userId';
-    
-    // Copy to clipboard as fallback
-    Clipboard.setData(ClipboardData(text: shareText));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('分享链接已复制到剪贴板'),
-        duration: Duration(seconds: 2),
-        backgroundColor: AppColors.success,
-      ),
-    );
-  }
-
-  void _copyProfileLink() {
-    final userId = _profile?['id'] ?? '';
-    final profileUrl = 'https://openfaithhub.com/#/profile/$userId';
-    Clipboard.setData(ClipboardData(text: profileUrl));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('链接已复制到剪贴板')),
     );
   }
 
