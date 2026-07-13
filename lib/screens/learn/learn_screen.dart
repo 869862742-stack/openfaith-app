@@ -926,86 +926,171 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
           side: BorderSide(color: AppColors.borderColor, width: 0.5),
         ),
         child: Container(
-          width: 320,
+          width: 340,
           padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: AppColors.auroraGradient,
-                ),
-                child: const Icon(Icons.volunteer_activism, color: Colors.white, size: 28),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('参与共建',
+                      style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold)),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(ctx),
+                    child: const Icon(Icons.close,
+                        color: AppColors.iconColorWeak, size: 20),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
               const Text(
-                '参与共建',
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'OpenFaith 是一个开源项目，欢迎参与书籍整理、翻译、校对等工作。\n\n'
-                '您可以通过以下方式参与：\n'
-                '• 整理经典文献数字化\n'
-                '• 翻译多语种版本\n'
-                '• 校对已有内容\n'
-                '• 贡献新的研究成果\n\n'
-                '每一份贡献都将帮助更多人了解世界信仰文化。',
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 14,
-                  height: 1.6,
-                ),
-                textAlign: TextAlign.left,
+                '你的每一条建议，都在帮助这份信仰内容变得更准确、更完整。',
+                style: TextStyle(color: AppColors.textPlaceholder, fontSize: 12),
               ),
               const SizedBox(height: 20),
+              
+              // 建议类型
+              const Text('建议类型 *', style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: ['新增书籍', '修正错误', '翻译内容', '其他建议'].map((type) {
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() => _selectedContributionType = type);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: _selectedContributionType == type ? AppColors.rainbowEnd : AppColors.borderColor,
+                          width: 1,
+                        ),
+                        color: _selectedContributionType == type ? AppColors.rainbowEnd.withOpacity(0.1) : Colors.transparent,
+                      ),
+                      child: Text(
+                        type,
+                        style: TextStyle(
+                          color: _selectedContributionType == type ? Colors.white : AppColors.textSecondary,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 16),
+              
+              // 来源（可选）
+              const Text('来源（可选）', style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppColors.borderColor, width: 1),
+                ),
+                child: TextField(
+                  style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+                  decoration: const InputDecoration(
+                    hintText: '如：某本书、某个网站',
+                    hintStyle: TextStyle(color: AppColors.textPlaceholder, fontSize: 14),
+                    border: InputBorder.none,
+                  ),
+                  onChanged: (value) => _contributionSource = value,
+                ),
+              ),
+              const SizedBox(height: 16),
+              
+              // 详细内容
+              const Text('详细内容 *', style: TextStyle(color: AppColors.textWeak, fontSize: 12)),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppColors.borderColor, width: 1),
+                ),
+                child: TextField(
+                  maxLines: 4,
+                  style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+                  decoration: const InputDecoration(
+                    hintText: '请详细描述你的建议或发现的问题...',
+                    hintStyle: TextStyle(color: AppColors.textPlaceholder, fontSize: 14),
+                    border: InputBorder.none,
+                  ),
+                  onChanged: (value) => _contributionContent = value,
+                ),
+              ),
+              const SizedBox(height: 20),
+              
+              // 提交按钮
               GestureDetector(
                 onTap: () async {
-                  final uri = Uri.parse('https://openfaithhub.com/#/support');
-                  if (await canLaunchUrl(uri)) {
-                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                  if (_selectedContributionType.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('请选择建议类型')),
+                    );
+                    return;
                   }
-                  if (ctx.mounted) Navigator.pop(ctx);
+                  if (_contributionContent.trim().isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('请填写详细内容')),
+                    );
+                    return;
+                  }
+                  
+                  try {
+                    final userId = _supabase.auth.currentUser?.id ?? 'anonymous';
+                    await _supabase.from('support_tickets').insert({
+                      'user_id': userId,
+                      'subject': _selectedContributionType,
+                      'description': _contributionSource.isNotEmpty
+                          ? '[$_contributionSource] $_contributionContent'
+                          : _contributionContent,
+                      'status': 'open',
+                      'priority': 'normal',
+                    });
+                    
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('提交成功，感谢你的共建贡献！')),
+                    );
+                    
+                    setState(() {
+                      _selectedContributionType = '';
+                      _contributionSource = '';
+                      _contributionContent = '';
+                    });
+                    
+                    if (ctx.mounted) Navigator.pop(ctx);
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('提交失败，请稍后重试')),
+                    );
+                  }
                 },
                 child: Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   decoration: BoxDecoration(
-
                     borderRadius: BorderRadius.circular(12),
-
                     border: Border.all(color: AppColors.rainbowEnd, width: 1),
-
                   ),
                   child: const Center(
                     child: Text(
-                      '访问共建页面',
+                      '提交建议',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              GestureDetector(
-                onTap: () => Navigator.pop(ctx),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Text(
-                    '关闭',
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 14,
                     ),
                   ),
                 ),

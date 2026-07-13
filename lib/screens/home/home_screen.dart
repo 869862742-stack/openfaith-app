@@ -437,26 +437,22 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _fetchAvailableTags() async {
     try {
+      // Fetch from religions table to get all available religion tags
       final res = await _supabase
-          .from('posts')
-          .select('tags')
-          .eq('status', 'published')
-          .order('created_at', ascending: false)
-          .limit(100);
+          .from('religions')
+          .select('name')
+          .eq('is_active', true)
+          .order('sort_order')
+          .order('name');
+      
       final tagSet = <String>{};
       for (final row in (res as List? ?? [])) {
-        final tags = row['tags'] as List<dynamic>?;
-        if (tags != null) {
-          for (final t in tags) {
-            final tag = t.toString();
-            if (!tag.startsWith('__') && !tag.startsWith('member_') &&
-                !RegExp(r'^[0-9a-f]{8}-[0-9a-f]{4}-').hasMatch(tag) &&
-                tag.isNotEmpty) {
-              tagSet.add(tag);
-            }
-          }
+        final name = row['name'] as String?;
+        if (name != null && name.isNotEmpty) {
+          tagSet.add(name);
         }
       }
+      
       if (!mounted) return;
       setState(() => _availableTags = tagSet.toList()..sort());
     } catch (e) {
