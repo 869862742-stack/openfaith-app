@@ -202,38 +202,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _postCount = (postsResp as List).length;
         });
       }
-
-      // Calculate followers count from follows table
-      try {
-        final followersResp = await _supabase
-            .from('follows')
-            .select('id')
-            .eq('following_id', userId)
-            .eq('status', 'active');
-        if (followersResp != null && mounted) {
-          setState(() {
-            _followersCount = (followersResp as List).length;
-          });
-        }
-      } catch (e) {
-        debugPrint('Error fetching followers count: $e');
-      }
-
-      // Calculate following count from follows table
-      try {
-        final followingResp = await _supabase
-            .from('follows')
-            .select('id')
-            .eq('follower_id', userId)
-            .eq('status', 'active');
-        if (followingResp != null && mounted) {
-          setState(() {
-            _followingCount = (followingResp as List).length;
-          });
-        }
-      } catch (e) {
-        debugPrint('Error fetching following count: $e');
-      }
     } catch (e) {
       debugPrint('Profile load error: $e');
     }
@@ -454,7 +422,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         // 菜单按钮（网页版: w-10 h-10 rounded-full bg-hoverBg）
                         _buildCircleButton(
                           icon: Icons.menu,
-                          onTap: _openSidebar,
+                          onTap: () {
+                            // 打开侧边栏
+                          },
                         ),
                         const Spacer(),
                         // 分享按钮
@@ -637,7 +607,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: _buildLevelBar(),
               ),
 
-              // ── 统计数据（网页版: 粉丝/关注/热值/热点 4项）──
+              // ── 统计数据（网页版: flex-3列，每列 center）──
               const SizedBox(height: 16),
               Row(
                 children: [
@@ -651,11 +621,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   Expanded(
                     child: _buildStatColumn(
-                        _heatCount, '热值', null),
-                  ),
-                  Expanded(
-                    child: _buildStatColumn(
-                        _hotPoints, '热点', null),
+                        _heatCount + _hotPoints, '获赞', null),
                   ),
                 ],
               ),
