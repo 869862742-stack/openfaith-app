@@ -1,6 +1,9 @@
-name: APK Release Build
+name: APK Release Build (Shorebird)
 on:
   workflow_dispatch:
+
+env:
+  SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
 
 jobs:
   build:
@@ -44,9 +47,13 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
       
-      # Build APK directly (skip Shorebird for faster builds)
-      - name: Build APK
-        run: flutter build apk --release
+      - name: Setup Shorebird
+        uses: shorebirdtech/setup-shorebird@v1
+        with:
+          cache: true
+      
+      - name: Shorebird Release
+        run: shorebird release android --artifact apk
       
       - name: Upload APK
         uses: actions/upload-artifact@v4
