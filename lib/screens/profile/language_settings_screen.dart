@@ -162,8 +162,11 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
                           ? Container(
                               padding: const EdgeInsets.all(2),
                               decoration: BoxDecoration(
+
                                 borderRadius: BorderRadius.circular(12),
-                                gradient: AppColors.auroraGradient,
+
+                                border: Border.all(color: AppColors.rainbowEnd, width: 1),
+
                               ),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(

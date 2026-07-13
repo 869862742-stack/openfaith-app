@@ -260,8 +260,11 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     return Container(
       padding: const EdgeInsets.all(1),
       decoration: BoxDecoration(
+
         borderRadius: BorderRadius.circular(16),
-        gradient: AppColors.auroraGradientWithOpacity(0.5),
+
+        border: Border.all(color: AppColors.rainbowEnd, width: 1),
+
       ),
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -279,8 +282,11 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
+
                     borderRadius: BorderRadius.circular(12),
-                    gradient: AppColors.auroraGradient,
+
+                    border: Border.all(color: AppColors.rainbowEnd, width: 1),
+
                   ),
                   child: const Icon(Icons.menu_book, color: AppColors.textPrimary, size: 24),
                 ),

@@ -156,8 +156,11 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(1),
                   decoration: BoxDecoration(
+
                     borderRadius: BorderRadius.circular(17),
-                    gradient: AppColors.auroraGradient,
+
+                    border: Border.all(color: AppColors.rainbowEnd, width: 1),
+
                   ),
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
@@ -236,8 +239,11 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
         child: Container(
           padding: const EdgeInsets.all(1),
           decoration: BoxDecoration(
+
             borderRadius: BorderRadius.circular(20),
-            gradient: AppColors.auroraGradientWithOpacity(0.5),
+
+            border: Border.all(color: AppColors.rainbowEnd, width: 1),
+
           ),
           child: Container(
             padding:
@@ -529,8 +535,11 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
                         width: double.infinity,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         decoration: BoxDecoration(
+
                           borderRadius: BorderRadius.circular(12),
-                          gradient: AppColors.auroraGradient,
+
+                          border: Border.all(color: AppColors.rainbowEnd, width: 1),
+
                         ),
                         child: Center(
                           child: _creating

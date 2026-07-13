@@ -178,8 +178,11 @@ class _ContentPreferencesScreenState extends State<ContentPreferencesScreen> {
     return Container(
       padding: const EdgeInsets.all(1),
       decoration: BoxDecoration(
+
         borderRadius: BorderRadius.circular(12),
-        gradient: AppColors.auroraGradientWithOpacity(0.5),
+
+        border: Border.all(color: AppColors.rainbowEnd, width: 1),
+
       ),
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -203,8 +206,11 @@ class _ContentPreferencesScreenState extends State<ContentPreferencesScreen> {
               width: 4,
               height: 16,
               decoration: BoxDecoration(
+
                 borderRadius: BorderRadius.circular(2),
-                gradient: AppColors.auroraGradientWithOpacity(0.5),
+
+                border: Border.all(color: AppColors.rainbowEnd, width: 1),
+
               ),
             ),
             const SizedBox(width: 8),
@@ -367,8 +373,11 @@ class _ContentPreferencesScreenState extends State<ContentPreferencesScreen> {
       // 外层：彩虹渐变边框
       padding: const EdgeInsets.all(1),
       decoration: BoxDecoration(
+
         borderRadius: BorderRadius.circular(20),
-        gradient: AppColors.auroraGradientWithOpacity(0.6),
+
+        border: Border.all(color: AppColors.rainbowEnd, width: 1),
+
       ),
       child: Container(
         // 内层：透明背景

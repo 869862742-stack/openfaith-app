@@ -116,8 +116,11 @@ class _PublishPlanScreenState extends State<PublishPlanScreen> {
                               ? Container(
                                   padding: const EdgeInsets.all(1),
                                   decoration: BoxDecoration(
+
                                     borderRadius: BorderRadius.circular(21),
-                                    gradient: AppColors.auroraGradient,
+
+                                    border: Border.all(color: AppColors.rainbowEnd, width: 1),
+
                                   ),
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 9),
@@ -167,8 +170,11 @@ class _PublishPlanScreenState extends State<PublishPlanScreen> {
                         ),
                         child: Container(
                           decoration: BoxDecoration(
+
                             borderRadius: BorderRadius.circular(11),
-                            gradient: AppColors.auroraGradient,
+
+                            border: Border.all(color: AppColors.rainbowEnd, width: 1),
+
                           ),
                           padding: const EdgeInsets.all(1.5),
                           child: Container(
@@ -236,8 +242,11 @@ class _PublishPlanScreenState extends State<PublishPlanScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(1),
                     decoration: BoxDecoration(
+
                       borderRadius: BorderRadius.circular(17),
-                      gradient: AppColors.auroraGradient,
+
+                      border: Border.all(color: AppColors.rainbowEnd, width: 1),
+
                     ),
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),

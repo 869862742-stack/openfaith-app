@@ -882,8 +882,11 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
           width: double.infinity,
           padding: const EdgeInsets.all(1),
           decoration: BoxDecoration(
+
             borderRadius: BorderRadius.circular(12),
-            gradient: AppColors.auroraGradient,
+
+            border: Border.all(color: AppColors.rainbowEnd, width: 1),
+
           ),
           child: Container(
             width: double.infinity,
@@ -975,8 +978,11 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   decoration: BoxDecoration(
+
                     borderRadius: BorderRadius.circular(12),
-                    gradient: AppColors.auroraGradient,
+
+                    border: Border.all(color: AppColors.rainbowEnd, width: 1),
+
                   ),
                   child: const Center(
                     child: Text(

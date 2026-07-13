@@ -1315,7 +1315,7 @@ class _PublishNoteScreenState extends State<PublishNoteScreen> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
                         child: Ink(
-                          decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: AppColors.auroraGradient),
+                          decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.rainbowEnd, width: 1)),
                           child: const Center(child: Text('我知道了', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600))),
                         ),
                       ),
@@ -1341,7 +1341,7 @@ class _PublishNoteScreenState extends State<PublishNoteScreen> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
                         child: Ink(
-                          decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: AppColors.auroraGradient),
+                          decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.rainbowEnd, width: 1)),
                           child: const Center(child: Text('申请额外发布额度', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600))),
                         ),
                       ),
@@ -1442,7 +1442,7 @@ class _PublishNoteScreenState extends State<PublishNoteScreen> {
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                             ),
                             child: Ink(
-                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: AppColors.auroraGradient),
+                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.rainbowEnd, width: 1)),
                               child: Center(
                                 child: Text(_isSubmittingRequest ? '提交中...' : '提交申请', style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
                               ),

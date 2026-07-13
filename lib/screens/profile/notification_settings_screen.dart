@@ -89,8 +89,11 @@ class _NotificationSettingsScreenState
               width: 48,
               height: 28,
               decoration: BoxDecoration(
+
                 borderRadius: BorderRadius.circular(14),
-                gradient: AppColors.auroraGradient,
+
+                border: Border.all(color: AppColors.rainbowEnd, width: 1),
+
               ),
               padding: const EdgeInsets.all(2),
               child: Container(

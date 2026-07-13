@@ -174,8 +174,11 @@ class _DisplaySettingsScreenState extends State<DisplaySettingsScreen> {
             Container(
               padding: const EdgeInsets.all(1),
               decoration: BoxDecoration(
+
                 borderRadius: BorderRadius.circular(12),
-                gradient: AppColors.auroraGradientWithOpacity(0.6),
+
+                border: Border.all(color: AppColors.rainbowEnd, width: 1),
+
               ),
               child: Container(
                 padding: const EdgeInsets.all(16),
@@ -229,9 +232,11 @@ class _DisplaySettingsScreenState extends State<DisplaySettingsScreen> {
                               Container(
                                 padding: const EdgeInsets.all(1.5),
                                 decoration: BoxDecoration(
-                                  borderRadius:
-                                      BorderRadius.circular(20),
-                                  gradient: AppColors.auroraGradient,
+
+                                  borderRadius: BorderRadius.circular(20),
+
+                                  border: Border.all(color: AppColors.rainbowEnd, width: 1),
+
                                 ),
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(

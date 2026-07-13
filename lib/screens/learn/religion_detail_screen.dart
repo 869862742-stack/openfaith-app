@@ -224,8 +224,11 @@ class _ReligionDetailScreenState extends State<ReligionDetailScreen> {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
+
               borderRadius: BorderRadius.circular(8),
-              gradient: AppColors.auroraGradient,
+
+              border: Border.all(color: AppColors.rainbowEnd, width: 1),
+
             ),
             padding: const EdgeInsets.all(1.5),
             child: Container(
@@ -745,8 +748,11 @@ class _ReligionDetailScreenState extends State<ReligionDetailScreen> {
       child: Container(
         padding: const EdgeInsets.all(1.5),
         decoration: BoxDecoration(
+
           borderRadius: BorderRadius.circular(16),
-          gradient: AppColors.auroraGradient,
+
+          border: Border.all(color: AppColors.rainbowEnd, width: 1),
+
         ),
         child: Container(
           padding: const EdgeInsets.all(12),

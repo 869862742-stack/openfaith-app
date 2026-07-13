@@ -188,8 +188,11 @@ class _AddGroupScreenState extends State<AddGroupScreen> {
             height: 40,
             padding: const EdgeInsets.all(1),
             decoration: BoxDecoration(
+
               borderRadius: BorderRadius.circular(12),
-              gradient: AppColors.auroraGradient,
+
+              border: Border.all(color: AppColors.rainbowEnd, width: 1),
+
             ),
             child: Container(
               decoration: BoxDecoration(
@@ -245,8 +248,11 @@ class _AddGroupScreenState extends State<AddGroupScreen> {
       child: Container(
         padding: const EdgeInsets.all(1),
         decoration: BoxDecoration(
+
           borderRadius: BorderRadius.circular(13),
-          gradient: AppColors.auroraGradient,
+
+          border: Border.all(color: AppColors.rainbowEnd, width: 1),
+
         ),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 19),
@@ -581,8 +587,11 @@ class _AddGroupScreenState extends State<AddGroupScreen> {
             width: double.infinity,
             padding: const EdgeInsets.all(1),
             decoration: BoxDecoration(
+
               borderRadius: BorderRadius.circular(13),
-              gradient: AppColors.auroraGradient,
+
+              border: Border.all(color: AppColors.rainbowEnd, width: 1),
+
             ),
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 13),

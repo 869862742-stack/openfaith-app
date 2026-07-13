@@ -28,8 +28,11 @@ class RainbowBorder extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
+
         borderRadius: BorderRadius.circular(borderRadius),
-        gradient: AppColors.auroraGradientWithOpacity(opacity),
+
+        border: Border.all(color: AppColors.rainbowEnd, width: 1),
+
       ),
       child: Padding(
         padding: EdgeInsets.all(borderWidth),

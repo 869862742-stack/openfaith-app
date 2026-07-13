@@ -33,8 +33,11 @@ class AuroraButton extends StatelessWidget {
         // 外层：渐变边框
         padding: EdgeInsets.all(borderWidth),
         decoration: BoxDecoration(
+
           borderRadius: BorderRadius.circular(borderRadius),
-          gradient: AppColors.auroraGradientWithOpacity(opacity),
+
+          border: Border.all(color: AppColors.rainbowEnd, width: 1),
+
         ),
         child: Container(
           // 内层：实色 #050816
@@ -100,8 +103,11 @@ class AuroraButtonFilled extends StatelessWidget {
           vertical: AppSpacing.md,
         ),
         decoration: BoxDecoration(
+
           borderRadius: BorderRadius.circular(borderRadius),
-          gradient: AppColors.auroraGradient,
+
+          border: Border.all(color: AppColors.rainbowEnd, width: 1),
+
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

@@ -63,8 +63,11 @@ class DesignPreviewScreen extends StatelessWidget {
             Container(
               height: 60,
               decoration: BoxDecoration(
+
                 borderRadius: BorderRadius.circular(12),
-                gradient: AppColors.auroraGradient,
+
+                border: Border.all(color: AppColors.rainbowEnd, width: 1),
+
               ),
               child: const Center(
                 child: Text(

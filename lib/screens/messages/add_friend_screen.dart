@@ -173,8 +173,11 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
       child: Container(
         padding: const EdgeInsets.all(1),
         decoration: BoxDecoration(
+
           borderRadius: BorderRadius.circular(13),
-          gradient: AppColors.auroraGradient,
+
+          border: Border.all(color: AppColors.rainbowEnd, width: 1),
+
         ),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 19),
@@ -333,8 +336,11 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
+
                 borderRadius: BorderRadius.circular(8),
-                gradient: AppColors.auroraGradient,
+
+                border: Border.all(color: AppColors.rainbowEnd, width: 1),
+
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -570,8 +576,11 @@ class _GreetingDialog extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(1),
                 decoration: BoxDecoration(
+
                   borderRadius: BorderRadius.circular(13),
-                  gradient: AppColors.auroraGradient,
+
+                  border: Border.all(color: AppColors.rainbowEnd, width: 1),
+
                 ),
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 13),

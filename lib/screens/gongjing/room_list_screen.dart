@@ -408,8 +408,11 @@ class _RoomListScreenState extends State<RoomListScreen> {
               height: 44,
               padding: const EdgeInsets.all(1),
               decoration: BoxDecoration(
+
                 borderRadius: BorderRadius.circular(12),
-                gradient: AppColors.auroraGradient,
+
+                border: Border.all(color: AppColors.rainbowEnd, width: 1),
+
               ),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -621,8 +624,11 @@ class _RoomListScreenState extends State<RoomListScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
+
                         borderRadius: BorderRadius.circular(8),
-                        gradient: AppColors.auroraGradientWithOpacity(0.1),
+
+                        border: Border.all(color: AppColors.rainbowEnd, width: 1),
+
                       ),
                       child: ShaderMask(
                         shaderCallback: (rect) =>
@@ -755,8 +761,11 @@ class _RoomListScreenState extends State<RoomListScreen> {
             child: Container(
               padding: const EdgeInsets.all(1),
               decoration: BoxDecoration(
+
                 borderRadius: BorderRadius.circular(12),
-                gradient: AppColors.auroraGradient,
+
+                border: Border.all(color: AppColors.rainbowEnd, width: 1),
+
               ),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),

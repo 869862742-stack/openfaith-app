@@ -534,8 +534,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   child: Container(
                                     padding: const EdgeInsets.all(1),
                                     decoration: BoxDecoration(
+
                                       borderRadius: BorderRadius.circular(13),
-                                      gradient: AppColors.auroraGradient,
+
+                                      border: Border.all(color: AppColors.rainbowEnd, width: 1),
+
                                     ),
                                     child: Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 23, vertical: 11),
@@ -871,8 +874,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(1), // border width
       decoration: BoxDecoration(
+
         borderRadius: BorderRadius.circular(12),
-        gradient: AppColors.auroraGradientWithOpacity(0.5),
+
+        border: Border.all(color: AppColors.rainbowEnd, width: 1),
+
       ),
       child: Container(
         padding: const EdgeInsets.all(16),
