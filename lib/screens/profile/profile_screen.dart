@@ -1100,6 +1100,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+
+  void _copyProfileLink() {
+    final userId = _profile?['id'] ?? '';
+    final profileUrl = 'https://openfaithhub.com/#/profile/' + userId;
+    Clipboard.setData(ClipboardData(text: profileUrl));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('链接已复制到剪贴板')),
+    );
+  }
   // ═══════════════════════════════════════════════════════
   // Sidebar
   // ═══════════════════════════════════════════════════════
@@ -1121,14 +1130,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildShareItem(IconData icon, String label, {VoidCallback? onTap}) {
 
-  void _copyProfileLink() {
-    final userId = _profile?['id'] ?? '';
-    final profileUrl = 'https://openfaithhub.com/#/profile/' + userId;
-    Clipboard.setData(ClipboardData(text: profileUrl));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('链接已复制到剪贴板')),
-    );
-  }
     return Column(
       children: [
         GestureDetector(
