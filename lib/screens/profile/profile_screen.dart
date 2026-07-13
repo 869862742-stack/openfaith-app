@@ -202,7 +202,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _postCount = (postsResp as List).length;
         });
       }
-    } catch (e) {
+    }
+
+      // Calculate followers count from follows table
+      try {
+        final followersResp = await _supabase
+            .from('follows')
+            .select('id')
+            .eq('following_id', userId)
+            .eq('status', 'active');
+        if (followersResp != null && mounted) {
+          setState(() {
+            _followersCount = (followersResp as List).length;
+          });
+        }
+      } catch (e) {
+        debugPrint('Error fetching followers count: $e');
+      }
+
+      // Calculate following count from follows table
+      try {
+        final followingResp = await _supabase
+            .from('follows')
+            .select('id')
+            .eq('follower_id', userId)
+            .eq('status', 'active');
+        if (followingResp != null && mounted) {
+          setState(() {
+            _followingCount = (followingResp as List).length;
+          });
+        }
+      } catch (e) {
+        debugPrint('Error fetching following count: $e');
+      } catch (e) {
       debugPrint('Profile load error: $e');
     }
 
