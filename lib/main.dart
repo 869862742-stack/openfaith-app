@@ -3,7 +3,11 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shorebird_code_push/shorebird_code_push.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'splash/splash_screen.dart';
 import 'webview/webview_shell.dart';
+import 'utils/status_bar_controller.dart';
+import 'utils/permission_manager.dart';
+import 'utils/push_notification_manager.dart';
 
 const supabaseUrl = 'https://rdhwmeittgdosmkxtpak.supabase.co';
 const supabaseAnonKey = 'sb_publishable_Sch6yDRuc1N0w7M61-U29A_ZP0J-9xe';
@@ -31,6 +35,12 @@ void main() async {
     url: supabaseUrl,
     publishableKey: supabaseAnonKey,
   );
+
+  // 状态栏初始化（深色主题，亮色图标）
+  StatusBarHelper.reset();
+
+  // 推送通知初始化（框架代码，需要 Firebase 配置后完善）
+  await PushNotificationManager.initialize();
 
   // Sentry 错误监控
   await SentryFlutter.init(
@@ -60,7 +70,9 @@ class OpenFaithApp extends StatelessWidget {
           surface: Color(0xFF050816),
         ),
       ),
-      home: const WebViewShell(),
+      home: const SplashScreen(
+        child: WebViewShell(),
+      ),
     );
   }
 }
