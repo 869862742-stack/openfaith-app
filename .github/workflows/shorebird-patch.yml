@@ -21,6 +21,18 @@ jobs:
         shell: bash
     runs-on: ubuntu-latest
     steps:
+      - name: Free disk space
+        run: |
+          echo "Before cleanup:"
+          df -h /
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo apt-get clean
+          df -h /
+        shell: bash
+
       - name: Git Checkout
         uses: actions/checkout@v4
 
