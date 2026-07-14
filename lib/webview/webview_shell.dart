@@ -254,10 +254,9 @@ class _WebViewShellState extends State<WebViewShell> {
           if (window.__openfaithCallIntercepted) return 'already_injected';
           window.__openfaithCallIntercepted = true;
           
-          // 拦截所有可能的通话按钮点击
+          // 拦截所有可能的通话和书籍按钮点击
           document.addEventListener('click', function(e) {
             var target = e.target;
-            // 向上查找最近的 a 标签或 button
             while (target && target !== document.body) {
               var href = target.getAttribute && target.getAttribute('href');
               if (href) {
@@ -267,14 +266,23 @@ class _WebViewShellState extends State<WebViewShell> {
                   e.preventDefault();
                   e.stopPropagation();
                   var userId = chatMatch[1];
-                  // 调用Flutter JS Bridge
                   if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
                     window.flutter_inappwebview.callHandler('startNativeCall', userId);
                   }
                   return false;
                 }
+                // 检查是否是书籍链接 (#/book/xxx)
+                var bookMatch = href.match(/#\/book\/([^\/\?#]+)/);
+                if (bookMatch) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  var bookId = bookMatch[1];
+                  if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
+                    window.flutter_inappwebview.callHandler('navigateToNative', '/books/' + bookId);
+                  }
+                  return false;
+                }
               }
-              // 检查 data-action 或其他自定义属性
               var action = target.getAttribute && target.getAttribute('data-action');
               if (action === 'call' || action === 'voice-call' || action === 'video-call') {
                 var peerId = target.getAttribute('data-peer-id') || target.getAttribute('data-user-id');
@@ -291,11 +299,7 @@ class _WebViewShellState extends State<WebViewShell> {
             }
           }, true);
           
-          // 也拦截通过 onclick 直接绑定的通话函数
-          var origPushState = history.pushState;
-          var origReplaceState = history.replaceState;
-          
-          // 监听hashchange事件
+          // 监听hashchange事件 — 处理SPA内部导航
           window.addEventListener('hashchange', function(e) {
             var hash = window.location.hash;
             var chatMatch = hash.match(/#\/chat\/([^\/\?#]+)/);
@@ -303,6 +307,14 @@ class _WebViewShellState extends State<WebViewShell> {
               var userId = chatMatch[1];
               if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
                 window.flutter_inappwebview.callHandler('startNativeCall', userId);
+              }
+              return;
+            }
+            var bookMatch = hash.match(/#\/book\/([^\/\?#]+)/);
+            if (bookMatch) {
+              var bookId = bookMatch[1];
+              if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
+                window.flutter_inappwebview.callHandler('navigateToNative', '/books/' + bookId);
               }
             }
           });
