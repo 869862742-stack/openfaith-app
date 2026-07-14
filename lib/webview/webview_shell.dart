@@ -1,9 +1,11 @@
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:go_router/go_router.dart';
 
 /// WebView 壳 - 加载网页版 OpenFaith
 /// 所有页面、导航、业务逻辑都由网页版处理
-/// Flutter 仅提供原生容器 + 未来逐步替换的原生模块
+/// Flutter 仅提供原生容器 + 逐步替换的原生模块（如藏书、通话）
 class WebViewShell extends StatefulWidget {
   const WebViewShell({super.key});
 
@@ -15,15 +17,12 @@ class _WebViewShellState extends State<WebViewShell> {
   InAppWebViewController? _webViewController;
   bool _isLoading = true;
   double _progress = 0;
-  String _currentUrl = '';
 
-  // 网页版地址
   static const String _baseUrl = 'https://openfaithhub.com';
 
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      // Android 返回键处理：WebView 有历史则后退，否则退出
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
@@ -32,7 +31,8 @@ class _WebViewShellState extends State<WebViewShell> {
           await controller.goBack();
         } else {
           if (context.mounted) {
-            Navigator.of(context).maybePop();
+            // 在首页按返回键 = 退出APP
+            SystemNavigator.pop();
           }
         }
       },
@@ -40,52 +40,36 @@ class _WebViewShellState extends State<WebViewShell> {
         backgroundColor: const Color(0xFF050816),
         body: Stack(
           children: [
-            // WebView 主体
             InAppWebView(
               initialUrlRequest: URLRequest(url: WebUri(_baseUrl)),
               initialSettings: InAppWebViewSettings(
-                // 基础设置
                 javaScriptEnabled: true,
                 domStorageEnabled: true,
                 databaseEnabled: true,
-                // 缓存策略
                 cacheEnabled: true,
-                // 媒体自动播放
                 mediaPlaybackRequiresUserGesture: false,
-                // 允许混合内容（HTTPS 页面加载 HTTP 资源）
                 mixedContentMode: MixedContentMode.MIXED_CONTENT_ALWAYS_ALLOW,
-                // 透明背景，避免白屏闪烁
                 transparentBackground: true,
-                // 支持缩放
                 supportZoom: false,
-                // 隐藏滚动条（和原生APP一致）
                 verticalScrollbarThumbColor: Colors.white24,
-                // 安全区域
-                useShouldOverrideUrlLoading: false,
-                // 允许文件访问
+                useShouldOverrideUrlLoading: true,
                 allowFileAccessFromFileURLs: true,
                 allowUniversalAccessFromFileURLs: true,
               ),
               onWebViewCreated: (controller) {
                 _webViewController = controller;
-                // 注册 JS Bridge（未来原生模块通信用）
                 _registerJsBridge(controller);
               },
               onLoadStart: (controller, url) {
-                setState(() {
-                  _isLoading = true;
-                  _currentUrl = url?.toString() ?? '';
-                });
+                setState(() => _isLoading = true);
               },
               onProgressChanged: (controller, progress) {
-                setState(() {
-                  _progress = progress / 100;
-                });
+                setState(() => _progress = progress / 100);
               },
-              onLoadStop: (controller, url) {
-                setState(() {
-                  _isLoading = false;
-                });
+              onLoadStop: (controller, url) async {
+                setState(() => _isLoading = false);
+                // 密码门控自动填充
+                await _tryAutoFillPassword(controller, url);
               },
               onLoadError: (controller, url, code, message) {
                 debugPrint('[WebView] Load error: $code $message for $url');
@@ -93,8 +77,23 @@ class _WebViewShellState extends State<WebViewShell> {
               onConsoleMessage: (controller, consoleMessage) {
                 debugPrint('[WebView Console] ${consoleMessage.message}');
               },
+              // 拦截导航 — 原生路由跳转
+              shouldOverrideUrlLoading: (controller, navigationAction) async {
+                final url = navigationAction.request.url?.toString() ?? '';
+                
+                if (url.startsWith(_baseUrl)) {
+                  final path = url.substring(_baseUrl.length);
+                  
+                  // 藏书 → 原生
+                  if (path == '/books' || path.startsWith('/books/')) {
+                    if (mounted) context.go(path);
+                    return NavigationActionPolicy.CANCEL;
+                  }
+                }
+                
+                return NavigationActionPolicy.ALLOW;
+              },
             ),
-            // 加载指示器
             if (_isLoading)
               Positioned(
                 top: 0,
@@ -113,14 +112,54 @@ class _WebViewShellState extends State<WebViewShell> {
     );
   }
 
-  /// 注册 JS Bridge，供网页版调用原生能力
+  /// 密码门控自动填充
+  Future<void> _tryAutoFillPassword(InAppWebViewController controller, Uri? url) async {
+    if (url == null) return;
+    if (!url.toString().startsWith(_baseUrl)) return;
+    
+    try {
+      await controller.evaluateJavascript(source: '''
+        (function() {
+          var form = document.querySelector('form[action="/login"]');
+          if (!form) return 'no_form';
+          var pwd = form.querySelector('input[type="password"]');
+          if (!pwd) return 'no_input';
+          if (pwd.value.length > 0) return 'already_filled';
+          pwd.value = 'openfaith2026';
+          pwd.dispatchEvent(new Event('input', {bubbles: true}));
+          pwd.dispatchEvent(new Event('change', {bubbles: true}));
+          setTimeout(function() { form.submit(); }, 300);
+          return 'submitted';
+        })()
+      ''');
+    } catch (e) {
+      debugPrint('[WebView] Password auto-fill error: $e');
+    }
+  }
+
+  /// JS Bridge — 网页调用原生能力
   void _registerJsBridge(InAppWebViewController controller) {
-    // 预留：未来在此注册原生模块的 JS 桥接
-    // 示例：
-    // controller.addJavaScriptHandler(
-    //   handlerName: 'getDeviceInfo',
-    //   callback: (args) => {'platform': 'android', 'version': '...'},
-    // );
+    // 导航到原生页面
+    controller.addJavaScriptHandler(
+      handlerName: 'navigateToNative',
+      callback: (args) {
+        if (args.isNotEmpty && mounted) {
+          final path = args[0] as String;
+          context.go(path);
+        }
+      },
+    );
+    
+    // 返回上一页
+    controller.addJavaScriptHandler(
+      handlerName: 'goBack',
+      callback: (args) async {
+        if (await _webViewController?.canGoBack() == true) {
+          await _webViewController?.goBack();
+        }
+      },
+    );
+    
     debugPrint('[WebView] JS Bridge registered');
   }
 }

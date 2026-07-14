@@ -1,0 +1,35 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../webview/webview_shell.dart';
+import '../screens/book_library_screen.dart';
+import '../screens/book_reader_screen.dart';
+
+/// 路由配置 — WebView 为主 + 藏书原生模块
+final GoRouter appRouter = GoRouter(
+  initialLocation: '/home',
+  routes: [
+    // 主页 = WebView 加载网页版
+    GoRoute(
+      path: '/home',
+      builder: (context, state) => const WebViewShell(),
+    ),
+    // 藏书阁（原生，支持离线阅读）
+    GoRoute(
+      path: '/books',
+      builder: (context, state) => const BookLibraryScreen(),
+    ),
+    GoRoute(
+      path: '/books/:bookId',
+      builder: (context, state) {
+        final bookId = state.pathParameters['bookId']!;
+        final title = state.uri.queryParameters['title'] ?? '藏书';
+        final fileUrl = state.uri.queryParameters['fileUrl'] ?? '';
+        return BookReaderScreen(
+          bookId: bookId,
+          title: title,
+          fileUrl: fileUrl,
+        );
+      },
+    ),
+  ],
+);
