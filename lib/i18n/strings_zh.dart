@@ -155,4 +155,31 @@ const Map<String, String> zhStrings = {
   'calendar_month': '月',
   'calendar_weekdays': '["日","一","二","三","四","五","六"]',
   'calendar_months': '["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"]',
+  // ==========================================================================
+  // About OpenFaith
+  // ==========================================================================
+  'about_title': '关于 OpenFaith',
+  'about_openfaith': '关于 OpenFaith',
+  'about_feature_intro': '功能介绍',
+  'about_feature_content': 'OpenFaith 是一款信仰驱动的社交平台。
+
+【核心功能】
+- 动态分享：分享你的信仰故事、生活感悟
+- 互动社区：点赞、评论、关注好友
+- 学习中心：宗教百科、经典藏书、每日日历
+- 离线阅读：下载书籍后可随时阅读
+- 即时通讯：与好友实时聊天
+- 音视频通话：一键发起语音视频通话
+- 多语言支持：中文 / English
+
+【技术特色】
+- 基于 Flutter 跨平台开发
+- Shorebird 热更新，无需重装即可获取新功能
+- 深色主题，保护视力
+
+官网：openfaithhub.com',
+  'about_version_update': '版本更新',
+  'about_download_apk': '下载最新版本',
+  'about_privacy_policy': '隐私保护指引',
+  'about_terms_of_service': '软件许可及服务协议',
 };

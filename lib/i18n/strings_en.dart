@@ -155,4 +155,31 @@ const Map<String, String> enStrings = {
   'calendar_month': 'Month',
   'calendar_weekdays': '["Su","Mo","Tu","We","Th","Fr","Sa"]',
   'calendar_months': '["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]',
+  // ==========================================================================
+  // About OpenFaith
+  // ==========================================================================
+  'about_title': 'About OpenFaith',
+  'about_openfaith': 'About OpenFaith',
+  'about_feature_intro': 'Features',
+  'about_feature_content': 'OpenFaith is a faith-driven social platform.
+
+[Core Features]
+- Feed Sharing: Share your faith stories and life insights
+- Community Interaction: Like, comment, and follow friends
+- Learning Center: Religious encyclopedia, classic books, daily calendar
+- Offline Reading: Download books and read anytime
+- Instant Messaging: Real-time chat with friends
+- Audio/Video Calls: One-tap voice and video calls
+- Multi-language: Chinese / English
+
+[Tech Highlights]
+- Built with Flutter for cross-platform
+- Shorebird hot updates, no reinstall needed
+- Dark theme, eye-friendly
+
+Website: openfaithhub.com',
+  'about_version_update': 'Check for Updates',
+  'about_download_apk': 'Download Latest APK',
+  'about_privacy_policy': 'Privacy Policy',
+  'about_terms_of_service': 'Terms of Service',
 };

@@ -12,6 +12,7 @@ import 'content_preferences_screen.dart';
 import 'switch_account_screen.dart';
 import '../sidebar_pages/privacy_policy_screen.dart';
 import '../sidebar_pages/terms_of_service_screen.dart';
+import 'about_screen.dart';
 import '../auth/login_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -71,6 +72,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onTap: () => _navigateTo(const ContentPreferencesScreen()),
                 ),
 
+                _buildSettingItem(
+                  icon: Icons.info_outline,
+                  title: context.tr('about_openfaith'),
+                  onTap: () => _navigateTo(const AboutScreen()),
+                ),
+                const SizedBox(height: 4),
                 // ── Divider ──
                 const SizedBox(height: 24),
                 Container(
