@@ -7,6 +7,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../theme/app_colors.dart';
+import '../../services/call_service.dart';
+import '../call/call_screen.dart';
 
 /// 私聊页面 - 100% 对齐网页版 PrivateChat.tsx
 class PrivateChatScreen extends StatefulWidget {
@@ -1175,14 +1177,36 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
                     }),
                     _buildMoreMenuItem(
                         Icons.phone, '通话', () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('语音通话功能即将开放')),
-                      );
+                      _startVoiceCall();
                     }),
                   ],
                 ),
               ),
           ],
+        ),
+      ),
+    );
+  }
+
+  void _startVoiceCall() {
+    final myUserId = _currentUserId;
+    if (myUserId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('请先登录')),
+      );
+      return;
+    }
+    
+    final friendId = widget.otherUserId;
+    final friendName = widget.otherUserName;
+    
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => CallScreen(
+          myUserId: myUserId,
+          peerName: friendName,
+          callType: 'voice',
+          isIncoming: false,
         ),
       ),
     );

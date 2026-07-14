@@ -25,6 +25,8 @@ class _WebViewShellState extends State<WebViewShell> {
   static const List<String> _nativePaths = [
     '/books',
     '/books/',
+    '/book',     // 网页版阅读器URL
+    '/book/',    // 网页版阅读器URL
     '/learn/books',
     '/classic-books',
   ];
@@ -48,7 +50,19 @@ class _WebViewShellState extends State<WebViewShell> {
         backgroundColor: const Color(0xFF050816),
         body: Stack(
           children: [
-            InAppWebView(
+            // 顶部安全区占位，防止汉堡菜单和搜索栏被状态栏遮挡
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height: MediaQuery.of(context).padding.top,
+              child: Container(
+                color: const Color(0xFF050816),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+              child: InAppWebView(
               initialUrlRequest: URLRequest(url: WebUri(_baseUrl)),
               initialSettings: InAppWebViewSettings(
                 javaScriptEnabled: true,
@@ -102,15 +116,18 @@ class _WebViewShellState extends State<WebViewShell> {
                   final path = url.substring(_baseUrl.length);
                   
                   // 藏书 → 原生
-                  if (path == '/books' || path.startsWith('/books/')) {
-                    debugPrint('[WebView] Intercepting /books: $url');
-                    if (mounted) context.go(path);
+                  if (path == '/books' || path.startsWith('/books/') || path == '/book' || path.startsWith('/book/')) {
+                    debugPrint('[WebView] Intercepting book URL: $url');
+                    // /book/:id 映射到 /books/:bookId 路由
+                    final nativePath = path.startsWith('/book/') ? '/books/${path.substring(6)}' : path;
+                    if (mounted) context.go(nativePath);
                     return NavigationActionPolicy.CANCEL;
                   }
                 }
                 
                 return NavigationActionPolicy.ALLOW;
               },
+            ),
             ),
             if (_isLoading)
               Positioned(
