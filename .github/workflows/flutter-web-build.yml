@@ -14,10 +14,12 @@ jobs:
       - run: flutter pub get
       - run: flutter build web --release
 
-      # 上传 Flutter Web 构建产物
-      - name: Upload Flutter Web build
-        uses: actions/upload-artifact@v4
+      # 部署到 Cloudflare Pages
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
         with:
-          name: flutter-web-build
-          path: build/web/
-          retention-days: 7
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: openfaith
+          directory: build/web
+          branch: main
