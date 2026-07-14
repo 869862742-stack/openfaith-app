@@ -65,6 +65,13 @@ jobs:
         with:
           cache: true
       
+      - name: Get version from pubspec.yaml
+        id: version
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //' | tr -d '[:space:]')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
+      
       - name: Shorebird Release
         run: shorebird release android --artifact apk
       
@@ -74,3 +81,21 @@ jobs:
           name: openfaith-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
           retention-days: 30
+
+      # 发布到 GitHub Releases
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: OpenFaith v${{ steps.version.outputs.version }}
+          body: |
+            ## OpenFaith ${{ steps.version.outputs.version }}
+            
+            ### 下载
+            - 点击下载 APK 文件
+            - 安装前请确保已卸载旧版本
+          files: build/app/outputs/flutter-apk/app-release.apk
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
