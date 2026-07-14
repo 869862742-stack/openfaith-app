@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../webview/webview_shell.dart';
 import '../screens/book_library_screen.dart';
+import '../screens/religion_book_list_screen.dart';
 import '../screens/book_reader_screen.dart';
 
 /// 路由配置 — WebView 为主 + 藏书原生模块
@@ -13,11 +14,24 @@ final GoRouter appRouter = GoRouter(
       path: '/home',
       builder: (context, state) => const WebViewShell(),
     ),
-    // 藏书阁（原生，支持离线阅读）
+    // 藏书阁（原生，宗教分类列表）
     GoRoute(
       path: '/books',
       builder: (context, state) => const BookLibraryScreen(),
     ),
+    // 宗教藏书列表
+    GoRoute(
+      path: '/books/religion/:religionId',
+      builder: (context, state) {
+        final religionId = state.pathParameters['religionId']!;
+        final religionName = state.uri.queryParameters['name'] ?? '';
+        return ReligionBookListScreen(
+          religionId: religionId,
+          religionName: religionName,
+        );
+      },
+    ),
+    // 书籍阅读器
     GoRoute(
       path: '/books/:bookId',
       builder: (context, state) {

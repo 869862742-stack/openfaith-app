@@ -1,13 +1,10 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:dio/dio.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'book_reader_screen.dart';
+import '../theme/app_colors.dart';
+import 'religion_book_list_screen.dart';
 
-/// 藏书阁 - 展示书籍列表，支持下载和在线阅读
+/// 藏书阁 - 宗教分类列表（对齐网页版"经典藏书"）
+/// 显示所有宗教及其藏书数量，点击跳转到该宗教的藏书列表
 class BookLibraryScreen extends StatefulWidget {
   const BookLibraryScreen({super.key});
 
@@ -15,206 +12,209 @@ class BookLibraryScreen extends StatefulWidget {
   State<BookLibraryScreen> createState() => _BookLibraryScreenState();
 }
 
-class _BookLibraryScreenState extends State<BookLibraryScreen> with SingleTickerProviderStateMixin {
+class _BookLibraryScreenState extends State<BookLibraryScreen> {
   final SupabaseClient _supabase = Supabase.instance.client;
-  List<Map<String, dynamic>> _books = [];
+  List<Map<String, dynamic>> _religions = [];
+  Map<String, int> _bookCounts = {};
+  Map<String, int> _groupCounts = {};
   bool _isLoading = true;
-  int _currentTab = 0;
-  Map<String, double> _downloadProgress = {};
 
   @override
   void initState() {
     super.initState();
-    _loadBooks();
+    _loadData();
   }
 
-  Future<void> _loadBooks() async {
+  Future<void> _loadData() async {
     try {
-      final response = await _supabase
-          .from('books')
-          .select('*')
-          .order('created_at', ascending: false);
-      setState(() {
-        _books = List<Map<String, dynamic>>.from(response);
-        _isLoading = false;
-      });
+      // 并行获取宗教、书籍、书组数据
+      final results = await Future.wait([
+        _supabase.from('religions').select().eq('is_active', true).order('sort_order').order('name'),
+        _supabase.from('books').select('religion, id'),
+        _supabase.from('book_groups').select('religion, id, parent_id'),
+      ]);
+
+      final religions = (results[0] as List).cast<Map<String, dynamic>>();
+      final books = (results[1] as List).cast<Map<String, dynamic>>();
+      final groups = (results[2] as List).cast<Map<String, dynamic>>();
+
+      // 统计每个宗教的书籍数量
+      final bookCounts = <String, int>{};
+      for (final book in books) {
+        final religion = book['religion']?.toString() ?? '';
+        bookCounts[religion] = (bookCounts[religion] ?? 0) + 1;
+      }
+
+      // 统计每个宗教的顶级书组数量（parent_id 为空的）
+      final groupCounts = <String, int>{};
+      for (final group in groups) {
+        if (group['parent_id'] == null) {
+          final religion = group['religion']?.toString() ?? '';
+          groupCounts[religion] = (groupCounts[religion] ?? 0) + 1;
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _religions = religions;
+          _bookCounts = bookCounts;
+          _groupCounts = groupCounts;
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() => _isLoading = false);
-      debugPrint('[BookLibrary] Error: $e');
+      debugPrint('[BookLibrary] Error loading data: $e');
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
-  }
-
-  Future<void> _downloadBook(Map<String, dynamic> book) async {
-    final bookId = book['id'];
-    final fileUrl = book['file_url'];
-    if (fileUrl == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('书籍文件不可用')));
-      return;
-    }
-    final status = await Permission.storage.request();
-    if (!status.isGranted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('需要存储权限才能下载')));
-      return;
-    }
-    setState(() => _downloadProgress[bookId] = 0);
-    try {
-      final dir = await getApplicationDocumentsDirectory();
-      final bookDir = Directory('${dir.path}/books');
-      if (!await bookDir.exists()) await bookDir.create(recursive: true);
-      final fileName = book['filename'] ?? '$bookId.pdf';
-      final savePath = '${bookDir.path}/$fileName';
-      await Dio().download(fileUrl, savePath, onReceiveProgress: (received, total) {
-        setState(() => _downloadProgress[bookId] = received / total);
-      });
-      setState(() => _downloadProgress.remove(bookId));
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('下载完成')));
-    } catch (e) {
-      setState(() => _downloadProgress.remove(bookId));
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('下载失败: $e')));
-    }
-  }
-
-  bool _isDownloaded(String bookId) => false; // TODO
-
-  void _openBook(Map<String, dynamic> book) {
-    Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => BookReaderScreen(
-        bookId: book['id'],
-        title: book['title'] ?? '',
-        fileUrl: book['file_url'],
-      ),
-    ));
   }
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        backgroundColor: const Color(0xFF050816),
-        appBar: AppBar(
-          backgroundColor: const Color(0xFF050816),
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.menu, color: Colors.white),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
-          title: const Text('藏书阁', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          bottom: TabBar(
-            indicatorColor: const Color(0xFF9D4EDD),
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.white54,
-            onTap: (index) => setState(() => _currentTab = index),
-            tabs: const [
-              Tab(text: '全部藏书'),
-              Tab(text: '已下载'),
-            ],
-          ),
+    return Scaffold(
+      backgroundColor: AppColors.bgColor,
+      appBar: AppBar(
+        backgroundColor: AppColors.bgColor,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
         ),
-        body: TabBarView(
-          children: [
-            _buildBookList(_books),
-            _buildBookList(_books.where((b) => _isDownloaded(b['id'])).toList()),
-          ],
+        title: const Text(
+          '经典藏书',
+          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
         ),
+        centerTitle: true,
       ),
-    );
-  }
-
-  Widget _buildBookList(List<Map<String, dynamic>> books) {
-    if (_isLoading) return const Center(child: CircularProgressIndicator(color: Color(0xFF9D4EDD)));
-    if (books.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.library_books_outlined, size: 64, color: Colors.white.withOpacity(0.3)),
-            const SizedBox(height: 16),
-            Text(_currentTab == 0 ? '暂无藏书' : '暂无下载', style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 16)),
-          ],
-        ),
-      );
-    }
-    return RefreshIndicator(
-      onRefresh: _loadBooks,
-      child: GridView.builder(
-        padding: const EdgeInsets.all(16),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3, mainAxisSpacing: 16, crossAxisSpacing: 12, childAspectRatio: 0.6,
-        ),
-        itemCount: books.length,
-        itemBuilder: (context, index) => _buildBookCard(books[index]),
-      ),
-    );
-  }
-
-  Widget _buildBookCard(Map<String, dynamic> book) {
-    final title = book['title'] ?? '未知书名';
-    final author = book['author'] ?? '未知作者';
-    final coverUrl = book['cover_url'];
-    final bookId = book['id'];
-    final isDownloading = _downloadProgress.containsKey(bookId);
-    final progress = _downloadProgress[bookId] ?? 0;
-
-    return GestureDetector(
-      onTap: () => _openBook(book),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Stack(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: const Color(0xFF0A0E21)),
-                    child: coverUrl != null
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: CachedNetworkImage(
-                              imageUrl: coverUrl, fit: BoxFit.cover,
-                              placeholder: (context, url) => const Center(child: CircularProgressIndicator(color: Color(0xFF9D4EDD), strokeWidth: 2)),
-                              errorWidget: (context, url, error) => const Center(child: Icon(Icons.book, size: 40, color: Colors.white38)),
-                            ),
-                          )
-                        : const Center(child: Icon(Icons.book, size: 40, color: Colors.white38)),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: AppColors.purple))
+          : _religions.isEmpty
+              ? Center(
+                  child: Text(
+                    '暂无藏书数据',
+                    style: TextStyle(color: AppColors.textSecondary, fontSize: 16),
                   ),
-                  if (isDownloading)
-                    Positioned.fill(
-                      child: Container(
-                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: Colors.black.withOpacity(0.7)),
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              SizedBox(width: 32, height: 32, child: CircularProgressIndicator(value: progress, color: const Color(0xFF9D4EDD), strokeWidth: 3)),
-                              const SizedBox(height: 8),
-                              Text('${(progress * 100).toInt()}%', style: const TextStyle(color: Colors.white, fontSize: 12)),
-                            ],
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: _religions.length,
+                  itemBuilder: (context, index) {
+                    final religion = _religions[index];
+                    final religionId = religion['id']?.toString() ?? '';
+                    final religionName = religion['name']?.toString() ?? '';
+                    final bookCount = _bookCounts[religionId] ?? 0;
+                    final groupCount = _groupCounts[religionId] ?? 0;
+
+                    return _buildReligionCard(
+                      religionId: religionId,
+                      religionName: religionName,
+                      bookCount: bookCount,
+                      groupCount: groupCount,
+                    );
+                  },
+                ),
+    );
+  }
+
+  Widget _buildReligionCard({
+    required String religionId,
+    required String religionName,
+    required int bookCount,
+    required int groupCount,
+  }) {
+    // 构建副标题：X 卷 或 X 个子分类 · Y 卷
+    String subtitle = '';
+    if (groupCount > 0 && bookCount > 0) {
+      subtitle = '$groupCount 个子分类 · $bookCount 卷';
+    } else if (bookCount > 0) {
+      subtitle = '$bookCount 卷';
+    } else if (groupCount > 0) {
+      subtitle = '$groupCount 个子分类';
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      // 外层：1px 渐变边框
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        gradient: AppColors.auroraGradient,
+      ),
+      child: Container(
+        // 内层：深色背景
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(11),
+          color: AppColors.bgColor,
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(11),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => ReligionBookListScreen(
+                    religionId: religionId,
+                    religionName: religionName,
+                  ),
+                ),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  // 书籍图标
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: AppColors.bgSecondary,
+                    ),
+                    child: const Icon(
+                      Icons.menu_book,
+                      color: AppColors.purple,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  // 文字信息
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          religionName,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                      ),
+                        if (subtitle.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            subtitle,
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
-                  if (_isDownloaded(bookId))
-                    Positioned(
-                      top: 8, right: 8,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(color: const Color(0xFF9D4EDD), borderRadius: BorderRadius.circular(4)),
-                        child: const Icon(Icons.download_done, size: 16, color: Colors.white),
-                      ),
-                    ),
+                  ),
+                  // 箭头
+                  Icon(
+                    Icons.chevron_right,
+                    color: AppColors.textWeak,
+                    size: 20,
+                  ),
                 ],
               ),
             ),
-            const SizedBox(height: 8),
-            Text(title, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500)),
-            const SizedBox(height: 2),
-            Text(author, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 10)),
-          ],
+          ),
         ),
       ),
     );

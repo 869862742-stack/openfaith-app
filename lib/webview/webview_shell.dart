@@ -17,8 +17,17 @@ class _WebViewShellState extends State<WebViewShell> {
   InAppWebViewController? _webViewController;
   bool _isLoading = true;
   double _progress = 0;
+  String? _currentUrl;
 
   static const String _baseUrl = 'https://openfaithhub.com';
+
+  /// 需要拦截跳转原生的路径模式
+  static const List<String> _nativePaths = [
+    '/books',
+    '/books/',
+    '/learn/books',
+    '/classic-books',
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +40,6 @@ class _WebViewShellState extends State<WebViewShell> {
           await controller.goBack();
         } else {
           if (context.mounted) {
-            // 在首页按返回键 = 退出APP
             SystemNavigator.pop();
           }
         }
@@ -62,12 +70,21 @@ class _WebViewShellState extends State<WebViewShell> {
               },
               onLoadStart: (controller, url) {
                 setState(() => _isLoading = true);
+                if (url != null) {
+                  debugPrint('[WebView] LoadStart: $url');
+                }
               },
               onProgressChanged: (controller, progress) {
                 setState(() => _progress = progress / 100);
               },
               onLoadStop: (controller, url) async {
                 setState(() => _isLoading = false);
+                if (url != null) {
+                  _currentUrl = url.toString();
+                  debugPrint('[WebView] LoadStop: $_currentUrl');
+                  // 检查是否需要跳转原生
+                  _checkAndNavigateToNative(url.toString());
+                }
                 // 密码门控自动填充
                 await _tryAutoFillPassword(controller, url);
               },
@@ -86,6 +103,7 @@ class _WebViewShellState extends State<WebViewShell> {
                   
                   // 藏书 → 原生
                   if (path == '/books' || path.startsWith('/books/')) {
+                    debugPrint('[WebView] Intercepting /books: $url');
                     if (mounted) context.go(path);
                     return NavigationActionPolicy.CANCEL;
                   }
@@ -110,6 +128,26 @@ class _WebViewShellState extends State<WebViewShell> {
         ),
       ),
     );
+  }
+
+  /// 检查当前URL是否需要跳转到原生页面
+  void _checkAndNavigateToNative(String url) {
+    if (!url.startsWith(_baseUrl)) return;
+    
+    final path = url.substring(_baseUrl.length).split('?')[0].split('#')[0];
+    
+    debugPrint('[WebView] Checking path: $path');
+    
+    // 检查是否匹配原生路径
+    for (final nativePath in _nativePaths) {
+      if (path == nativePath || path.startsWith(nativePath)) {
+        debugPrint('[WebView] Navigating to native: $path');
+        if (mounted) {
+          context.go(path);
+        }
+        return;
+      }
+    }
   }
 
   /// 密码门控自动填充
@@ -145,6 +183,7 @@ class _WebViewShellState extends State<WebViewShell> {
       callback: (args) {
         if (args.isNotEmpty && mounted) {
           final path = args[0] as String;
+          debugPrint('[WebView] JS Bridge navigateToNative: $path');
           context.go(path);
         }
       },
@@ -157,6 +196,14 @@ class _WebViewShellState extends State<WebViewShell> {
         if (await _webViewController?.canGoBack() == true) {
           await _webViewController?.goBack();
         }
+      },
+    );
+    
+    // 获取当前URL（用于调试）
+    controller.addJavaScriptHandler(
+      handlerName: 'getCurrentUrl',
+      callback: (args) {
+        return _currentUrl ?? '';
       },
     );
     
