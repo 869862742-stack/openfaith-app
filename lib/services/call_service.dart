@@ -181,17 +181,18 @@ class CallService {
   
   /// 挂断
   Future<void> endCall() async {
-    if (_currentCallId != null) {
+    final callId = _currentCallId;
+    if (callId != null) {
       try {
         await _supabase
             .from('private_messages')
             .update({
               'content': '[CALL_HANGUP]${_encodeJson({
-                'callId': _currentCallId,
+                'callId': callId,
                 'status': 'hangup',
               })}',
             })
-            .eq('id', _currentCallId);
+            .eq('id', callId);
       } catch (e) {
         debugPrint('[CallService] Failed to send hangup: $e');
       }
