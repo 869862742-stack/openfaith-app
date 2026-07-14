@@ -12,6 +12,19 @@ jobs:
     
     steps:
       - uses: actions/checkout@v4
+
+      # 清理磁盘空间，避免构建时空间不足
+      - name: Free disk space
+        run: |
+          echo "Before cleanup:"
+          df -h /
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo apt-get clean
+          echo "After cleanup:"
+          df -h /
       
       - uses: actions/setup-java@v4
         with:
