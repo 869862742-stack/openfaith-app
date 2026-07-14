@@ -2,6 +2,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:go_router/go_router.dart';
+import '../screens/call/call_screen.dart';
+import '../services/call_service.dart';
 
 /// WebView 壳 - 加载网页版 OpenFaith
 /// 所有页面、导航、业务逻辑都由网页版处理
@@ -99,6 +101,8 @@ class _WebViewShellState extends State<WebViewShell> {
                   // 检查是否需要跳转原生
                   _checkAndNavigateToNative(url.toString());
                 }
+                // 注入JS拦截通话按钮点击
+                await _injectCallInterceptJs(controller);
                 // 密码门控自动填充
                 await _tryAutoFillPassword(controller, url);
               },
@@ -113,14 +117,39 @@ class _WebViewShellState extends State<WebViewShell> {
                 final url = navigationAction.request.url?.toString() ?? '';
                 
                 if (url.startsWith(_baseUrl)) {
-                  final path = url.substring(_baseUrl.length);
+                  // 提取路径部分（去掉base URL）
+                  final rawPath = url.substring(_baseUrl.length);
                   
-                  // 藏书 → 原生
-                  if (path == '/books' || path.startsWith('/books/') || path == '/book' || path.startsWith('/book/')) {
-                    debugPrint('[WebView] Intercepting book URL: $url');
+                  // 处理Hash路由：URL格式为 /#/book/:id 或 /#/chat/:userId
+                  final hashPath = _extractHashPath(rawPath);
+                  // 也要处理非hash的普通路径
+                  final normalPath = rawPath.split('?')[0].split('#')[0];
+                  
+                  debugPrint('[WebView] URL intercept - raw: $rawPath, hash: $hashPath, normal: $normalPath');
+                  
+                  // 优先处理Hash路由
+                  final pathToCheck = hashPath ?? normalPath;
+                  
+                  // 藏书/阅读器 → 原生
+                  if (pathToCheck == '/books' || pathToCheck.startsWith('/books/') ||
+                      pathToCheck == '/book' || pathToCheck.startsWith('/book/')) {
+                    debugPrint('[WebView] Intercepting book URL: $url (path: $pathToCheck)');
                     // /book/:id 映射到 /books/:bookId 路由
-                    final nativePath = path.startsWith('/book/') ? '/books/${path.substring(6)}' : path;
+                    String nativePath;
+                    if (pathToCheck.startsWith('/book/')) {
+                      nativePath = '/books/${pathToCheck.substring(6)}';
+                    } else {
+                      nativePath = pathToCheck;
+                    }
                     if (mounted) context.go(nativePath);
+                    return NavigationActionPolicy.CANCEL;
+                  }
+                  
+                  // 通话/聊天 → 原生通话页面
+                  if (pathToCheck.startsWith('/chat/')) {
+                    final userId = pathToCheck.substring(6); // 去掉 /chat/
+                    debugPrint('[WebView] Intercepting chat/call URL: $url, userId: $userId');
+                    if (mounted) _navigateToNativeCall(userId);
                     return NavigationActionPolicy.CANCEL;
                   }
                 }
@@ -147,23 +176,143 @@ class _WebViewShellState extends State<WebViewShell> {
     );
   }
 
+  /// 从URL路径中提取Hash路由部分
+  /// 输入: /#/book/xxx 或 /#/chat/yyy 或 /some/path
+  /// 输出: /book/xxx 或 /chat/yyy 或 null（如果不是hash路由）
+  String? _extractHashPath(String rawPath) {
+    // Hash路由格式: /#/something
+    if (rawPath.startsWith('/#/')) {
+      return rawPath.substring(2); // 去掉 /# 得到 /something
+    }
+    // 也处理 /#something (没有斜杠的情况)
+    if (rawPath.startsWith('#/')) {
+      return rawPath.substring(1); // 去掉 # 得到 /something
+    }
+    return null;
+  }
+
   /// 检查当前URL是否需要跳转到原生页面
   void _checkAndNavigateToNative(String url) {
     if (!url.startsWith(_baseUrl)) return;
     
-    final path = url.substring(_baseUrl.length).split('?')[0].split('#')[0];
+    final rawPath = url.substring(_baseUrl.length);
     
-    debugPrint('[WebView] Checking path: $path');
+    // 先尝试提取hash路由
+    final hashPath = _extractHashPath(rawPath);
+    // 非hash的普通路径
+    final normalPath = rawPath.split('?')[0].split('#')[0];
+    
+    final path = hashPath ?? normalPath;
+    
+    debugPrint('[WebView] Checking path: $path (hash: $hashPath)');
     
     // 检查是否匹配原生路径
     for (final nativePath in _nativePaths) {
       if (path == nativePath || path.startsWith(nativePath)) {
         debugPrint('[WebView] Navigating to native: $path');
+        // /book/:id 映射到 /books/:bookId
+        String goPath = path;
+        if (path.startsWith('/book/')) {
+          goPath = '/books/${path.substring(6)}';
+        }
         if (mounted) {
-          context.go(path);
+          context.go(goPath);
         }
         return;
       }
+    }
+    
+    // 也检查通话路径
+    if (path.startsWith('/chat/')) {
+      final userId = path.substring(6);
+      debugPrint('[WebView] Navigating to native call: userId=$userId');
+      if (mounted) _navigateToNativeCall(userId);
+    }
+  }
+
+  /// 导航到原生通话页面
+  void _navigateToNativeCall(String userId) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => CallScreen(
+          myUserId: '', // TODO: 从登录状态获取
+          peerUserId: userId,
+          peerName: userId, // 网页版chat路由中userId即对方标识
+          callType: 'voice',
+          isIncoming: false,
+        ),
+      ),
+    );
+  }
+
+  /// 注入JS拦截通话按钮点击
+  Future<void> _injectCallInterceptJs(InAppWebViewController controller) async {
+    try {
+      await controller.evaluateJavascript(source: '''
+        (function() {
+          // 避免重复注入
+          if (window.__openfaithCallIntercepted) return 'already_injected';
+          window.__openfaithCallIntercepted = true;
+          
+          // 拦截所有可能的通话按钮点击
+          document.addEventListener('click', function(e) {
+            var target = e.target;
+            // 向上查找最近的 a 标签或 button
+            while (target && target !== document.body) {
+              var href = target.getAttribute && target.getAttribute('href');
+              if (href) {
+                // 检查是否是通话链接 (#/chat/xxx)
+                var chatMatch = href.match(/#\/chat\/([^\/\?#]+)/);
+                if (chatMatch) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  var userId = chatMatch[1];
+                  // 调用Flutter JS Bridge
+                  if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
+                    window.flutter_inappwebview.callHandler('startNativeCall', userId);
+                  }
+                  return false;
+                }
+              }
+              // 检查 data-action 或其他自定义属性
+              var action = target.getAttribute && target.getAttribute('data-action');
+              if (action === 'call' || action === 'voice-call' || action === 'video-call') {
+                var peerId = target.getAttribute('data-peer-id') || target.getAttribute('data-user-id');
+                if (peerId) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
+                    window.flutter_inappwebview.callHandler('startNativeCall', peerId);
+                  }
+                  return false;
+                }
+              }
+              target = target.parentElement;
+            }
+          }, true);
+          
+          // 也拦截通过 onclick 直接绑定的通话函数
+          var origPushState = history.pushState;
+          var origReplaceState = history.replaceState;
+          
+          // 监听hashchange事件
+          window.addEventListener('hashchange', function(e) {
+            var hash = window.location.hash;
+            var chatMatch = hash.match(/#\/chat\/([^\/\?#]+)/);
+            if (chatMatch) {
+              var userId = chatMatch[1];
+              if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
+                window.flutter_inappwebview.callHandler('startNativeCall', userId);
+              }
+            }
+          });
+          
+          return 'injected';
+        })()
+      ''');
+      debugPrint('[WebView] Call intercept JS injected');
+    } catch (e) {
+      debugPrint('[WebView] Call intercept JS injection error: $e');
     }
   }
 
@@ -202,6 +351,18 @@ class _WebViewShellState extends State<WebViewShell> {
           final path = args[0] as String;
           debugPrint('[WebView] JS Bridge navigateToNative: $path');
           context.go(path);
+        }
+      },
+    );
+    
+    // 发起原生通话
+    controller.addJavaScriptHandler(
+      handlerName: 'startNativeCall',
+      callback: (args) {
+        if (args.isNotEmpty && mounted) {
+          final userId = args[0] as String;
+          debugPrint('[WebView] JS Bridge startNativeCall: userId=$userId');
+          _navigateToNativeCall(userId);
         }
       },
     );

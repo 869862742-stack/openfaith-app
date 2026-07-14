@@ -1204,6 +1204,7 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
       MaterialPageRoute(
         builder: (_) => CallScreen(
           myUserId: myUserId,
+          peerUserId: friendId,
           peerName: friendName,
           callType: 'voice',
           isIncoming: false,

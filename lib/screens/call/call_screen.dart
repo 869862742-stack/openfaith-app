@@ -5,6 +5,7 @@ import '../../theme/app_colors.dart';
 
 class CallScreen extends StatefulWidget {
   final String myUserId;
+  final String peerUserId;
   final String peerName;
   final String callType; // 'voice' | 'video'
   final bool isIncoming;
@@ -15,6 +16,7 @@ class CallScreen extends StatefulWidget {
   const CallScreen({
     super.key,
     required this.myUserId,
+    required this.peerUserId,
     required this.peerName,
     required this.callType,
     required this.isIncoming,
@@ -57,6 +59,15 @@ class _CallScreenState extends State<CallScreen> {
         channelName: widget.channelName!,
         type: widget.callType,
         callerName: widget.peerName,
+      );
+    } else if (!widget.isIncoming) {
+      // 发起通话
+      debugPrint('[CallScreen] Starting outgoing call to ${widget.peerName} (${widget.peerUserId})');
+      _callService.startCall(
+        myUserId: widget.myUserId,
+        peerUserId: widget.peerUserId,
+        peerName: widget.peerName,
+        type: widget.callType,
       );
     }
   }

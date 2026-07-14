@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// 阅读器 - 支持 PDF 在线阅读和本地离线阅读
 class BookReaderScreen extends StatefulWidget {
@@ -32,7 +33,6 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
   @override
   void initState() {
     super.initState();
-    
     _loadBook();
   }
 
@@ -47,15 +47,48 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
       return;
     }
 
-    // 本地没有，从网络下载
-    if (widget.fileUrl != null) {
+    // 确定 fileUrl
+    String? url = widget.fileUrl;
+    if (url == null || url.isEmpty) {
+      // 从 Supabase 查询
+      setState(() => _loadingMessage = '获取书籍信息...');
+      url = await _fetchFileUrlFromSupabase();
+    }
+
+    if (url != null && url.isNotEmpty) {
       setState(() => _loadingMessage = '正在下载书籍...');
-      await _downloadAndCacheBook(widget.fileUrl!);
+      await _downloadAndCacheBook(url);
     } else {
       setState(() {
         _isLoading = false;
         _loadingMessage = '书籍文件不可用';
       });
+    }
+  }
+
+  /// 从 Supabase books 表查询 file_url
+  Future<String?> _fetchFileUrlFromSupabase() async {
+    try {
+      final supabase = Supabase.instance.client;
+      final res = await supabase
+          .from('books')
+          .select('file_url, title')
+          .eq('id', widget.bookId)
+          .limit(1);
+      
+      if (res != null && res.isNotEmpty) {
+        final fileUrl = res[0]['file_url'] as String?;
+        // 如果 title 也没传，从数据库取
+        if (fileUrl != null) {
+          debugPrint('[BookReader] Fetched file_url from Supabase: $fileUrl');
+          return fileUrl;
+        }
+      }
+      debugPrint('[BookReader] No file_url found for bookId: ${widget.bookId}');
+      return null;
+    } catch (e) {
+      debugPrint('[BookReader] Supabase query error: $e');
+      return null;
     }
   }
 
@@ -98,14 +131,17 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
         url,
         savePath,
         onReceiveProgress: (received, total) {
-          setState(() {
-            _loadingMessage = '下载中 ${((received / total) * 100).toInt()}%';
-          });
+          if (total > 0) {
+            setState(() {
+              _loadingMessage = '下载中 ${((received / total) * 100).toInt()}%';
+            });
+          }
         },
       );
 
       setState(() {
         _localFilePath = savePath;
+        _isLoading = false;
       });
     } catch (e) {
       setState(() {
