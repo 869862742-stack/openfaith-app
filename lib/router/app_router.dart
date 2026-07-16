@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../webview/webview_shell.dart';
+import '../navigation/bottom_nav.dart';
 import '../screens/book_library_screen.dart';
 import '../screens/religion_book_list_screen.dart';
 import '../screens/book_reader_screen.dart';
@@ -12,7 +13,7 @@ final GoRouter appRouter = GoRouter(
     // 主页 = WebView 加载网页版
     GoRoute(
       path: '/home',
-      builder: (context, state) => const WebViewShell(),
+      builder: (context, state) => const BottomNavScreen(),
     ),
     // 藏书阁（原生，宗教分类列表）
     GoRoute(
