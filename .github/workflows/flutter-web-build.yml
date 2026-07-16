@@ -13,15 +13,15 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.5'
+          flutter-version: '3.44.5'
           channel: 'stable'
           cache: true
 
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build web (HTML renderer)
-        run: flutter build web --release --web-renderer html --base-href="/"
+      - name: Build web
+        run: flutter build web --release --base-href="/"
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/pages-action@v1
