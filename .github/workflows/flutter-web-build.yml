@@ -27,7 +27,7 @@ jobs:
         run: npm install -g wrangler
 
       - name: Deploy to Cloudflare Pages
-        run: |
-          wrangler pages deploy build/web --project-name=openfaith \
-            --account-id=e3cfcf3046c4b621689891ffe3c9ad49 \
-            --api-token=cfk_8htOHZ0dmYVg0a2Vm4ArBD5S9NWaHDKYOa5IAp0u309bfa99
+        env:
+          CLOUDFLARE_API_TOKEN: cfk_8htOHZ0dmYVg0a2Vm4ArBD5S9NWaHDKYOa5IAp0u309bfa99
+          CLOUDFLARE_ACCOUNT_ID: e3cfcf3046c4b621689891ffe3c9ad49
+        run: wrangler pages deploy build/web --project-name=openfaith --branch=main
