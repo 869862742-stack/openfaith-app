@@ -37,20 +37,24 @@ void main() {
 Future<void> _initApp() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Shorebird OTA 热更新
-  try {
-    final updater = ShorebirdUpdater();
-    final status = await updater.checkForUpdate().timeout(
-      const Duration(seconds: 5),
-      onTimeout: () => UpdateStatus.upToDate,
-    );
-    if (status == UpdateStatus.outdated) {
-      debugPrint('[Shorebird] New patch available, downloading...');
-      await updater.update().timeout(const Duration(seconds: 10));
-      debugPrint('[Shorebird] Patch downloaded');
+  // Shorebird OTA 热更新 (仅在非Web平台启用)
+  if (!kIsWeb) {
+    try {
+      final updater = ShorebirdUpdater();
+      final status = await updater.checkForUpdate().timeout(
+        const Duration(seconds: 5),
+        onTimeout: () => UpdateStatus.upToDate,
+      );
+      if (status == UpdateStatus.outdated) {
+        debugPrint('[Shorebird] New patch available, downloading...');
+        await updater.update().timeout(const Duration(seconds: 10));
+        debugPrint('[Shorebird] Patch downloaded');
+      }
+    } catch (e) {
+      debugPrint('[Shorebird] Update check skipped: $e');
     }
-  } catch (e) {
-    debugPrint('[Shorebird] Update check skipped: $e');
+  } else {
+    debugPrint('[Shorebird] Skipped on Web platform');
   }
 
   // Supabase 初始化
