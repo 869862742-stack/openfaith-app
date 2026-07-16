@@ -161,7 +161,7 @@ const Map<String, String> enStrings = {
   'about_title': 'About OpenFaith',
   'about_openfaith': 'About OpenFaith',
   'about_feature_intro': 'Features',
-  'about_feature_content': 'OpenFaith is a faith-driven social platform.
+  'about_feature_content': '''OpenFaith is a faith-driven social platform.
 
 [Core Features]
 - Feed Sharing: Share your faith stories and life insights
@@ -177,7 +177,7 @@ const Map<String, String> enStrings = {
 - Shorebird hot updates, no reinstall needed
 - Dark theme, eye-friendly
 
-Website: openfaithhub.com',
+Website: openfaithhub.com''',
   'about_version_update': 'Check for Updates',
   'about_download_apk': 'Download Latest APK',
   'about_privacy_policy': 'Privacy Policy',

@@ -161,7 +161,7 @@ const Map<String, String> zhStrings = {
   'about_title': '关于 OpenFaith',
   'about_openfaith': '关于 OpenFaith',
   'about_feature_intro': '功能介绍',
-  'about_feature_content': 'OpenFaith 是一款信仰驱动的社交平台。
+  'about_feature_content': '''OpenFaith 是一款信仰驱动的社交平台。
 
 【核心功能】
 - 动态分享：分享你的信仰故事、生活感悟
@@ -177,7 +177,7 @@ const Map<String, String> zhStrings = {
 - Shorebird 热更新，无需重装即可获取新功能
 - 深色主题，保护视力
 
-官网：openfaithhub.com',
+官网：openfaithhub.com''',
   'about_version_update': '版本更新',
   'about_download_apk': '下载最新版本',
   'about_privacy_policy': '隐私保护指引',

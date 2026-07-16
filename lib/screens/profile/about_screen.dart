@@ -43,7 +43,7 @@ class _AboutScreenState extends State<AboutScreen> {
       final status = await patcher.checkForUpdate();
       if (mounted) {
         setState(() {
-          _patchVersion = status.available ? '有更新可用' : '已是最新';
+          _patchVersion = status == UpdateStatus.outdated ? '有更新可用' : '已是最新';
         });
       }
     } catch (_) {}
@@ -367,7 +367,7 @@ class _AboutScreenState extends State<AboutScreen> {
       final status = await patcher.checkForUpdate();
 
       String msg = '';
-      if (status.available) {
+      if (status == UpdateStatus.outdated) {
         msg = '发现新补丁版本！\n\n正在下载更新补丁...\n下载完成后重启APP即可生效。';
         await patcher.update();
         msg += '\n\n补丁已下载，请重启APP以应用更新。';
