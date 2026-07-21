@@ -36,7 +36,6 @@ class CallConnectionService : ConnectionService() {
             }
             
             private fun connectionActive() {
-                connectionProperties = Connection.PROPERTY_ACTIVE
                 setConnectionCapabilities(Connection.CAPABILITY_HOLD)
             }
             
@@ -45,7 +44,7 @@ class CallConnectionService : ConnectionService() {
             }
         }
         
-        request?.handle?.let { connection.setAddress(it, TelecomManager.PRESENTATION_ALLOWED) }
+        request?.getHandle()?.let { connection.setAddress(it, TelecomManager.PRESENTATION_ALLOWED) }
         connection.setConnectionCapabilities(
             Connection.CAPABILITY_HOLD or Connection.CAPABILITY_SUPPORT_HOLD
         )
@@ -70,7 +69,7 @@ class CallConnectionService : ConnectionService() {
             }
         }
         
-        request?.handle?.let { connection.setAddress(it, TelecomManager.PRESENTATION_ALLOWED) }
+        request?.getHandle()?.let { connection.setAddress(it, TelecomManager.PRESENTATION_ALLOWED) }
         connection.setAudioModeIsVoip(true)
         
         return connection
