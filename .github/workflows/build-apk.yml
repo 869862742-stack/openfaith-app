@@ -13,6 +13,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
@@ -87,3 +89,35 @@ jobs:
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update version.json in web repo
+        if: success()
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //' | tr -d '[:space:]' | cut -d'+' -f1)
+          APK_SIZE=$(du -h build/app/outputs/flutter-apk/app-release.apk | cut -f1 | tr -d '[:space:]')
+          
+          # Create new version.json content
+          cat > version.json << EOF
+          {
+            "latestVersion": "${VERSION}",
+            "downloadUrl": "https://openfaith.pages.dev/download/flutter/${VERSION}",
+            "fallbackUrl": "https://github.com/${{ github.repository }}/releases/download/app-v${VERSION}/app-release.apk",
+            "releaseUrl": "https://github.com/${{ github.repository }}/releases/tag/app-v${VERSION}",
+            "size": "${APK_SIZE}",
+            "publishedAt": "$(date +%Y-%m-%d)",
+            "changelog": "Flutter v${VERSION} - 自动构建"
+          }
+          EOF
+          
+          # Get current file SHA from web repo
+          CURRENT=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/869862742-stack/openfaith-web/contents/public/version.json" | \
+            python3 -c "import sys,json; print(json.load(sys.stdin).get('sha',''))")
+          
+          # Update version.json in web repo
+          CONTENT=$(base64 -w0 version.json)
+          curl -s -X PUT \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/869862742-stack/openfaith-web/contents/public/version.json" \
+            -d "{\"message\":\"chore: update version.json to Flutter v${VERSION}\",\"content\":\"${CONTENT}\",\"sha\":\"${CURRENT}\"}"
