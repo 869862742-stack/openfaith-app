@@ -26,26 +26,26 @@ class CallConnectionService : ConnectionService() {
             
             override fun onReject() {
                 Log.d(TAG, "onReject")
-                destroy()
+                cleanupConnection()
                 sendBroadcast(android.content.Intent("com.example.openfaith.CALL_DECLINED"))
             }
             
             override fun onDisconnect() {
                 Log.d(TAG, "onDisconnect")
-                destroy()
+                cleanupConnection()
             }
             
             private fun connectionActive() {
-                connectionProperties = PROPERTY_ACTIVE
-                setConnectionCapabilities(CONNECTION_CAPABILITY_HOLD)
+                connectionProperties = Connection.PROPERTY_ACTIVE
+                setConnectionCapabilities(Connection.CAPABILITY_HOLD)
             }
             
-            private fun destroy() {
+            private fun cleanupConnection() {
                 setDisconnected(DisconnectCause(DisconnectCause.LOCAL))
             }
         }
         
-        connection.address = request?.handle
+        request?.handle?.let { connection.setAddress(it, TelecomManager.PRESENTATION_ALLOWED) }
         connection.setConnectionCapabilities(
             Connection.CAPABILITY_HOLD or Connection.CAPABILITY_SUPPORT_HOLD
         )
@@ -70,7 +70,7 @@ class CallConnectionService : ConnectionService() {
             }
         }
         
-        connection.address = request?.handle
+        request?.handle?.let { connection.setAddress(it, TelecomManager.PRESENTATION_ALLOWED) }
         connection.setAudioModeIsVoip(true)
         
         return connection
