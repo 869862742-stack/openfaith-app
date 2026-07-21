@@ -49,6 +49,14 @@
                 <action android:name="android.telecom.ConnectionService" />
             </intent-filter>
         </service>
+        <receiver
+            android:name=".services.CallBroadcastReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.openfaith.openfaith_app.CALL_ANSWERED" />
+                <action android:name="com.openfaith.openfaith_app.CALL_DECLINED" />
+            </intent-filter>
+        </receiver>
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
