@@ -36,6 +36,7 @@ class _CallScreenState extends State<CallScreen> {
   final CallService _callService = CallService();
   bool _permissionsGranted = false;
   bool _swappedVideo = false; // 切换大小窗
+  bool _isHangingUp = false; // 挂断防抖
 
   @override
   void initState() {
@@ -116,6 +117,9 @@ class _CallScreenState extends State<CallScreen> {
   }
 
   void _endCallAndPop() {
+    // 防抖：防止重复触发挂断
+    if (_isHangingUp) return;
+    _isHangingUp = true;
     _callService.endCall();
     widget.onCallEnd?.call();
     if (mounted) {
@@ -165,7 +169,9 @@ class _CallScreenState extends State<CallScreen> {
     final statusText = _getStatusText(state);
     final initial = widget.peerName.isNotEmpty ? widget.peerName[0] : '?';
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
       backgroundColor: AppColors.bgColor,
       body: SafeArea(
         child: Column(
@@ -223,6 +229,7 @@ class _CallScreenState extends State<CallScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 
@@ -232,7 +239,9 @@ class _CallScreenState extends State<CallScreen> {
     final localController = _callService.getLocalVideoController();
     final remoteController = _callService.getRemoteVideoController(remoteUid);
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
         children: [
@@ -393,6 +402,7 @@ class _CallScreenState extends State<CallScreen> {
           ),
         ],
       ),
+    ),
     );
   }
 

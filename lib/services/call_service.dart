@@ -205,6 +205,12 @@ class CallService extends ChangeNotifier {
     required String type, // 'voice' | 'video'
     String? myUserId,
   }) async {
+    // 防抖：如果已经在通话中，直接返回
+    if (_isBusy) {
+      debugPrint('[CallService] Already busy, rejecting duplicate startCall');
+      return;
+    }
+
     if (_stateData.status != CallState.idle) {
       _isBusy = true;
       debugPrint('[CallService] Busy, rejecting new call');
@@ -304,6 +310,12 @@ class CallService extends ChangeNotifier {
     String? myUserId,
     String? remoteUserId,
   }) async {
+    // 防抖：如果已经在通话中，直接返回
+    if (_isBusy) {
+      debugPrint('[CallService] Already busy, rejecting duplicate acceptCall');
+      return;
+    }
+
     if (_stateData.status != CallState.idle && _stateData.status != CallState.incoming) {
       _isBusy = true;
       return;
@@ -525,14 +537,21 @@ class CallService extends ChangeNotifier {
   void dispose() {
     _timeoutTimer?.cancel();
     _durationTimer?.cancel();
-    try {
-      _engine?.leaveChannel();
-      _engine?.release();
-    } catch (e) {
-      debugPrint('[CallService] dispose error: $e');
-    }
-    _engine = null;
-    _engineInitialized = false;
+    // 确保 leaveChannel 完成后再 release，避免 SDK 状态冲突
+    () async {
+      try {
+        await _engine?.leaveChannel();
+      } catch (e) {
+        debugPrint('[CallService] dispose leaveChannel error: $e');
+      }
+      try {
+        await _engine?.release();
+      } catch (e) {
+        debugPrint('[CallService] dispose release error: $e');
+      }
+      _engine = null;
+      _engineInitialized = false;
+    }();
     super.dispose();
   }
 }

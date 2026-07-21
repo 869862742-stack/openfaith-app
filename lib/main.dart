@@ -27,11 +27,14 @@ void main() {
 
   runZonedGuarded<Future<void>>(
     () async {
-      await _initApp();
+      final initResult = await _initApp();
       runApp(
         ChangeNotifierProvider(
           create: (_) => CallService(),
-          child: const OpenFaithApp(),
+          child: OpenFaithApp(
+            supabaseReady: initResult['supabase'] ?? false,
+            callServiceReady: initResult['callService'] ?? false,
+          ),
         ),
       );
     },
@@ -41,7 +44,7 @@ void main() {
   );
 }
 
-Future<void> _initApp() async {
+Future<Map<String, bool>> _initApp() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Shorebird OTA 热更新 (仅在非Web平台启用)
@@ -65,21 +68,29 @@ Future<void> _initApp() async {
   }
 
   // Supabase 初始化
+  bool supabaseReady = false;
   try {
     await Supabase.initialize(
       url: supabaseUrl,
       publishableKey: supabaseAnonKey,
     ).timeout(const Duration(seconds: 10));
+    supabaseReady = true;
   } catch (e) {
     debugPrint('[Supabase] Init failed: $e');
   }
 
-  // CallService 初始化
-  try {
-    await CallService().initialize();
-    debugPrint('[CallService] Initialized');
-  } catch (e) {
-    debugPrint('[CallService] Init failed: $e');
+  // CallService 初始化（依赖 Supabase）
+  bool callServiceReady = false;
+  if (supabaseReady) {
+    try {
+      await CallService().initialize();
+      callServiceReady = true;
+      debugPrint('[CallService] Initialized');
+    } catch (e) {
+      debugPrint('[CallService] Init failed: $e');
+    }
+  } else {
+    debugPrint('[CallService] Skipped - Supabase not available');
   }
 
   // Sentry 错误监控
@@ -97,10 +108,19 @@ Future<void> _initApp() async {
   } catch (e) {
     debugPrint('[Sentry] Init skipped: $e');
   }
+
+  return {'supabase': supabaseReady, 'callService': callServiceReady};
 }
 
 class OpenFaithApp extends StatelessWidget {
-  const OpenFaithApp({super.key});
+  final bool supabaseReady;
+  final bool callServiceReady;
+
+  const OpenFaithApp({
+    super.key,
+    this.supabaseReady = false,
+    this.callServiceReady = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -116,6 +136,42 @@ class OpenFaithApp extends StatelessWidget {
         ),
       ),
       routerConfig: appRouter,
+      builder: (context, child) {
+        if (!supabaseReady) {
+          return _buildInitErrorScreen(
+            '无法连接到服务器',
+            '请检查网络连接后重试。',
+          );
+        }
+        return child ?? const SizedBox.shrink();
+      },
+    );
+  }
+
+  Widget _buildInitErrorScreen(String title, String message) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF050816),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.cloud_off, color: Colors.white54, size: 64),
+              const SizedBox(height: 24),
+              Text(title, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 12),
+              Text(message, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white54, fontSize: 14)),
+              const SizedBox(height: 32),
+              ElevatedButton(
+                onPressed: () {},
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF9D4EDD)),
+                child: const Text('重试', style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
