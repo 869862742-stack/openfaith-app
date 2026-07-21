@@ -149,7 +149,7 @@ Future<void> _checkAppUpdate() async {
     // 获取远程版本信息
     final dio = Dio();
     final response = await dio.get(
-      'https://openfaithhub.com/version.json',
+      'https://raw.githubusercontent.com/869862742-stack/openfaith-app/main/version.json',
       options: Options(
         connectTimeout: const Duration(seconds: 3),
         receiveTimeout: const Duration(seconds: 3),
