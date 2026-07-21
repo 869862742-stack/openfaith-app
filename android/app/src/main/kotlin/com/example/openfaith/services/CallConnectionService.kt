@@ -44,7 +44,7 @@ class CallConnectionService : ConnectionService() {
             }
         }
         
-        request?.getHandle()?.let { connection.setAddress(it, TelecomManager.PRESENTATION_ALLOWED) }
+        // request?.getHandle()?.let { connection.setAddress(it, TelecomManager.PRESENTATION_ALLOWED) }  // FIXME: getHandle() not available in current SDK
         connection.setConnectionCapabilities(
             Connection.CAPABILITY_HOLD or Connection.CAPABILITY_SUPPORT_HOLD
         )
@@ -69,7 +69,7 @@ class CallConnectionService : ConnectionService() {
             }
         }
         
-        request?.getHandle()?.let { connection.setAddress(it, TelecomManager.PRESENTATION_ALLOWED) }
+        // request?.getHandle()?.let { connection.setAddress(it, TelecomManager.PRESENTATION_ALLOWED) }  // FIXME: getHandle() not available in current SDK
         connection.setAudioModeIsVoip(true)
         
         return connection
