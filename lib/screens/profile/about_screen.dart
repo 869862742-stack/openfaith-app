@@ -1,5 +1,8 @@
+import 'dart:convert';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:dio/dio.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shorebird_code_push/shorebird_code_push.dart';
@@ -355,6 +358,7 @@ class _AboutScreenState extends State<AboutScreen> {
     );
   }
 
+  /// 检查更新：先检查 version.json（APP 版本），再检查 Shorebird 补丁
   Future<void> _checkForUpdate() async {
     if (_checkingUpdate) return;
     setState(() {
@@ -363,21 +367,46 @@ class _AboutScreenState extends State<AboutScreen> {
     });
 
     try {
-      final patcher = ShorebirdUpdater();
-      final status = await patcher.checkForUpdate();
-
-      String msg = '';
-      if (status == UpdateStatus.outdated) {
-        msg = '发现新补丁版本！\n\n正在下载更新补丁...\n下载完成后重启APP即可生效。';
-        await patcher.update();
-        msg += '\n\n补丁已下载，请重启APP以应用更新。';
-      } else {
-        msg = '当前已是最新版本 ($_appVersion + $_buildNumber)\n\n补丁状态: 已是最新';
+      // Step 1: 检查 version.json（APP 版本更新）
+      final versionChecked = await _checkVersionJson();
+      if (versionChecked) {
+        // 有新版本，已弹窗提示，结束
+        if (mounted) {
+          setState(() {
+            _checkingUpdate = false;
+          });
+        }
+        return;
       }
 
+      // Step 2: APP 已是最新，检查 Shorebird 补丁
+      try {
+        final patcher = ShorebirdUpdater();
+        final status = await patcher.checkForUpdate();
+
+        if (status == UpdateStatus.outdated) {
+          if (mounted) {
+            setState(() {
+              _updateMessage = '发现新补丁版本！\n\n正在下载更新补丁...\n下载完成后重启APP即可生效。';
+              _checkingUpdate = false;
+            });
+          }
+          await patcher.update();
+          if (mounted) {
+            setState(() {
+              _updateMessage = '补丁已下载完成！\n\n请重启APP以应用更新。';
+            });
+          }
+          return;
+        }
+      } catch (e) {
+        debugPrint('[About] Shorebird check error: $e');
+      }
+
+      // Step 3: 都已是最新
       if (mounted) {
         setState(() {
-          _updateMessage = msg;
+          _updateMessage = '当前已是最新版本 ($_appVersion)\n\n补丁状态: 已是最新';
           _checkingUpdate = false;
         });
       }
@@ -388,6 +417,216 @@ class _AboutScreenState extends State<AboutScreen> {
           _checkingUpdate = false;
         });
       }
+    }
+  }
+
+  /// 检查 version.json 是否有新版本
+  /// 返回 true 表示有新版本（已弹窗），false 表示已是最新或检查失败
+  Future<bool> _checkVersionJson() async {
+    try {
+      final dio = Dio();
+      final response = await dio.get(
+        'https://openfaithhub.com/version.json',
+        options: Options(
+          connectTimeout: const Duration(seconds: 5),
+          receiveTimeout: const Duration(seconds: 5),
+        ),
+      );
+
+      if (response.statusCode != 200 || response.data == null) {
+        debugPrint('[About] Failed to fetch version.json: ${response.statusCode}');
+        return false;
+      }
+
+      final Map<String, dynamic> data;
+      if (response.data is String) {
+        data = json.decode(response.data as String) as Map<String, dynamic>;
+      } else if (response.data is Map<String, dynamic>) {
+        data = response.data as Map<String, dynamic>;
+      } else {
+        debugPrint('[About] Unexpected response format');
+        return false;
+      }
+
+      final latestVersion = data['latestVersion'] as String? ?? '';
+      final downloadUrl = data['downloadUrl'] as String? ?? '';
+      final fallbackUrl = data['fallbackUrl'] as String? ?? '';
+      final changelog = data['changelog'] as String? ?? '';
+
+      if (latestVersion.isEmpty) {
+        debugPrint('[About] Invalid version data');
+        return false;
+      }
+
+      // 比较版本号
+      if (_isNewerVersion(_appVersion, latestVersion)) {
+        debugPrint('[About] New version available: $latestVersion (current: $_appVersion)');
+        if (mounted) {
+          _showUpdateDialog(
+            latestVersion: latestVersion,
+            currentVersion: _appVersion,
+            downloadUrl: downloadUrl,
+            fallbackUrl: fallbackUrl,
+            changelog: changelog,
+          );
+        }
+        return true;
+      } else {
+        debugPrint('[About] APP version up to date: $_appVersion');
+        return false;
+      }
+    } catch (e) {
+      debugPrint('[About] version.json check error: $e');
+      return false;
+    }
+  }
+
+  /// 比较语义化版本号，判断 remote 是否比 current 更新
+  bool _isNewerVersion(String current, String remote) {
+    try {
+      final currentParts = current.split('.').map((e) => int.tryParse(e) ?? 0).toList();
+      final remoteParts = remote.split('.').map((e) => int.tryParse(e) ?? 0).toList();
+
+      final maxLen = currentParts.length > remoteParts.length
+          ? currentParts.length
+          : remoteParts.length;
+      while (currentParts.length < maxLen) {
+        currentParts.add(0);
+      }
+      while (remoteParts.length < maxLen) {
+        remoteParts.add(0);
+      }
+
+      for (int i = 0; i < maxLen; i++) {
+        if (remoteParts[i] > currentParts[i]) return true;
+        if (remoteParts[i] < currentParts[i]) return false;
+      }
+      return false;
+    } catch (e) {
+      debugPrint('[About] Version compare error: $e');
+      return false;
+    }
+  }
+
+  /// 显示版本更新弹窗
+  void _showUpdateDialog({
+    required String latestVersion,
+    required String currentVersion,
+    required String downloadUrl,
+    required String fallbackUrl,
+    required String changelog,
+  }) {
+    showDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: AppColors.cardBg,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: AppColors.borderColor, width: 0.5),
+          ),
+          title: Row(
+            children: [
+              const Icon(Icons.system_update_alt, color: AppColors.auroraBlue, size: 22),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  '发现新版本 v$latestVersion',
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '当前版本: v$currentVersion',
+                style: const TextStyle(
+                  color: AppColors.textWeak,
+                  fontSize: 13,
+                ),
+              ),
+              if (changelog.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                const Text(
+                  '更新内容',
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 160),
+                  child: SingleChildScrollView(
+                    child: Text(
+                      changelog,
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 13,
+                        height: 1.6,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text(
+                '稍后再说',
+                style: TextStyle(color: AppColors.textWeak, fontSize: 14),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+                _openDownloadUrl(downloadUrl, fallbackUrl);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF9D4EDD),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text('立即下载', style: TextStyle(fontSize: 14)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// 打开下载链接
+  Future<void> _openDownloadUrl(String downloadUrl, String fallbackUrl) async {
+    String url = downloadUrl;
+    if (url.isEmpty && fallbackUrl.isNotEmpty) {
+      url = fallbackUrl;
+    }
+    if (url.isEmpty) {
+      // 兜底到默认下载页
+      url = 'https://openfaithhub.com/download';
+    }
+
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    } catch (e) {
+      debugPrint('[About] Failed to open download URL: $e');
     }
   }
 
