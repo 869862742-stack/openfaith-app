@@ -6,7 +6,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shorebird_code_push/shorebird_code_push.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'router/app_router.dart';
+import 'services/call_service.dart';
 
 const supabaseUrl = 'https://rdhwmeittgdosmkxtpak.supabase.co';
 const supabaseAnonKey = 'sb_publishable_Sch6yDRuc1N0w7M61-U29A_ZP0J-9xe';
@@ -26,7 +28,12 @@ void main() {
   runZonedGuarded<Future<void>>(
     () async {
       await _initApp();
-      runApp(const OpenFaithApp());
+      runApp(
+        ChangeNotifierProvider(
+          create: (_) => CallService(),
+          child: const OpenFaithApp(),
+        ),
+      );
     },
     (error, stack) {
       debugPrint('[ZoneError] $error');
@@ -65,6 +72,14 @@ Future<void> _initApp() async {
     ).timeout(const Duration(seconds: 10));
   } catch (e) {
     debugPrint('[Supabase] Init failed: $e');
+  }
+
+  // CallService 初始化
+  try {
+    await CallService().initialize();
+    debugPrint('[CallService] Initialized');
+  } catch (e) {
+    debugPrint('[CallService] Init failed: $e');
   }
 
   // Sentry 错误监控
