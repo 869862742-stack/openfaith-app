@@ -426,7 +426,7 @@ class _AboutScreenState extends State<AboutScreen> {
     try {
       final dio = Dio();
       final response = await dio.get(
-        'https://openfaithhub.com/version.json',
+        'https://raw.githubusercontent.com/869862742-stack/openfaith-app/main/version.json',
         options: Options(
           connectTimeout: const Duration(seconds: 5),
           receiveTimeout: const Duration(seconds: 5),
