@@ -105,25 +105,10 @@ class CallService extends ChangeNotifier {
     if (_engineInitialized) return;
     try {
       _engine = createAgoraRtcEngine();
-      final code = await _engine!.initialize(RtcEngineContext(
+      await _engine!.initialize(RtcEngineContext(
         appId: appId,
         channelProfile: ChannelProfileType.channelProfileCommunication,
       ));
-      if (code != 0) {
-        debugPrint('[CallService] Engine initialize returned error code: $code');
-        _engine = null;
-        return;
-      }
-      if (code != 0) {
-        debugPrint('[CallService] Engine initialize returned error code: $code');
-        _engine = null;
-        return;
-      }
-      if (code != 0) {
-        debugPrint('[CallService] Engine initialize returned error code: $code');
-        _engine = null;
-        return;
-      }
 
       _engine!.registerEventHandler(
         RtcEngineEventHandler(
