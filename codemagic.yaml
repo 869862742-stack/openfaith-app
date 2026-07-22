@@ -19,23 +19,26 @@ workflows:
         script: flutter build apk --release --target-platform android-arm64
       - name: Upload to GitHub Release
         script: |
+          set -e
           VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //' | tr -d ' ' | cut -d'+' -f1)
           TAG="v${VERSION}"
-          echo "Version: ${VERSION}, Tag: ${TAG}"
-          
+          APK_NAME="OpenFaith-${TAG}.apk"
+          echo "Version: ${VERSION}, Tag: ${TAG}, APK Name: ${APK_NAME}"
+
           APK_PATH="build/app/outputs/flutter-apk/app-release.apk"
           if [ ! -f "$APK_PATH" ]; then
             echo "ERROR: APK not found at $APK_PATH"
             exit 1
           fi
-          
-          APK_SIZE=$(stat -f%z "$APK_PATH" 2>/dev/null || stat -c%s "$APK_PATH" 2>/dev/null)
+
+          APK_SIZE=$(stat -f%z "$APK_PATH" || stat -c%s "$APK_PATH")
           echo "APK size: ${APK_SIZE} bytes"
-          
+
+          # Get or create release
           RELEASE_INFO=$(curl -s -H "Authorization: token ${GITHUB_TOKEN}" \
             "https://api.github.com/repos/869862742-stack/openfaith-app/releases/tags/${TAG}")
-          RELEASE_ID=$(echo "$RELEASE_INFO" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('id',''))" 2>/dev/null)
-          
+          RELEASE_ID=$(echo "$RELEASE_INFO" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('id',''))")
+
           if [ -z "$RELEASE_ID" ]; then
             echo "Creating new release ${TAG}..."
             CREATE_RESP=$(curl -s -X POST -H "Authorization: token ${GITHUB_TOKEN}" \
@@ -45,48 +48,58 @@ workflows:
             RELEASE_ID=$(echo "$CREATE_RESP" | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])")
             echo "Created release with ID: ${RELEASE_ID}"
           else
-            echo "Release ${TAG} already exists with ID: ${RELEASE_ID}"
+            echo "Release ${TAG} exists with ID: ${RELEASE_ID}"
           fi
-          
-          # Delete existing asset with same name (if any) before uploading
-          ASSETS_INFO=$(curl -s -H "Authorization: token ${GITHUB_TOKEN}" \
+
+          # Delete ALL existing assets named APK_NAME to avoid "already_exists" error
+          echo "Checking for existing assets named ${APK_NAME}..."
+          ASSETS_JSON=$(curl -s -H "Authorization: token ${GITHUB_TOKEN}" \
             "https://api.github.com/repos/869862742-stack/openfaith-app/releases/${RELEASE_ID}/assets")
-          EXISTING_ASSET_ID=$(echo "$ASSETS_INFO" | python3 -c "
-          import sys,json
-          assets=json.load(sys.stdin)
+          echo "Assets list response length: $(echo "$ASSETS_JSON" | wc -c) chars"
+
+          # Use python3 to find and delete matching assets (with proper variable passing via env)
+          export ASSET_NAME="${APK_NAME}"
+          export GITHUB_TOKEN_AUTH="${GITHUB_TOKEN}"
+          echo "$ASSETS_JSON" | python3 -c "
+          import sys, json, os, subprocess
+          assets = json.load(sys.stdin)
+          target = os.environ['ASSET_NAME']
+          token = os.environ['GITHUB_TOKEN_AUTH']
+          print(f'Looking for asset named: {target}')
+          print(f'Total assets in release: {len(assets)}')
           for a in assets:
-              if a['name']=='OpenFaith-${TAG}.apk':
-                  print(a['id'])
-                  break
-          " 2>/dev/null)
-          
-          if [ -n "$EXISTING_ASSET_ID" ]; then
-            echo "Deleting existing asset ID: ${EXISTING_ASSET_ID}..."
-            DEL_RESP=$(curl -s -w "%{http_code}" -X DELETE \
-              -H "Authorization: token ${GITHUB_TOKEN}" \
-              "https://api.github.com/repos/869862742-stack/openfaith-app/releases/assets/${EXISTING_ASSET_ID}")
-            echo "Delete response: ${DEL_RESP}"
-          fi
-          
-          UPLOAD_URL="https://uploads.github.com/repos/869862742-stack/openfaith-app/releases/${RELEASE_ID}/assets?name=OpenFaith-${TAG}.apk"
+              name = a.get('name', '')
+              aid = a.get('id', '')
+              print(f'  Found asset: {name} (id={aid})')
+              if name == target:
+                  print(f'  -> Deleting asset {name} (id={aid})...')
+                  r = subprocess.run(
+                      ['curl', '-s', '-w', '%{http_code}', '-X', 'DELETE',
+                       '-H', f'Authorization: token {token}',
+                       f'https://api.github.com/repos/869862742-stack/openfaith-app/releases/assets/{aid}'],
+                      capture_output=True, text=True
+                  )
+                  print(f'  -> Delete result: HTTP {r.stdout.strip()[-3:] if r.stdout.strip() else "no response"}')
+          "
+          echo "Asset cleanup complete."
+
+          # Upload APK
+          UPLOAD_URL="https://uploads.github.com/repos/869862742-stack/openfaith-app/releases/${RELEASE_ID}/assets?name=${APK_NAME}"
           echo "Uploading APK to: ${UPLOAD_URL}"
-          
-          UPLOAD_RESP=$(curl -s -w "\n%{http_code}" -X POST \
+
+          HTTP_CODE=$(curl -s -o /tmp/upload_response.json -w "%{http_code}" -X POST \
             -H "Authorization: token ${GITHUB_TOKEN}" \
             -H "Content-Type: application/vnd.android.package-archive" \
             --data-binary @"${APK_PATH}" \
             "${UPLOAD_URL}")
-          
-          HTTP_CODE=$(echo "$UPLOAD_RESP" | tail -1)
-          BODY=$(echo "$UPLOAD_RESP" | sed '$d')
-          
+
           if [ "$HTTP_CODE" = "201" ]; then
-            DOWNLOAD_URL=$(echo "$BODY" | python3 -c "import sys,json; print(json.load(sys.stdin).get('browser_download_url',''))" 2>/dev/null)
+            DOWNLOAD_URL=$(python3 -c "import json; d=json.load(open('/tmp/upload_response.json')); print(d.get('browser_download_url',''))")
             echo "SUCCESS! APK uploaded."
             echo "Download URL: ${DOWNLOAD_URL}"
           else
             echo "Upload failed with HTTP ${HTTP_CODE}"
-            echo "Response: ${BODY}"
+            cat /tmp/upload_response.json
             exit 1
           fi
     artifacts:
