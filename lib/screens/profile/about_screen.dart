@@ -358,8 +358,7 @@ class _AboutScreenState extends State<AboutScreen> {
     );
   }
 
-  /// 检查更新：使用 AppUpdateService 进行版本检查、下载和安装
-  /// 如果有新版本，弹出带下载进度条的更新弹窗
+  /// 检查更新：先检查 Shorebird 补丁，再检查 APP 版本更新
   Future<void> _checkForUpdate() async {
     if (_checkingUpdate) return;
     setState(() {
@@ -368,26 +367,7 @@ class _AboutScreenState extends State<AboutScreen> {
     });
 
     try {
-      // Step 1: 检查 APP 版本更新
-      final updateInfo = await AppUpdateService().checkForUpdate();
-      if (updateInfo != null) {
-        // 有新版本，弹出带下载进度的更新弹窗
-        if (mounted) {
-          setState(() {
-            _checkingUpdate = false;
-          });
-          showDialog<void>(
-            context: context,
-            barrierDismissible: true,
-            builder: (dialogContext) {
-              return UpdateDialog(update: updateInfo);
-            },
-          );
-        }
-        return;
-      }
-
-      // Step 2: APP 已是最新，检查 Shorebird 补丁
+      // Step 1: 先检查 Shorebird 补丁
       try {
         final patcher = ShorebirdUpdater();
         final status = await patcher.checkForUpdate();
@@ -409,6 +389,25 @@ class _AboutScreenState extends State<AboutScreen> {
         }
       } catch (e) {
         debugPrint('[About] Shorebird check error: $e');
+      }
+
+      // Step 2: 没有 Shorebird 补丁，检查 APP 版本更新
+      final updateInfo = await AppUpdateService().checkForUpdate();
+      if (updateInfo != null) {
+        // 有新版本，弹出带下载进度的更新弹窗
+        if (mounted) {
+          setState(() {
+            _checkingUpdate = false;
+          });
+          showDialog<void>(
+            context: context,
+            barrierDismissible: true,
+            builder: (dialogContext) {
+              return UpdateDialog(update: updateInfo);
+            },
+          );
+        }
+        return;
       }
 
       // Step 3: 都已是最新
