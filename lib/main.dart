@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -8,33 +7,17 @@ import 'package:shorebird_code_push/shorebird_code_push.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:dio/dio.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'router/app_router.dart';
 import 'services/call_service.dart';
+import 'services/app_update_service.dart';
 import 'theme/app_colors.dart';
 
 const supabaseUrl = 'https://rdhwmeittgdosmkxtpak.supabase.co';
 const supabaseAnonKey = 'sb_publishable_Sch6yDRuc1N0w7M61-U29A_ZP0J-9xe';
 
-/// APP 版本更新信息
-class _AppUpdateInfo {
-  final String latestVersion;
-  final String downloadUrl;
-  final String fallbackUrl;
-  final String changelog;
-
-  _AppUpdateInfo({
-    required this.latestVersion,
-    required this.downloadUrl,
-    required this.fallbackUrl,
-    required this.changelog,
-  });
-}
-
 /// 待展示的更新信息（模块级变量，启动时检查一次）
-_AppUpdateInfo? _pendingUpdate;
+AppUpdateInfo? _pendingUpdate;
 
 void main() {
   // 全局错误处理
@@ -138,91 +121,15 @@ Future<Map<String, bool>> _initApp() async {
   return {'supabase': supabaseReady, 'callService': callServiceReady};
 }
 
-/// 检查 APP 是否有新版本可更新
-/// 3秒超时，失败静默，不影响启动
+/// 检查 APP 是否有新版本可更新（启动时调用）
 Future<void> _checkAppUpdate() async {
   try {
-    // 获取当前版本
-    final packageInfo = await PackageInfo.fromPlatform();
-    final currentVersion = packageInfo.version;
-
-    // 获取远程版本信息
-    final dio = Dio();
-    final response = await dio.get(
-      'https://raw.githubusercontent.com/869862742-stack/openfaith-app/main/version.json',
-      options: Options(
-        connectTimeout: const Duration(seconds: 3),
-        receiveTimeout: const Duration(seconds: 3),
-      ),
-    );
-
-    if (response.statusCode != 200 || response.data == null) {
-      debugPrint('[AppUpdate] Failed to fetch version.json: ${response.statusCode}');
-      return;
-    }
-
-    final Map<String, dynamic> data;
-    if (response.data is String) {
-      data = json.decode(response.data as String) as Map<String, dynamic>;
-    } else if (response.data is Map<String, dynamic>) {
-      data = response.data as Map<String, dynamic>;
-    } else {
-      debugPrint('[AppUpdate] Unexpected response format');
-      return;
-    }
-
-    final latestVersion = data['latestVersion'] as String? ?? '';
-    final downloadUrl = data['downloadUrl'] as String? ?? '';
-    final fallbackUrl = data['fallbackUrl'] as String? ?? '';
-    final changelog = data['changelog'] as String? ?? '';
-
-    if (latestVersion.isEmpty || downloadUrl.isEmpty) {
-      debugPrint('[AppUpdate] Invalid version data');
-      return;
-    }
-
-    // 比较版本号
-    if (_isNewerVersion(currentVersion, latestVersion)) {
-      debugPrint('[AppUpdate] New version available: $latestVersion (current: $currentVersion)');
-      _pendingUpdate = _AppUpdateInfo(
-        latestVersion: latestVersion,
-        downloadUrl: downloadUrl,
-        fallbackUrl: fallbackUrl,
-        changelog: changelog,
-      );
-    } else {
-      debugPrint('[AppUpdate] Already up to date: $currentVersion');
+    final updateInfo = await AppUpdateService().checkForUpdate();
+    if (updateInfo != null) {
+      _pendingUpdate = updateInfo;
     }
   } catch (e) {
     debugPrint('[AppUpdate] Check skipped: $e');
-  }
-}
-
-/// 比较语义化版本号，判断 remote 是否比 current 更新
-bool _isNewerVersion(String current, String remote) {
-  try {
-    final currentParts = current.split('.').map((e) => int.tryParse(e) ?? 0).toList();
-    final remoteParts = remote.split('.').map((e) => int.tryParse(e) ?? 0).toList();
-
-    // 补齐长度
-    final maxLen = currentParts.length > remoteParts.length
-        ? currentParts.length
-        : remoteParts.length;
-    while (currentParts.length < maxLen) {
-      currentParts.add(0);
-    }
-    while (remoteParts.length < maxLen) {
-      remoteParts.add(0);
-    }
-
-    for (int i = 0; i < maxLen; i++) {
-      if (remoteParts[i] > currentParts[i]) return true;
-      if (remoteParts[i] < currentParts[i]) return false;
-    }
-    return false; // 相等
-  } catch (e) {
-    debugPrint('[AppUpdate] Version compare error: $e');
-    return false;
   }
 }
 
@@ -246,7 +153,6 @@ class _OpenFaithAppState extends State<OpenFaithApp> {
   @override
   void initState() {
     super.initState();
-    // 首帧渲染后检查并展示更新弹窗
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _maybeShowUpdateDialog();
     });
@@ -261,103 +167,9 @@ class _OpenFaithAppState extends State<OpenFaithApp> {
       context: context,
       barrierDismissible: true,
       builder: (dialogContext) {
-        return AlertDialog(
-          backgroundColor: AppColors.cardBg,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: AppColors.borderColor, width: 0.5),
-          ),
-          title: Row(
-            children: [
-              const Icon(Icons.system_update_alt, color: AppColors.auroraBlue, size: 22),
-              const SizedBox(width: 8),
-              Flexible(
-                child: Text(
-                  '发现新版本 v${update.latestVersion}',
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (update.changelog.isNotEmpty) ...[
-                const Text(
-                  '更新内容',
-                  style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxHeight: 160),
-                  child: SingleChildScrollView(
-                    child: Text(
-                      update.changelog,
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 13,
-                        height: 1.6,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text(
-                '稍后再说',
-                style: TextStyle(color: AppColors.textWeak, fontSize: 14),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(dialogContext);
-                _openUpdateUrl(update);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF9D4EDD),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: const Text('立即更新', style: TextStyle(fontSize: 14)),
-            ),
-          ],
-        );
+        return UpdateDialog(update: update);
       },
     );
-  }
-
-  Future<void> _openUpdateUrl(_AppUpdateInfo update) async {
-    // 优先使用 downloadUrl，fallback 到 fallbackUrl
-    String url = update.downloadUrl;
-    if (url.isEmpty && update.fallbackUrl.isNotEmpty) {
-      url = update.fallbackUrl;
-    }
-    if (url.isEmpty) return;
-
-    try {
-      final uri = Uri.parse(url);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      }
-    } catch (e) {
-      debugPrint('[AppUpdate] Failed to open URL: $e');
-    }
   }
 
   @override
@@ -410,6 +222,212 @@ class _OpenFaithAppState extends State<OpenFaithApp> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// 更新弹窗组件：显示版本信息 -> 下载进度 -> 自动安装
+/// 可被 main.dart 启动弹窗和 about_screen 手动检查复用
+class UpdateDialog extends StatefulWidget {
+  final AppUpdateInfo update;
+  const UpdateDialog({super.key, required this.update});
+
+  @override
+  State<UpdateDialog> createState() => _UpdateDialogState();
+}
+
+class _UpdateDialogState extends State<UpdateDialog> {
+  double _downloadProgress = 0.0;
+  bool _isDownloading = false;
+  String _status = 'info'; // 'info' | 'downloading' | 'error'
+  String _errorMessage = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _setupCallbacks();
+  }
+
+  void _setupCallbacks() {
+    final service = AppUpdateService();
+    service.onProgressUpdate = (progress) {
+      if (mounted) {
+        setState(() {
+          _downloadProgress = progress;
+        });
+      }
+    };
+    service.onStatusChange = (status, {error}) {
+      if (!mounted) return;
+      setState(() {
+        _status = status;
+        if (status == 'error' && error != null) {
+          _errorMessage = error;
+          _isDownloading = false;
+        }
+        if (status == 'completed') {
+          Navigator.of(context).pop();
+        }
+      });
+    };
+  }
+
+  Future<void> _startDownload() async {
+    setState(() {
+      _isDownloading = true;
+      _status = 'downloading';
+      _downloadProgress = 0.0;
+      _errorMessage = '';
+    });
+
+    await AppUpdateService().downloadAndInstall(widget.update);
+
+    if (mounted) {
+      setState(() {
+        _isDownloading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: AppColors.cardBg,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: AppColors.borderColor, width: 0.5),
+      ),
+      title: Row(
+        children: [
+          Icon(
+            _isDownloading ? Icons.downloading : Icons.system_update_alt,
+            color: AppColors.auroraBlue,
+            size: 22,
+          ),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              _isDownloading
+                  ? '正在下载更新'
+                  : '发现新版本 v${widget.update.latestVersion}',
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (_isDownloading) ...[
+            // 下载进度界面
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: LinearProgressIndicator(
+                value: _downloadProgress,
+                backgroundColor: AppColors.borderColor,
+                valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF9D4EDD)),
+                minHeight: 8,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '${(_downloadProgress * 100).toStringAsFixed(1)}%',
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Text(
+                  'v${widget.update.latestVersion}',
+                  style: const TextStyle(
+                    color: AppColors.textWeak,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+            if (_errorMessage.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                '下载失败: $_errorMessage',
+                style: const TextStyle(color: Colors.redAccent, fontSize: 12),
+              ),
+            ],
+          ] else ...[
+            // 版本信息界面
+            if (widget.update.changelog.isNotEmpty) ...[
+              const Text(
+                '更新内容',
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 6),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 160),
+                child: SingleChildScrollView(
+                  child: Text(
+                    widget.update.changelog,
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 13,
+                      height: 1.6,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ],
+      ),
+      actions: [
+        if (_isDownloading)
+          TextButton(
+            onPressed: () {
+              AppUpdateService().cancelDownload();
+              Navigator.pop(context);
+            },
+            child: const Text(
+              '取消',
+              style: TextStyle(color: AppColors.textWeak, fontSize: 14),
+            ),
+          )
+        else ...[
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              '稍后提醒',
+              style: TextStyle(color: AppColors.textWeak, fontSize: 14),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: _startDownload,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF9D4EDD),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text(
+              _errorMessage.isNotEmpty ? '重试' : '立即更新',
+              style: const TextStyle(fontSize: 14),
+            ),
+          ),
+        ],
+      ],
     );
   }
 }
