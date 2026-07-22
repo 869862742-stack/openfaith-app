@@ -45,52 +45,108 @@ class AppUpdateService {
   void Function(String status, {String? error})? onStatusChange;
 
   /// 检查是否有新版本
+  /// 先尝试 raw GitHub URL，失败后 fallback 到 GitHub API
+  /// 网络异常（两个源都失败）时抛出异常，无新版本时返回 null
   Future<AppUpdateInfo?> checkForUpdate() async {
-    try {
-      final packageInfo = await PackageInfo.fromPlatform();
-      final currentVersion = packageInfo.version;
+    final packageInfo = await PackageInfo.fromPlatform();
+    final currentVersion = packageInfo.version;
 
+    Map<String, dynamic>? data;
+
+    // 尝试 1: raw GitHub URL
+    try {
+      final rawUrl = 'https://raw.githubusercontent.com/869862742-stack/openfaith-app/main/version.json';
+      debugPrint('[AppUpdateService] Trying raw URL: $rawUrl');
       final response = await _dio.get(
-        'https://raw.githubusercontent.com/869862742-stack/openfaith-app/main/version.json',
+        rawUrl,
         options: Options(
           connectTimeout: const Duration(seconds: 5),
           receiveTimeout: const Duration(seconds: 5),
         ),
       );
-
-      if (response.statusCode != 200 || response.data == null) return null;
-
-      final Map<String, dynamic> data;
-      if (response.data is String) {
-        data = json.decode(response.data as String) as Map<String, dynamic>;
-      } else if (response.data is Map<String, dynamic>) {
-        data = response.data as Map<String, dynamic>;
-      } else {
-        return null;
+      if (response.statusCode == 200 && response.data != null) {
+        data = _parseVersionData(response.data);
+        if (data != null) {
+          debugPrint('[AppUpdateService] Successfully fetched from raw URL');
+        }
       }
-
-      final latestVersion = data['latestVersion'] as String? ?? '';
-      final downloadUrl = data['downloadUrl'] as String? ?? '';
-      final fallbackUrl = data['fallbackUrl'] as String? ?? '';
-      final changelog = data['changelog'] as String? ?? '';
-
-      if (latestVersion.isEmpty || downloadUrl.isEmpty) return null;
-
-      if (_isNewerVersion(currentVersion, latestVersion)) {
-        debugPrint('[AppUpdateService] New version: $latestVersion (current: $currentVersion)');
-        return AppUpdateInfo(
-          latestVersion: latestVersion,
-          downloadUrl: downloadUrl,
-          fallbackUrl: fallbackUrl,
-          changelog: changelog,
-        );
-      }
-      debugPrint('[AppUpdateService] Already up to date: $currentVersion');
-      return null;
     } catch (e) {
-      debugPrint('[AppUpdateService] Check failed: $e');
-      return null;
+      debugPrint('[AppUpdateService] Raw URL failed: $e');
     }
+
+    // 尝试 2: GitHub API (fallback)
+    if (data == null) {
+      try {
+        final apiUrl = 'https://api.github.com/repos/869862742-stack/openfaith-app/contents/version.json';
+        debugPrint('[AppUpdateService] Falling back to GitHub API: $apiUrl');
+        final response = await _dio.get(
+          apiUrl,
+          options: Options(
+            connectTimeout: const Duration(seconds: 8),
+            receiveTimeout: const Duration(seconds: 8),
+            headers: {'Accept': 'application/vnd.github.v3+json'},
+          ),
+        );
+        if (response.statusCode == 200 && response.data != null) {
+          final Map<String, dynamic> apiResp;
+          if (response.data is String) {
+            apiResp = json.decode(response.data as String) as Map<String, dynamic>;
+          } else if (response.data is Map<String, dynamic>) {
+            apiResp = response.data as Map<String, dynamic>;
+          } else {
+            apiResp = {};
+          }
+          final content = apiResp['content'] as String?;
+          if (content != null && content.isNotEmpty) {
+            final decoded = utf8.decode(base64.decode(content));
+            data = _parseVersionData(decoded);
+            if (data != null) {
+              debugPrint('[AppUpdateService] Successfully fetched from GitHub API');
+            }
+          }
+        }
+      } catch (e) {
+        debugPrint('[AppUpdateService] GitHub API fallback also failed: $e');
+      }
+    }
+
+    // 两个源都失败，抛出异常让调用方感知网络错误
+    if (data == null) {
+      throw Exception('无法获取版本信息，请检查网络连接后重试');
+    }
+
+    final latestVersion = data['latestVersion'] as String? ?? '';
+    final downloadUrl = data['downloadUrl'] as String? ?? '';
+    final fallbackUrl = data['fallbackUrl'] as String? ?? '';
+    final changelog = data['changelog'] as String? ?? '';
+
+    if (latestVersion.isEmpty || downloadUrl.isEmpty) return null;
+
+    if (_isNewerVersion(currentVersion, latestVersion)) {
+      debugPrint('[AppUpdateService] New version: $latestVersion (current: $currentVersion)');
+      return AppUpdateInfo(
+        latestVersion: latestVersion,
+        downloadUrl: downloadUrl,
+        fallbackUrl: fallbackUrl,
+        changelog: changelog,
+      );
+    }
+    debugPrint('[AppUpdateService] Already up to date: $currentVersion');
+    return null;
+  }
+
+  /// 解析 version.json 数据
+  Map<String, dynamic>? _parseVersionData(dynamic responseData) {
+    try {
+      if (responseData is String) {
+        return json.decode(responseData) as Map<String, dynamic>;
+      } else if (responseData is Map<String, dynamic>) {
+        return responseData;
+      }
+    } catch (e) {
+      debugPrint('[AppUpdateService] Parse version data failed: $e');
+    }
+    return null;
   }
 
   /// 下载 APK 并触发系统安装

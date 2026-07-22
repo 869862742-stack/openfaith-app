@@ -419,9 +419,10 @@ class _AboutScreenState extends State<AboutScreen> {
         });
       }
     } catch (e) {
+      // checkForUpdate 抛出异常表示网络错误（两个源都失败）
       if (mounted) {
         setState(() {
-          _updateMessage = '检查更新失败: $e\n\n请稍后重试，或前往 GitHub Releases 手动下载最新版本。';
+          _updateMessage = '检查更新失败，请检查网络后重试';
           _checkingUpdate = false;
         });
       }
