@@ -105,10 +105,15 @@ class CallService extends ChangeNotifier {
     if (_engineInitialized) return;
     try {
       _engine = createAgoraRtcEngine();
-      await _engine!.initialize(RtcEngineContext(
+      final code = await _engine!.initialize(RtcEngineContext(
         appId: appId,
         channelProfile: ChannelProfileType.channelProfileCommunication,
       ));
+      if (code != 0) {
+        debugPrint('[CallService] Engine initialize returned error code: $code');
+        _engine = null;
+        return;
+      }
 
       _engine!.registerEventHandler(
         RtcEngineEventHandler(
@@ -159,7 +164,7 @@ class CallService extends ChangeNotifier {
       debugPrint('[CallService] Engine initialized');
     } catch (e) {
       debugPrint('[CallService] Init error: $e');
-      rethrow;
+      _engine = null;
     }
   }
 
@@ -218,6 +223,11 @@ class CallService extends ChangeNotifier {
     }
 
     await initialize();
+
+    if (!_engineInitialized || _engine == null) {
+      debugPrint('[CallService] Engine not available, cannot start call');
+      return;
+    }
 
     final currentUserId = myUserId ?? _getCurrentUserId();
     if (currentUserId.isEmpty) {
