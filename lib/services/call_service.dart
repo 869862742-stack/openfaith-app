@@ -119,6 +119,11 @@ class CallService extends ChangeNotifier {
         _engine = null;
         return;
       }
+      if (code != 0) {
+        debugPrint('[CallService] Engine initialize returned error code: $code');
+        _engine = null;
+        return;
+      }
 
       _engine!.registerEventHandler(
         RtcEngineEventHandler(
