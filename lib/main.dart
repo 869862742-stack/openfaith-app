@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -8,6 +9,7 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:path_provider/path_provider.dart';
 import 'router/app_router.dart';
 import 'services/call_service.dart';
 import 'services/app_update_service.dart';
@@ -24,15 +26,17 @@ void main() {
   // 最小化同步初始化，确保 UI 立即渲染
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 全局错误处理
+  // 全局错误处理 —— 增加本地文件日志
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.presentError(details);
     debugPrint('[FlutterError] ${details.exception}');
+    _writeCrashLog('FlutterError', details.exception.toString(), details.stack?.toString());
   };
 
   PlatformDispatcher.instance.onError = (error, stack) {
     debugPrint('[PlatformError] $error');
-    return true;
+    _writeCrashLog('PlatformError', error.toString(), stack.toString());
+    return true; // 吞掉异常，防止 APP 崩溃
   };
 
   // 覆盖默认 ErrorWidget —— 防止 release 模式下出现灰色错误页面
@@ -48,6 +52,21 @@ void main() {
       child: const OpenFaithApp(),
     ),
   );
+}
+
+/// 写入崩溃日志到本地文件（用于事后诊断）
+Future<void> _writeCrashLog(String type, String error, String? stack) async {
+  try {
+    final dir = await getApplicationDocumentsDirectory();
+    final file = File('${dir.path}/crash_log.txt');
+    final timestamp = DateTime.now().toIso8601String();
+    await file.writeAsString(
+      '\n--- $timestamp ---\n[$type] $error\n${stack ?? ''}\n',
+      mode: FileMode.append,
+    );
+  } catch (_) {
+    // 日志写入失败不应影响 APP 运行
+  }
 }
 
 class OpenFaithApp extends StatefulWidget {
@@ -72,16 +91,13 @@ class _OpenFaithAppState extends State<OpenFaithApp> {
   /// 后台初始化：所有耗时操作移到此处，UI 先展示 Splash
   Future<void> _runBackgroundInit() async {
     try {
-      // 1. 并行执行：Shorebird补丁检查 + 版本检查（整体8秒超时）
+      // 1. APP 版本检查（Shorebird 补丁检查已移至延迟执行，避免原生崩溃）
       try {
-        await Future.wait([
-          _checkShorebirdPatch(),
-          _checkAppUpdate(),
-        ]).timeout(const Duration(seconds: 8));
+        await _checkAppUpdate().timeout(const Duration(seconds: 8));
       } on TimeoutException {
-        debugPrint('[Init] Parallel update checks timed out after 8s');
+        debugPrint('[Init] App update check timed out after 8s');
       } catch (e) {
-        debugPrint('[Init] Parallel update checks error: $e');
+        debugPrint('[Init] App update check error: $e');
       }
 
       // 2. Supabase 初始化
@@ -95,13 +111,14 @@ class _OpenFaithAppState extends State<OpenFaithApp> {
         debugPrint('[Supabase] Init failed: $e');
       }
 
-      // 3. CallService 初始化（依赖 Supabase）
+      // 3. CallService 初始化（依赖 Supabase）— 不再 rethrow
       if (_supabaseReady) {
         try {
           await CallService().initialize();
           debugPrint('[CallService] Initialized');
         } catch (e) {
-          debugPrint('[CallService] Init failed: $e');
+          debugPrint('[CallService] Init failed (non-fatal): $e');
+          // 不再设置 _initError，通话功能不可用不影响 APP 核心功能
         }
       } else {
         debugPrint('[CallService] Skipped - Supabase not available');
@@ -122,8 +139,13 @@ class _OpenFaithAppState extends State<OpenFaithApp> {
       } catch (e) {
         debugPrint('[Sentry] Init skipped: $e');
       }
+
+      // 5. Shorebird 补丁检查 —— 延迟执行 + 仅检查不下载
+      //    放在所有核心初始化之后，且延迟 3 秒，确保引擎稳定
+      _deferredShorebirdCheck();
     } catch (e) {
       debugPrint('[Init] Unexpected error: $e');
+      _writeCrashLog('InitError', e.toString(), null);
     }
 
     // 初始化流程结束，切换 UI
@@ -141,7 +163,34 @@ class _OpenFaithAppState extends State<OpenFaithApp> {
     }
   }
 
-  /// 检查并下载 Shorebird 补丁（超时5秒）
+  /// 延迟 Shorebird 检查 —— 不阻塞启动，不下载补丁，仅检查
+  void _deferredShorebirdCheck() {
+    Future.delayed(const Duration(seconds: 3), () async {
+      if (!mounted) return;
+      if (kIsWeb) return;
+
+      try {
+        final updater = ShorebirdUpdater();
+        final status = await updater.checkForUpdate().timeout(
+          const Duration(seconds: 5),
+          onTimeout: () => UpdateStatus.upToDate,
+        );
+        if (status == UpdateStatus.outdated) {
+          debugPrint('[Shorebird] Patch available (deferred, not downloading)');
+          // 不在此处调用 updater.update()，避免原生代码操作导致崩溃
+        }
+      } on NoSuchMethodError catch (e) {
+        debugPrint('[Shorebird] Not available in this build: $e');
+      } on PlatformException catch (e) {
+        debugPrint('[Shorebird] Platform error: $e');
+      } catch (e) {
+        debugPrint('[Shorebird] Deferred check skipped: $e');
+      }
+    });
+  }
+
+  /// 检查并下载 Shorebird 补丁（保留供将来安全版本使用）
+  /// 当前不在此处调用 —— 由 _deferredShorebirdCheck 替代
   static Future<void> _checkShorebirdPatch() async {
     if (kIsWeb) {
       debugPrint('[Shorebird] Skipped on Web platform');
@@ -161,6 +210,8 @@ class _OpenFaithAppState extends State<OpenFaithApp> {
         );
         debugPrint('[Shorebird] Patch downloaded');
       }
+    } on NoSuchMethodError catch (e) {
+      debugPrint('[Shorebird] Not available: $e');
     } catch (e) {
       debugPrint('[Shorebird] Update check skipped: $e');
     }
