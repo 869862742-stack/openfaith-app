@@ -10,19 +10,32 @@ import com.openfaith.openfaith_app.services.CallBroadcastReceiver
 class MainActivity : FlutterActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // 对齐 Flutter 视图与系统窗口
-        WindowCompat.setDecorFitsSystemWindows(window, false)
+        // MUST be first: initialize Activity before any window operations
+        super.onCreate(savedInstanceState)
 
-        // 关键：在 Android 12+ 上禁用系统 SplashScreen 的淡出动画
-        // 防止淡出过程中暴露灰色间隙
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            splashScreen.setOnExitAnimationListener { splashScreenView ->
-                // 直接移除，不做淡出动画
-                splashScreenView.remove()
-            }
+        // 对齐 Flutter 视图与系统窗口
+        try {
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+        } catch (e: Exception) {
+            // Silently handle - window may not be ready
         }
 
-        super.onCreate(savedInstanceState)
+        // Android 12+: 禁用系统 SplashScreen 的淡出动画
+        // 防止淡出过程中暴露灰色间隙
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            try {
+                val splashScreen = installSplashScreen()
+                splashScreen.setOnExitAnimationListener { splashScreenView ->
+                    try {
+                        splashScreenView.remove()
+                    } catch (e: Exception) {
+                        // Silently handle on OEM devices where remove() may conflict
+                    }
+                }
+            } catch (e: Exception) {
+                // installSplashScreen may not be available on all devices
+            }
+        }
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
