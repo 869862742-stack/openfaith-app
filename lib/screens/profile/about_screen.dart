@@ -7,6 +7,7 @@ import 'package:shorebird_code_push/shorebird_code_push.dart';
 import '../../theme/app_colors.dart';
 import '../../i18n/app_localizations.dart';
 import '../../services/app_update_service.dart';
+import '../../widgets/update_dialog.dart';
 import '../sidebar_pages/privacy_policy_screen.dart';
 import '../sidebar_pages/terms_of_service_screen.dart';
 
