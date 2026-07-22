@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="LaunchTheme" parent="@android:style/Theme.Black.NoTitleBar">
-        <item name="android:windowBackground">@drawable/launch_background</item>
+    <!-- LaunchTheme: compat splash screen for API 24-30 (Android 7-11) -->
+    <style name="LaunchTheme" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/launch_bg</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/launch_background</item>
+        <item name="postSplashScreenTheme">@style/NormalTheme</item>
     </style>
+
+    <!-- NormalTheme: plain dark background after splash, before Flutter renders -->
     <style name="NormalTheme" parent="@android:style/Theme.Black.NoTitleBar">
         <item name="android:windowBackground">@color/launch_bg</item>
     </style>
