@@ -35,6 +35,12 @@ void main() {
     return true;
   };
 
+  // 覆盖默认 ErrorWidget —— 防止 release 模式下出现灰色错误页面
+  ErrorWidget.builder = (FlutterErrorDetails details) {
+    debugPrint('[ErrorWidget] ${details.exception}');
+    return const SizedBox.shrink();
+  };
+
   // 立即 runApp —— 不再等待后台初始化
   runApp(
     ChangeNotifierProvider(
