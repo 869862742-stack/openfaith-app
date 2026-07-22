@@ -48,6 +48,26 @@ workflows:
             echo "Release ${TAG} already exists with ID: ${RELEASE_ID}"
           fi
           
+          # Delete existing asset with same name (if any) before uploading
+          ASSETS_INFO=$(curl -s -H "Authorization: token ${GITHUB_TOKEN}" \
+            "https://api.github.com/repos/869862742-stack/openfaith-app/releases/${RELEASE_ID}/assets")
+          EXISTING_ASSET_ID=$(echo "$ASSETS_INFO" | python3 -c "
+          import sys,json
+          assets=json.load(sys.stdin)
+          for a in assets:
+              if a['name']=='OpenFaith-${TAG}.apk':
+                  print(a['id'])
+                  break
+          " 2>/dev/null)
+          
+          if [ -n "$EXISTING_ASSET_ID" ]; then
+            echo "Deleting existing asset ID: ${EXISTING_ASSET_ID}..."
+            DEL_RESP=$(curl -s -w "%{http_code}" -X DELETE \
+              -H "Authorization: token ${GITHUB_TOKEN}" \
+              "https://api.github.com/repos/869862742-stack/openfaith-app/releases/assets/${EXISTING_ASSET_ID}")
+            echo "Delete response: ${DEL_RESP}"
+          fi
+          
           UPLOAD_URL="https://uploads.github.com/repos/869862742-stack/openfaith-app/releases/${RELEASE_ID}/assets?name=OpenFaith-${TAG}.apk"
           echo "Uploading APK to: ${UPLOAD_URL}"
           
