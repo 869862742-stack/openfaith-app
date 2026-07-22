@@ -17,6 +17,47 @@ workflows:
         script: flutter pub get
       - name: Build Android Release APK
         script: flutter build apk --release --target-platform android-arm64
+      - name: Upload to GitHub Release
+        script: |
+          #!/usr/bin/env bash
+          set -e
+          
+          APK_PATH="build/app/outputs/flutter-apk/app-release.apk"
+          RELEASE_TAG="v1.3.9"
+          REPO="869862742-stack/openfaith-app"
+          ASSET_NAME="OpenFaith-v1.3.9.apk"
+          
+          echo "Getting release info for ${RELEASE_TAG}..."
+          RELEASE_INFO=$(curl -s -H "Authorization: token ${GITHUB_TOKEN}" \
+            "https://api.github.com/repos/${REPO}/releases/tags/${RELEASE_TAG}")
+          RELEASE_ID=$(echo "$RELEASE_INFO" | python3 -c "import json,sys; print(json.load(sys.stdin)['id'])")
+          echo "Release ID: ${RELEASE_ID}"
+          
+          # Delete existing asset if any
+          ASSET_ID=$(echo "$RELEASE_INFO" | python3 -c "
+          import json,sys
+          data=json.load(sys.stdin)
+          for a in data.get('assets',[]):
+              if a['name']=='${ASSET_NAME}':
+                  print(a['id'])
+                  break
+          " 2>/dev/null || echo "")
+          
+          if [ -n "$ASSET_ID" ]; then
+            echo "Deleting old asset ${ASSET_ID}..."
+            curl -s -X DELETE -H "Authorization: token ${GITHUB_TOKEN}" \
+              "https://api.github.com/repos/${REPO}/releases/assets/${ASSET_ID}"
+          fi
+          
+          echo "Uploading APK to release..."
+          curl -s -X POST \
+            -H "Authorization: token ${GITHUB_TOKEN}" \
+            -H "Content-Type: application/vnd.android.package-archive" \
+            --data-binary "@${APK_PATH}" \
+            "https://uploads.github.com/repos/${REPO}/releases/${RELEASE_ID}/assets?name=${ASSET_NAME}"
+          
+          echo ""
+          echo "Upload complete!"
     artifacts:
       - build/app/outputs/flutter-apk/app-release.apk
     publishing:
