@@ -10,11 +10,13 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'router/app_router.dart';
 import 'services/call_service.dart';
 import 'services/app_update_service.dart';
 import 'widgets/update_dialog.dart';
 import 'theme/app_colors.dart';
+import 'i18n/app_localizations.dart';
 
 const supabaseUrl = 'https://rdhwmeittgdosmkxtpak.supabase.co';
 const supabaseAnonKey = 'sb_publishable_Sch6yDRuc1N0w7M61-U29A_ZP0J-9xe';
@@ -286,6 +288,13 @@ class _OpenFaithAppState extends State<OpenFaithApp> {
     return MaterialApp.router(
       title: 'OpenFaith',
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: AppLocalizations.supportedLocales,
       theme: ThemeData(
         brightness: Brightness.dark,
         scaffoldBackgroundColor: const Color(0xFF050816),
