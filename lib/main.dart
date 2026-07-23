@@ -22,9 +22,15 @@ const supabaseAnonKey = 'sb_publishable_Sch6yDRuc1N0w7M61-U29A_ZP0J-9xe';
 /// 待展示的更新信息（启动时检查一次）
 AppUpdateInfo? _pendingUpdate;
 
+/// 最小 splash 显示时间（毫秒）
+const int _minSplashDurationMs = 1500;
+
 void main() {
   // 最小化同步初始化，确保 UI 立即渲染
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 尽早隐藏系统 UI，防止系统栏闪烁
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
   // 全局错误处理 —— 增加本地文件日志
   FlutterError.onError = (FlutterErrorDetails details) {
@@ -39,7 +45,7 @@ void main() {
     return true; // 吞掉异常，防止 APP 崩溃
   };
 
-  // 覆盖默认 ErrorWidget —— 防止 release 模式下出现灰色错误页面
+  // 覆盖默认 ErrorWidget —— 返回深色背景占位而非灰色错误页面
   ErrorWidget.builder = (FlutterErrorDetails details) {
     debugPrint('[ErrorWidget] ${details.exception}');
     return const SizedBox.shrink();
@@ -85,46 +91,56 @@ class _OpenFaithAppState extends State<OpenFaithApp> {
   @override
   void initState() {
     super.initState();
+    debugPrint('[OpenFaith] initState called, starting background init');
     _runBackgroundInit();
   }
 
   /// 后台初始化：所有耗时操作移到此处，UI 先展示 Splash
   Future<void> _runBackgroundInit() async {
+    // ⏱ 记录开始时间
+    final stopwatch = Stopwatch()..start();
+    debugPrint('[Init] Background init started');
+
     try {
       // 1. APP 版本检查（Shorebird 补丁检查已移至延迟执行，避免原生崩溃）
+      debugPrint('[Init] Step 1: Checking app updates...');
       try {
         await _checkAppUpdate().timeout(const Duration(seconds: 8));
+        debugPrint('[Init] Step 1: App update check completed (${stopwatch.elapsedMilliseconds}ms)');
       } on TimeoutException {
-        debugPrint('[Init] App update check timed out after 8s');
+        debugPrint('[Init] Step 1: App update check timed out after 8s');
       } catch (e) {
-        debugPrint('[Init] App update check error: $e');
+        debugPrint('[Init] Step 1: App update check error: $e');
       }
 
       // 2. Supabase 初始化
+      debugPrint('[Init] Step 2: Initializing Supabase...');
       try {
         await Supabase.initialize(
           url: supabaseUrl,
           publishableKey: supabaseAnonKey,
         ).timeout(const Duration(seconds: 10));
         _supabaseReady = true;
+        debugPrint('[Init] Step 2: Supabase initialized (${stopwatch.elapsedMilliseconds}ms)');
       } catch (e) {
-        debugPrint('[Supabase] Init failed: $e');
+        debugPrint('[Init] Step 2: Supabase init failed: $e');
       }
 
       // 3. CallService 初始化（依赖 Supabase）— 不再 rethrow
       if (_supabaseReady) {
+        debugPrint('[Init] Step 3: Initializing CallService...');
         try {
           await CallService().initialize();
-          debugPrint('[CallService] Initialized');
+          debugPrint('[Init] Step 3: CallService initialized (${stopwatch.elapsedMilliseconds}ms)');
         } catch (e) {
-          debugPrint('[CallService] Init failed (non-fatal): $e');
-          // 不再设置 _initError，通话功能不可用不影响 APP 核心功能
+          debugPrint('[Init] Step 3: CallService init failed (non-fatal): $e');
         }
       } else {
-        debugPrint('[CallService] Skipped - Supabase not available');
+        debugPrint('[Init] Step 3: CallService skipped - Supabase not available');
       }
 
       // 4. Sentry 错误监控
+      debugPrint('[Init] Step 4: Initializing Sentry...');
       try {
         const sentryDsn = 'YOUR_SENTRY_DSN_HERE';
         if (!sentryDsn.contains('YOUR_') && sentryDsn.isNotEmpty) {
@@ -135,18 +151,31 @@ class _OpenFaithAppState extends State<OpenFaithApp> {
               options.tracesSampleRate = kReleaseMode ? 1.0 : 0.5;
             },
           ).timeout(const Duration(seconds: 5));
+          debugPrint('[Init] Step 4: Sentry initialized (${stopwatch.elapsedMilliseconds}ms)');
+        } else {
+          debugPrint('[Init] Step 4: Sentry skipped (no DSN configured)');
         }
       } catch (e) {
-        debugPrint('[Sentry] Init skipped: $e');
+        debugPrint('[Init] Step 4: Sentry init skipped: $e');
       }
 
       // 5. Shorebird 补丁检查 —— 延迟执行 + 仅检查不下载
-      //    放在所有核心初始化之后，且延迟 3 秒，确保引擎稳定
       _deferredShorebirdCheck();
     } catch (e) {
       debugPrint('[Init] Unexpected error: $e');
       _writeCrashLog('InitError', e.toString(), null);
     }
+
+    // ⏱ 确保 splash 至少显示 _minSplashDurationMs 毫秒
+    final elapsed = stopwatch.elapsedMilliseconds;
+    if (elapsed < _minSplashDurationMs) {
+      final remaining = _minSplashDurationMs - elapsed;
+      debugPrint('[Init] Waiting ${remaining}ms for minimum splash display...');
+      await Future.delayed(Duration(milliseconds: remaining));
+    }
+    stopwatch.stop();
+
+    debugPrint('[Init] All init done, total time: ${stopwatch.elapsedMilliseconds}ms, switching UI');
 
     // 初始化流程结束，切换 UI
     if (!mounted) return;
@@ -177,7 +206,6 @@ class _OpenFaithAppState extends State<OpenFaithApp> {
         );
         if (status == UpdateStatus.outdated) {
           debugPrint('[Shorebird] Patch available (deferred, not downloading)');
-          // 不在此处调用 updater.update()，避免原生代码操作导致崩溃
         }
       } on NoSuchMethodError catch (e) {
         debugPrint('[Shorebird] Not available in this build: $e');
@@ -190,7 +218,6 @@ class _OpenFaithAppState extends State<OpenFaithApp> {
   }
 
   /// 检查并下载 Shorebird 补丁（保留供将来安全版本使用）
-  /// 当前不在此处调用 —— 由 _deferredShorebirdCheck 替代
   static Future<void> _checkShorebirdPatch() async {
     if (kIsWeb) {
       debugPrint('[Shorebird] Skipped on Web platform');
@@ -245,6 +272,7 @@ class _OpenFaithAppState extends State<OpenFaithApp> {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('[OpenFaith] build() called, _initialized=$_initialized');
     return MaterialApp.router(
       title: 'OpenFaith',
       debugShowCheckedModeBanner: false,
@@ -258,9 +286,20 @@ class _OpenFaithAppState extends State<OpenFaithApp> {
       ),
       routerConfig: appRouter,
       builder: (context, child) {
-        // 初始化未完成 → 显示品牌启动画面
+        // 🔑 关键修复：始终将 child (Router) 保留在 widget tree 中
+        // 这样 GoRouter 始终挂载，初始化完成后可无缝切换
         if (!_initialized) {
-          return const _SplashScreen();
+          // 初始化未完成 → 叠加品牌启动画面在路由之上
+          debugPrint('[OpenFaith] builder: showing SplashScreen overlay');
+          return Stack(
+            children: [
+              // 底层：路由（始终挂载，但不可见）
+              if (child != null)
+                Opacity(opacity: 0, child: child),
+              // 顶层：品牌启动画面（完全覆盖）
+              const _SplashScreen(),
+            ],
+          );
         }
         // 初始化完成但 Supabase 失败 → 显示错误页面
         if (_initError) {
@@ -323,6 +362,7 @@ class _SplashScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('[SplashScreen] build() called');
     return Scaffold(
       backgroundColor: const Color(0xFF050816),
       body: Center(
@@ -333,19 +373,19 @@ class _SplashScreen extends StatelessWidget {
               'OpenFaith',
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 28,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 2,
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 3,
               ),
             ),
             const SizedBox(height: 48),
             SizedBox(
-              width: 24,
-              height: 24,
+              width: 28,
+              height: 28,
               child: CircularProgressIndicator(
-                strokeWidth: 2,
+                strokeWidth: 2.5,
                 valueColor: AlwaysStoppedAnimation<Color>(
-                  Colors.white.withOpacity(0.4),
+                  Colors.white.withOpacity(0.5),
                 ),
               ),
             ),
