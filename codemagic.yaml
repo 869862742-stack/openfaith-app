@@ -2,7 +2,7 @@ workflows:
   android-release:
     name: Android Release APK (Shorebird)
     instance_type: mac_mini_m2
-    max_build_duration: 60
+    max_build_duration: 120
     environment:
       java: 17
       flutter: stable
@@ -14,6 +14,11 @@ workflows:
         - push
       branch_patterns:
         - pattern: main
+    cache:
+      cache_paths:
+        - $HOME/.gradle/caches
+        - $HOME/.gradle/wrapper
+        - $HOME/.pub-cache
     scripts:
       - name: Get Flutter packages
         script: flutter pub get
@@ -24,9 +29,7 @@ workflows:
           echo "Installing Shorebird CLI..."
           export SHOREBIRD_DIR="$HOME/Library/Application Support/shorebird"
           curl -fsSL https://raw.githubusercontent.com/shorebirdtech/install/main/install.sh | bash -s -- --yes
-          # Add to PATH
           export PATH="$SHOREBIRD_DIR/bin:$HOME/.shorebird/bin:$PATH"
-          # Verify
           shorebird --version
       - name: Read version from pubspec.yaml
         script: |
@@ -58,7 +61,6 @@ workflows:
           RELEASE_ID=$(echo "$RELEASE_INFO" | python3 -c "import json,sys; print(json.load(sys.stdin)['id'])")
           echo "Release ID: ${RELEASE_ID}"
           
-          # Delete existing asset if any
           ASSET_ID=$(echo "$RELEASE_INFO" | python3 -c "
           import json,sys
           data=json.load(sys.stdin)
