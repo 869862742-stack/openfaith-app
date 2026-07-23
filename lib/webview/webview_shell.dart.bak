@@ -174,8 +174,7 @@ class _WebViewShellState extends State<WebViewShell> {
       },
       child: Scaffold(
         backgroundColor: const Color(0xFF050816),
-        body: SafeArea(
-          child: Stack(
+        body: Stack(
           children: [
             InAppWebView(
               initialUrlRequest: URLRequest(url: WebUri(_baseUrl)),
@@ -235,7 +234,6 @@ class _WebViewShellState extends State<WebViewShell> {
               ),
           ],
         ),
-          ),
       ),
     );
   }
