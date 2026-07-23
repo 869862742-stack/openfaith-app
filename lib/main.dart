@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:shorebird_code_push/shorebird_code_push.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:provider/provider.dart';
 import 'services/call_service.dart';
@@ -13,20 +12,8 @@ const supabaseAnonKey = 'sb_publishable_Sch6yDRuc1N0w7M61-U29A_ZP0J-9xe';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Shorebird OTA 热更新检查
-  try {
-    final updater = ShorebirdUpdater();
-    final status = await updater.checkForUpdate();
-    if (status == UpdateStatus.outdated) {
-      debugPrint('[Shorebird] New patch available, downloading...');
-      await updater.update();
-      debugPrint('[Shorebird] Patch downloaded, will apply on next restart');
-    } else {
-      debugPrint('[Shorebird] No new patches available');
-    }
-  } catch (e) {
-    debugPrint('[Shorebird] Update check skipped: $e');
-  }
+  // Shorebird 增量更新已通过 shorebird.yaml 的 auto_update: true 自动处理
+  // 无需手动检查，启动时会自动下载并应用补丁
 
   // Supabase 初始化（为原生通话模块准备）
   await Supabase.initialize(

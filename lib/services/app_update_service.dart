@@ -5,28 +5,41 @@ import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:shorebird_code_push/shorebird_code_push.dart';
+
+/// 更新类型
+enum UpdateType {
+  patch,      // Shorebird 增量补丁
+  fullApk,    // 完整 APK 下载
+}
 
 /// APP 版本更新信息模型
 class AppUpdateInfo {
+  final UpdateType type;
   final String latestVersion;
   final String downloadUrl;
   final String fallbackUrl;
   final String changelog;
+  final int? patchNumber; // Shorebird 补丁编号
 
   AppUpdateInfo({
+    required this.type,
     required this.latestVersion,
-    required this.downloadUrl,
-    required this.fallbackUrl,
-    required this.changelog,
+    this.downloadUrl = '',
+    this.fallbackUrl = '',
+    this.changelog = '',
+    this.patchNumber,
   });
+
+  bool get isPatch => type == UpdateType.patch;
 }
 
-/// APP 更新服务 - 负责下载 APK 并触发安装
-///
-/// 使用方式:
-/// 1. 调用 checkForUpdate() 检查是否有新版本
-/// 2. 如果有新版本，调用 downloadAndInstall() 下载并安装
-/// 3. 通过 onProgressUpdate / onStatusChange 监听进度和状态
+/// APP 更新服务
+/// 
+/// 更新策略（增量优先，降级兜底）：
+/// 1. 优先检查 Shorebird 增量补丁（小更新，几KB-几MB）
+/// 2. 无补丁时检查 version.json 完整 APK 更新（大版本更新）
+/// 3. Shorebird auto_update: true 时，启动自动下载应用补丁
 class AppUpdateService {
   static final AppUpdateService _instance = AppUpdateService._internal();
   factory AppUpdateService() => _instance;
@@ -41,13 +54,60 @@ class AppUpdateService {
 
   /// 进度回调
   void Function(double progress)? onProgressUpdate;
-  /// 状态回调: 'downloading' | 'installing' | 'completed' | 'error'
+  /// 状态回调: 'checking' | 'downloading' | 'installing' | 'completed' | 'error'
   void Function(String status, {String? error})? onStatusChange;
 
   /// 检查是否有新版本
-  /// 先尝试 raw GitHub URL，失败后 fallback 到 GitHub API
-  /// 网络异常（两个源都失败）时抛出异常，无新版本时返回 null
+  /// 优先检查 Shorebird 补丁，无补丁则检查完整 APK
   Future<AppUpdateInfo?> checkForUpdate() async {
+    onStatusChange?.call('checking');
+
+    // 步骤1: 检查 Shorebird 增量补丁
+    final patchInfo = await _checkShorebirdPatch();
+    if (patchInfo != null) {
+      debugPrint('[AppUpdate] Shorebird patch available: #${patchInfo.patchNumber}');
+      return patchInfo;
+    }
+
+    // 步骤2: 检查完整 APK 更新
+    final apkInfo = await _checkFullApkUpdate();
+    if (apkInfo != null) {
+      debugPrint('[AppUpdate] Full APK update available: ${apkInfo.latestVersion}');
+      return apkInfo;
+    }
+
+    debugPrint('[AppUpdate] Already up to date');
+    return null;
+  }
+
+  /// 检查 Shorebird 增量补丁
+  Future<AppUpdateInfo?> _checkShorebirdPatch() async {
+    try {
+      final updater = ShorebirdUpdater();
+      final status = await updater.checkForUpdate();
+      
+      if (status == UpdateStatus.outdated) {
+        // 获取当前补丁信息
+        final currentPatch = await updater.currentPatch();
+        final patchNum = currentPatch?.number ?? 0;
+        
+        debugPrint('[AppUpdate] Shorebird patch available (current: #$patchNum)');
+        return AppUpdateInfo(
+          type: UpdateType.patch,
+          latestVersion: currentPatch?.displayVersion ?? '',
+          patchNumber: patchNum,
+          changelog: '增量更新补丁 #${patchNum + 1}',
+        );
+      }
+      debugPrint('[AppUpdate] No Shorebird patch available (status: $status)');
+    } catch (e) {
+      debugPrint('[AppUpdate] Shorebird check failed: $e');
+    }
+    return null;
+  }
+
+  /// 检查完整 APK 更新（通过 version.json）
+  Future<AppUpdateInfo?> _checkFullApkUpdate() async {
     final packageInfo = await PackageInfo.fromPlatform();
     final currentVersion = packageInfo.version;
 
@@ -56,7 +116,6 @@ class AppUpdateService {
     // 尝试 1: raw GitHub URL
     try {
       final rawUrl = 'https://raw.githubusercontent.com/869862742-stack/openfaith-app/main/version.json';
-      debugPrint('[AppUpdateService] Trying raw URL: $rawUrl');
       final response = await _dio.get(
         rawUrl,
         options: Options(
@@ -66,19 +125,15 @@ class AppUpdateService {
       );
       if (response.statusCode == 200 && response.data != null) {
         data = _parseVersionData(response.data);
-        if (data != null) {
-          debugPrint('[AppUpdateService] Successfully fetched from raw URL');
-        }
       }
     } catch (e) {
-      debugPrint('[AppUpdateService] Raw URL failed: $e');
+      debugPrint('[AppUpdate] Raw URL failed: $e');
     }
 
     // 尝试 2: GitHub API (fallback)
     if (data == null) {
       try {
         final apiUrl = 'https://api.github.com/repos/869862742-stack/openfaith-app/contents/version.json';
-        debugPrint('[AppUpdateService] Falling back to GitHub API: $apiUrl');
         final response = await _dio.get(
           apiUrl,
           options: Options(
@@ -100,19 +155,15 @@ class AppUpdateService {
           if (content != null && content.isNotEmpty) {
             final decoded = utf8.decode(base64.decode(content));
             data = _parseVersionData(decoded);
-            if (data != null) {
-              debugPrint('[AppUpdateService] Successfully fetched from GitHub API');
-            }
           }
         }
       } catch (e) {
-        debugPrint('[AppUpdateService] GitHub API fallback also failed: $e');
+        debugPrint('[AppUpdate] GitHub API fallback also failed: $e');
       }
     }
 
-    // 两个源都失败，抛出异常让调用方感知网络错误
     if (data == null) {
-      throw Exception('无法获取版本信息，请检查网络连接后重试');
+      return null; // 网络异常时不抛异常，静默处理
     }
 
     final latestVersion = data['latestVersion'] as String? ?? '';
@@ -123,66 +174,70 @@ class AppUpdateService {
     if (latestVersion.isEmpty || downloadUrl.isEmpty) return null;
 
     if (_isNewerVersion(currentVersion, latestVersion)) {
-      debugPrint('[AppUpdateService] New version: $latestVersion (current: $currentVersion)');
       return AppUpdateInfo(
+        type: UpdateType.fullApk,
         latestVersion: latestVersion,
         downloadUrl: downloadUrl,
         fallbackUrl: fallbackUrl,
         changelog: changelog,
       );
     }
-    debugPrint('[AppUpdateService] Already up to date: $currentVersion');
     return null;
   }
 
-  /// 解析 version.json 数据
-  Map<String, dynamic>? _parseVersionData(dynamic responseData) {
+  /// 应用 Shorebird 增量补丁
+  Future<bool> _applyShorebirdPatch() async {
     try {
-      if (responseData is String) {
-        return json.decode(responseData) as Map<String, dynamic>;
-      } else if (responseData is Map<String, dynamic>) {
-        return responseData;
-      }
+      onStatusChange?.call('downloading');
+      final updater = ShorebirdUpdater();
+      await updater.update();
+      onStatusChange?.call('completed');
+      debugPrint('[AppUpdate] Shorebird patch applied successfully');
+      return true;
     } catch (e) {
-      debugPrint('[AppUpdateService] Parse version data failed: $e');
+      debugPrint('[AppUpdate] Shorebird patch apply failed: $e');
+      onStatusChange?.call('error', error: e.toString());
+      return false;
     }
-    return null;
   }
 
-  /// 下载 APK 并触发系统安装
-  /// 下载保存到 APP 缓存目录，完成后自动弹出系统安装器
+  /// 下载并安装更新
+  /// 根据更新类型自动选择：补丁 or 完整 APK
   Future<bool> downloadAndInstall(AppUpdateInfo updateInfo) async {
     if (_isDownloading) {
-      debugPrint('[AppUpdateService] Already downloading');
+      debugPrint('[AppUpdate] Already downloading');
       return false;
     }
 
     _isDownloading = true;
     _progress = 0.0;
-    _cancelToken = CancelToken();
 
+    // 增量补丁：直接应用
+    if (updateInfo.isPatch) {
+      final success = await _applyShorebirdPatch();
+      _isDownloading = false;
+      return success;
+    }
+
+    // 完整 APK：下载安装
+    _cancelToken = CancelToken();
     try {
       onStatusChange?.call('downloading');
 
-      // 确定下载 URL
       String url = updateInfo.downloadUrl;
       if (url.isEmpty && updateInfo.fallbackUrl.isNotEmpty) {
         url = updateInfo.fallbackUrl;
       }
       if (url.isEmpty) throw Exception('No download URL available');
 
-      // 获取临时目录
       final tempDir = await getTemporaryDirectory();
       final savePath = '${tempDir.path}/OpenFaith-v${updateInfo.latestVersion}.apk';
 
-      // 删除旧文件
       final file = File(savePath);
       if (await file.exists()) await file.delete();
 
-      debugPrint('[AppUpdateService] Downloading to: $savePath');
-      debugPrint('[AppUpdateService] URL: $url');
+      debugPrint('[AppUpdate] Downloading APK to: $savePath');
 
-      // dio 下载，支持进度回调
       await _dio.download(
         url,
         savePath,
@@ -195,14 +250,12 @@ class AppUpdateService {
         },
       );
 
-      // 验证文件
       if (!await file.exists()) throw Exception('Downloaded file not found');
       final fileSize = await file.length();
       if (fileSize < 1024 * 1024) throw Exception('File too small: $fileSize bytes');
 
-      debugPrint('[AppUpdateService] Download complete: ${(fileSize / 1024 / 1024).toStringAsFixed(1)} MB');
+      debugPrint('[AppUpdate] Download complete: ${(fileSize / 1024 / 1024).toStringAsFixed(1)} MB');
 
-      // 触发系统安装
       onStatusChange?.call('installing');
       final result = await OpenFilex.open(
         savePath,
@@ -210,16 +263,12 @@ class AppUpdateService {
       );
 
       if (result.type == ResultType.done) {
-        debugPrint('[AppUpdateService] Install dialog opened');
         onStatusChange?.call('completed');
         _isDownloading = false;
         return true;
       } else {
-        // Fallback: 不指定 type 让系统自行处理
-        debugPrint('[AppUpdateService] First attempt result: ${result.type} - ${result.message}');
         final result2 = await OpenFilex.open(savePath);
         if (result2.type == ResultType.done) {
-          debugPrint('[AppUpdateService] Install dialog opened (fallback)');
           onStatusChange?.call('completed');
           _isDownloading = false;
           return true;
@@ -227,7 +276,7 @@ class AppUpdateService {
         throw Exception('Failed to open APK: ${result2.message}');
       }
     } catch (e) {
-      debugPrint('[AppUpdateService] Download/install failed: $e');
+      debugPrint('[AppUpdate] Download/install failed: $e');
       onStatusChange?.call('error', error: e.toString());
       _isDownloading = false;
       return false;
@@ -239,7 +288,20 @@ class AppUpdateService {
     _cancelToken?.cancel('User cancelled');
     _isDownloading = false;
     _progress = 0.0;
-    debugPrint('[AppUpdateService] Download cancelled');
+  }
+
+  /// 解析 version.json
+  Map<String, dynamic>? _parseVersionData(dynamic responseData) {
+    try {
+      if (responseData is String) {
+        return json.decode(responseData) as Map<String, dynamic>;
+      } else if (responseData is Map<String, dynamic>) {
+        return responseData;
+      }
+    } catch (e) {
+      debugPrint('[AppUpdate] Parse failed: $e');
+    }
+    return null;
   }
 
   /// 比较语义化版本号

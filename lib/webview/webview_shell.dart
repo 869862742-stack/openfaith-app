@@ -99,13 +99,13 @@ class _WebViewShellState extends State<WebViewShell> {
     }
   }
 
-  /// 显示更新对话框
+  /// 显示更新对话框（支持增量补丁和完整APK）
   void _showUpdateDialog(AppUpdateInfo updateInfo) {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) {
-        bool isDownloading = false;
+        bool isUpdating = false;
         double downloadProgress = 0.0;
         
         return StatefulBuilder(
@@ -115,10 +115,21 @@ class _WebViewShellState extends State<WebViewShell> {
               setDialogState(() => downloadProgress = progress);
             };
             updateService.onStatusChange = (status, {error}) {
-              if (status == 'installing' || status == 'completed') {
+              if (status == 'completed') {
                 if (mounted) Navigator.of(dialogContext).pop();
               }
+              if (status == 'error') {
+                setDialogState(() => isUpdating = false);
+              }
             };
+            
+            final bool isPatch = updateInfo.isPatch;
+            final String title = isPatch 
+                ? '发现增量更新补丁 #${updateInfo.patchNumber ?? ""}'
+                : '发现新版本 v${updateInfo.latestVersion}';
+            final String subtitle = isPatch
+                ? '增量补丁，无需下载完整安装包'
+                : '需要下载完整安装包';
             
             return AlertDialog(
               backgroundColor: const Color(0xFF1A1A2E),
@@ -127,7 +138,7 @@ class _WebViewShellState extends State<WebViewShell> {
                 side: const BorderSide(color: Color(0xFF9D4EDD), width: 1),
               ),
               title: Text(
-                '发现新版本 v${updateInfo.latestVersion}',
+                title,
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -138,63 +149,75 @@ class _WebViewShellState extends State<WebViewShell> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Text(
+                    subtitle,
+                    style: const TextStyle(color: Color(0xFF9D4EDD), fontSize: 12),
+                  ),
                   if (updateInfo.changelog.isNotEmpty) ...[
+                    const SizedBox(height: 8),
                     Text(
                       updateInfo.changelog,
-                      style: TextStyle(
-                        color: Colors.grey[300],
-                        fontSize: 13,
-                      ),
+                      style: TextStyle(color: Colors.grey[300], fontSize: 13),
                     ),
-                    const SizedBox(height: 12),
                   ],
-                  if (isDownloading) ...[
-                    const SizedBox(height: 8),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: LinearProgressIndicator(
-                        value: downloadProgress > 0 ? downloadProgress : null,
-                        backgroundColor: Colors.grey[800],
-                        valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF9D4EDD)),
-                        minHeight: 6,
+                  if (isUpdating) ...[
+                    const SizedBox(height: 12),
+                    if (isPatch)
+                      const Row(
+                        children: [
+                          SizedBox(
+                            width: 16, height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Color(0xFF9D4EDD),
+                            ),
+                          ),
+                          SizedBox(width: 12),
+                          Text(
+                            '正在应用补丁...',
+                            style: TextStyle(color: Color(0xFF9D4EDD), fontSize: 13),
+                          ),
+                        ],
+                      )
+                    else ...[
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          value: downloadProgress > 0 ? downloadProgress : null,
+                          backgroundColor: Colors.grey[800],
+                          valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF9D4EDD)),
+                          minHeight: 6,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '下载中 ${(downloadProgress * 100).toInt()}%',
-                      style: const TextStyle(color: Color(0xFF9D4EDD), fontSize: 13),
-                    ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '下载中 ${(downloadProgress * 100).toInt()}%',
+                        style: const TextStyle(color: Color(0xFF9D4EDD), fontSize: 13),
+                      ),
+                    ],
                   ],
                 ],
               ),
               actions: [
-                if (!isDownloading) ...[
+                if (!isUpdating) ...[
                   TextButton(
                     onPressed: () => Navigator.of(dialogContext).pop(),
-                    child: const Text(
-                      '稍后再说',
-                      style: TextStyle(color: Colors.grey),
-                    ),
+                    child: const Text('稍后再说', style: TextStyle(color: Colors.grey)),
                   ),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF9D4EDD),
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
                     onPressed: () async {
-                      setDialogState(() => isDownloading = true);
+                      setDialogState(() => isUpdating = true);
                       await updateService.downloadAndInstall(updateInfo);
                     },
-                    child: const Text('立即更新'),
+                    child: Text(isPatch ? '立即应用' : '立即更新'),
                   ),
                 ] else ...[
-                  const Text(
-                    '正在下载...',
-                    style: TextStyle(color: Color(0xFF9D4EDD)),
-                  ),
+                  const Text('正在更新...', style: TextStyle(color: Color(0xFF9D4EDD))),
                 ],
               ],
             );
