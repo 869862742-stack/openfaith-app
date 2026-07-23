@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'dart:convert';
+import '../screens/call/call_screen.dart';
 
 /// WebView 壳 - 加载网页版 OpenFaith
 /// 所有页面、导航、业务逻辑都由网页版处理
-/// Flutter 仅提供原生容器 + 未来逐步替换的原生模块
+/// Flutter 仅提供原生容器 + 音视频通话原生模块
 class WebViewShell extends StatefulWidget {
   const WebViewShell({super.key});
 
@@ -68,7 +70,7 @@ class _WebViewShellState extends State<WebViewShell> {
               ),
               onWebViewCreated: (controller) {
                 _webViewController = controller;
-                // 注册 JS Bridge（未来原生模块通信用）
+                // 注册 JS Bridge（原生模块通信用）
                 _registerJsBridge(controller);
               },
               onLoadStart: (controller, url) {
@@ -115,12 +117,126 @@ class _WebViewShellState extends State<WebViewShell> {
 
   /// 注册 JS Bridge，供网页版调用原生能力
   void _registerJsBridge(InAppWebViewController controller) {
-    // 预留：未来在此注册原生模块的 JS 桥接
-    // 示例：
-    // controller.addJavaScriptHandler(
-    //   handlerName: 'getDeviceInfo',
-    //   callback: (args) => {'platform': 'android', 'version': '...'},
-    // );
-    debugPrint('[WebView] JS Bridge registered');
+    // 1. 发起通话
+    controller.addJavaScriptHandler(
+      handlerName: 'startCall',
+      callback: (args) {
+        if (args.isEmpty) return {'success': false, 'error': 'No arguments'};
+        
+        try {
+          final data = args[0] is String ? jsonDecode(args[0]) : args[0];
+          final myUserId = data['myUserId'] as String?;
+          final peerUserId = data['peerUserId'] as String?;
+          final peerName = data['peerName'] as String?;
+          final callType = data['callType'] as String? ?? 'voice';
+          final channelName = data['channelName'] as String?;
+          final callId = data['callId'] as String?;
+
+          if (myUserId == null || peerUserId == null || peerName == null) {
+            return {'success': false, 'error': 'Missing required fields'};
+          }
+
+          // 在主线程打开通话界面
+          Future.delayed(Duration.zero, () {
+            if (!mounted) return;
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => CallScreen(
+                  myUserId: myUserId,
+                  peerUserId: peerUserId,
+                  peerName: peerName,
+                  callType: callType,
+                  isIncoming: false,
+                  callId: callId,
+                  channelName: channelName,
+                  onCallEnd: () {
+                    // 通话结束，通知网页
+                    _notifyCallEnded(callId);
+                  },
+                ),
+              ),
+            );
+          });
+
+          return {'success': true};
+        } catch (e) {
+          return {'success': false, 'error': e.toString()};
+        }
+      },
+    );
+
+    // 2. 接听来电
+    controller.addJavaScriptHandler(
+      handlerName: 'answerCall',
+      callback: (args) {
+        if (args.isEmpty) return {'success': false, 'error': 'No arguments'};
+        
+        try {
+          final data = args[0] is String ? jsonDecode(args[0]) : args[0];
+          final myUserId = data['myUserId'] as String?;
+          final peerUserId = data['peerUserId'] as String?;
+          final peerName = data['peerName'] as String?;
+          final callType = data['callType'] as String? ?? 'voice';
+          final channelName = data['channelName'] as String?;
+          final callId = data['callId'] as String?;
+
+          if (myUserId == null || peerUserId == null || peerName == null) {
+            return {'success': false, 'error': 'Missing required fields'};
+          }
+
+          // 在主线程打开通话界面（接听模式）
+          Future.delayed(Duration.zero, () {
+            if (!mounted) return;
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => CallScreen(
+                  myUserId: myUserId,
+                  peerUserId: peerUserId,
+                  peerName: peerName,
+                  callType: callType,
+                  isIncoming: true,
+                  callId: callId,
+                  channelName: channelName,
+                  onCallEnd: () {
+                    _notifyCallEnded(callId);
+                  },
+                ),
+              ),
+            );
+          });
+
+          return {'success': true};
+        } catch (e) {
+          return {'success': false, 'error': e.toString()};
+        }
+      },
+    );
+
+    // 3. 获取设备信息
+    controller.addJavaScriptHandler(
+      handlerName: 'getDeviceInfo',
+      callback: (args) {
+        return {
+          'platform': 'android',
+          'appVersion': '1.3.9',
+          'hasNativeCall': true,
+        };
+      },
+    );
+
+    debugPrint('[WebView] JS Bridge registered with native call support');
+  }
+
+  /// 通知网页通话已结束
+  void _notifyCallEnded(String? callId) {
+    final controller = _webViewController;
+    if (controller == null) return;
+
+    final js = '''
+      if (window.OpenFaithBridge && window.OpenFaithBridge.onCallEnded) {
+        window.OpenFaithBridge.onCallEnded(${jsonEncode(callId)});
+      }
+    ''';
+    controller.evaluateJavascript(source: js);
   }
 }
