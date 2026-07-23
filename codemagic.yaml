@@ -1,12 +1,14 @@
 workflows:
   android-release:
-    name: Android Release APK
+    name: Android Release APK (Shorebird)
     instance_type: mac_mini_m2
     max_build_duration: 60
     environment:
+      java: 17
       flutter: stable
       vars:
         GITHUB_TOKEN: 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
+        SHOREBIRD_TOKEN: sb_api_2m_VbXpmD-E-IVt3S7PW3E6MnJh_0Ruqntx3jo7rBbc
     triggering:
       events:
         - push
@@ -15,17 +17,40 @@ workflows:
     scripts:
       - name: Get Flutter packages
         script: flutter pub get
-      - name: Build Android Release APK
-        script: flutter build apk --release --target-platform android-arm64
+      - name: Install Shorebird CLI
+        script: |
+          #!/usr/bin/env bash
+          set -e
+          echo "Installing Shorebird CLI..."
+          export SHOREBIRD_DIR="$HOME/Library/Application Support/shorebird"
+          curl -fsSL https://raw.githubusercontent.com/shorebirdtech/install/main/install.sh | bash -s -- --yes
+          # Add to PATH
+          export PATH="$SHOREBIRD_DIR/bin:$HOME/.shorebird/bin:$PATH"
+          # Verify
+          shorebird --version
+      - name: Read version from pubspec.yaml
+        script: |
+          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: *//' | tr -d '[:space:]')
+          echo "VERSION=$VERSION" >> $FCI_BUILD_ENV
+          echo "📦 App version: $VERSION"
+      - name: Shorebird Release (register base + build APK)
+        script: |
+          #!/usr/bin/env bash
+          set -e
+          export PATH="$HOME/Library/Application Support/shorebird/bin:$HOME/.shorebird/bin:$PATH"
+          echo "Running shorebird release android..."
+          shorebird release android --artifact apk --verbose
       - name: Upload to GitHub Release
         script: |
           #!/usr/bin/env bash
           set -e
           
           APK_PATH="build/app/outputs/flutter-apk/app-release.apk"
-          RELEASE_TAG="v1.3.9"
+          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: *//' | tr -d '[:space:]')
+          VERSION_NAME=$(echo "$VERSION" | cut -d'+' -f1)
+          RELEASE_TAG="v${VERSION_NAME}"
           REPO="869862742-stack/openfaith-app"
-          ASSET_NAME="OpenFaith-v1.3.9.apk"
+          ASSET_NAME="OpenFaith-v${VERSION_NAME}.apk"
           
           echo "Getting release info for ${RELEASE_TAG}..."
           RELEASE_INFO=$(curl -s -H "Authorization: token ${GITHUB_TOKEN}" \
@@ -49,7 +74,7 @@ workflows:
               "https://api.github.com/repos/${REPO}/releases/assets/${ASSET_ID}"
           fi
           
-          echo "Uploading APK to release..."
+          echo "Uploading APK (${ASSET_NAME}) to release ${RELEASE_TAG}..."
           curl -s -X POST \
             -H "Authorization: token ${GITHUB_TOKEN}" \
             -H "Content-Type: application/vnd.android.package-archive" \
