@@ -84,17 +84,27 @@ class AppUpdateService {
   Future<AppUpdateInfo?> _checkShorebirdPatch() async {
     try {
       final updater = ShorebirdUpdater();
+      
+      // 检查 Shorebird 是否可用
+      if (!updater.isAvailable) {
+        debugPrint('[AppUpdate] Shorebird updater not available');
+        return null;
+      }
+      
       final status = await updater.checkForUpdate();
       
       if (status == UpdateStatus.outdated) {
         // 获取当前补丁信息
-        final currentPatch = await updater.currentPatch();
+        final currentPatch = await updater.readCurrentPatch();
         final patchNum = currentPatch?.number ?? 0;
         
-        debugPrint('[AppUpdate] Shorebird patch available (current: #$patchNum)');
+        // 获取当前 APP 版本号
+        final packageInfo = await PackageInfo.fromPlatform();
+        
+        debugPrint('[AppUpdate] Shorebird patch available (current: #$patchNum, status: $status)');
         return AppUpdateInfo(
           type: UpdateType.patch,
-          latestVersion: currentPatch?.displayVersion ?? '',
+          latestVersion: packageInfo.version,
           patchNumber: patchNum,
           changelog: '增量更新补丁 #${patchNum + 1}',
         );
