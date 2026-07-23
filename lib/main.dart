@@ -45,10 +45,20 @@ void main() {
     return true; // 吞掉异常，防止 APP 崩溃
   };
 
-  // 覆盖默认 ErrorWidget —— 返回深色背景占位而非灰色错误页面
+  // 覆盖默认 ErrorWidget —— 显示可见的错误提示而非静默黑屏
   ErrorWidget.builder = (FlutterErrorDetails details) {
     debugPrint('[ErrorWidget] ${details.exception}');
-    return const SizedBox.shrink();
+    return Container(
+      color: const Color(0xFF050816),
+      padding: const EdgeInsets.all(16),
+      child: Center(
+        child: Text(
+          '渲染错误: ${details.exception}',
+          style: const TextStyle(color: Colors.redAccent, fontSize: 12),
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
   };
 
   // 立即 runApp —— 不再等待后台初始化
@@ -308,8 +318,11 @@ class _OpenFaithAppState extends State<OpenFaithApp> {
             '请检查网络连接后重试。',
           );
         }
-        // 一切正常 → 显示主路由
-        return child ?? const SizedBox.shrink();
+        // 一切正常 → 显示主路由，包裹深色背景防止过渡闪烁
+        return ColoredBox(
+          color: const Color(0xFF050816),
+          child: child ?? const SizedBox.shrink(),
+        );
       },
     );
   }
