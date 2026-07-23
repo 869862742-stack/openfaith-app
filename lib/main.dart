@@ -23,7 +23,7 @@ const supabaseAnonKey = 'sb_publishable_Sch6yDRuc1N0w7M61-U29A_ZP0J-9xe';
 AppUpdateInfo? _pendingUpdate;
 
 /// 最小 splash 显示时间（毫秒）
-const int _minSplashDurationMs = 1500;
+const int _minSplashDurationMs = 2000;
 
 void main() {
   // 最小化同步初始化，确保 UI 立即渲染
@@ -97,7 +97,6 @@ class _OpenFaithAppState extends State<OpenFaithApp> {
 
   /// 后台初始化：所有耗时操作移到此处，UI 先展示 Splash
   Future<void> _runBackgroundInit() async {
-    final startTime = DateTime.now();
     // ⏱ 记录开始时间
     final stopwatch = Stopwatch()..start();
     debugPrint('[Init] Background init started');
@@ -177,12 +176,6 @@ class _OpenFaithAppState extends State<OpenFaithApp> {
     stopwatch.stop();
 
     debugPrint('[Init] All init done, total time: ${stopwatch.elapsedMilliseconds}ms, switching UI');
-
-    // 确保 splash screen 至少显示 2 秒，避免一闪而过
-    final elapsed = DateTime.now().difference(startTime).inMilliseconds;
-    if (elapsed < 2000) {
-      await Future.delayed(Duration(milliseconds: 2000 - elapsed));
-    }
 
     // 初始化流程结束，切换 UI
     if (!mounted) return;
