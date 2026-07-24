@@ -538,6 +538,52 @@ class CallService extends ChangeNotifier {
     return '{$pairs}';
   }
 
+
+  /// 从 WebView Bridge 调用：直接加入 Agora 频道（信令由 Web 端处理）
+  Future<void> joinChannelFromWebView({
+    required String channelName,
+    required int uid,
+    required String token,
+    bool isVideo = false,
+  }) async {
+    await initialize();
+    
+    if (!_engineInitialized || _engine == null) {
+      debugPrint('[CallService] Engine not available for WebView call');
+      throw Exception('Agora engine not initialized');
+    }
+
+    if (isVideo) {
+      try {
+        await _engine!.enableVideo();
+      } catch (e) {
+        debugPrint('[CallService] enableVideo error: $e');
+      }
+    }
+
+    _stateData = CallStateData(
+      status: CallState.connected,
+      channelName: channelName,
+      isVideoEnabled: isVideo,
+    );
+
+    try {
+      await _engine!.joinChannel(
+        token: token,
+        channelId: channelName,
+        uid: uid,
+        options: const ChannelMediaOptions(),
+      );
+      debugPrint('[CallService] WebView call joined: channel=$channelName, uid=$uid');
+    } catch (e) {
+      debugPrint('[CallService] WebView joinChannel error: $e');
+      _stateData = const CallStateData(status: CallState.idle);
+      rethrow;
+    }
+
+    notifyListeners();
+  }
+
   @override
   void dispose() {
     _timeoutTimer?.cancel();

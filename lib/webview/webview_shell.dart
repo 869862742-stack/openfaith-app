@@ -4,6 +4,7 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../services/app_update_service.dart';
+import '../services/call_service.dart';
 
 /// WebView 壳 - 加载网页版 OpenFaith
 class WebViewShell extends StatefulWidget {
@@ -74,7 +75,6 @@ class _WebViewShellState extends State<WebViewShell> {
       if (updateInfo != null) {
         _showUpdateDialog(updateInfo);
       } else {
-        // 显示"已是最新版本"提示
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('当前已是最新版本 v${_appVersion.split('+').first}'),
@@ -99,7 +99,7 @@ class _WebViewShellState extends State<WebViewShell> {
     }
   }
 
-  /// 显示更新对话框（支持增量补丁和完整APK）
+  /// 显示更新对话框
   void _showUpdateDialog(AppUpdateInfo updateInfo) {
     showDialog(
       context: context,
@@ -227,6 +227,314 @@ class _WebViewShellState extends State<WebViewShell> {
     );
   }
 
+  /// 注入完整的 JavaScript Bridge（包括版本信息 + Agora 原生通话桥接）
+  Future<void> _injectJavaScriptBridge(InAppWebViewController controller) async {
+    await controller.evaluateJavascript(source: '''
+      (function() {
+        console.log('[OF Bridge] Injecting JavaScript Bridge...');
+        
+        // ========== 1. 版本信息注入 ==========
+        window.flutterInAppWebView.callHandler('getAppVersion').then(function(result) {
+          try {
+            var data = typeof result === 'string' ? JSON.parse(result) : result;
+            window.__OF_APP_VERSION__ = data.version;
+            window.__OF_APP_BUILD__ = data.buildNumber;
+            window.__OF_IS_NATIVE_APP__ = true;
+            console.log('[OF Bridge] APP version: ' + data.version + ' (build ' + data.buildNumber + ')');
+            
+            // 更新页面上显示的版本号
+            var versionEls = document.querySelectorAll('[class*="version"], [data-version]');
+            versionEls.forEach(function(el) {
+              if (el.textContent && el.textContent.includes('版本')) {
+                el.textContent = el.textContent.replace(/\\d+\\.\\d+\\.\\d+/, data.version);
+              }
+            });
+            
+            // 拦截"检查版本更新"按钮
+            var checkBtns = document.querySelectorAll('button');
+            checkBtns.forEach(function(btn) {
+              if (btn.textContent && (btn.textContent.includes('检查版本') || btn.textContent.includes('检查更新'))) {
+                btn.addEventListener('click', function(e) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('[OF Bridge] Intercepted version check button');
+                  window.flutterInAppWebView.callHandler('checkForAppUpdate');
+                }, true);
+              }
+            });
+          } catch(e) {
+            console.error('[OF Bridge] Version injection error:', e);
+          }
+        });
+        
+        // ========== 2. Agora 原生通话桥接（兼容 Capacitor 接口）==========
+        // 模拟 window.Capacitor 对象，让 Web 端的 hasNativeAgoraPlugin() 返回 true
+        if (!window.Capacitor) {
+          window.Capacitor = {
+            isNativePlatform: function() { return true; },
+            Plugins: {}
+          };
+        }
+        
+        // 注册 AgoraNative 插件
+        window.Capacitor.Plugins.AgoraNative = {
+          initialize: function(params) {
+            console.log('[AgoraNative Bridge] initialize called', params);
+            return window.flutterInAppWebView.callHandler('agoraInitialize', params)
+              .then(function(result) {
+                return typeof result === 'string' ? JSON.parse(result) : result;
+              });
+          },
+          
+          requestPermissions: function(params) {
+            console.log('[AgoraNative Bridge] requestPermissions called', params);
+            return window.flutterInAppWebView.callHandler('agoraRequestPermissions', params)
+              .then(function(result) {
+                return typeof result === 'string' ? JSON.parse(result) : result;
+              });
+          },
+          
+          startNativeCall: function(params) {
+            console.log('[AgoraNative Bridge] startNativeCall called', params);
+            return window.flutterInAppWebView.callHandler('agoraStartCall', params)
+              .then(function(result) {
+                return typeof result === 'string' ? JSON.parse(result) : result;
+              });
+          },
+          
+          leaveChannel: function() {
+            console.log('[AgoraNative Bridge] leaveChannel called');
+            return window.flutterInAppWebView.callHandler('agoraLeaveChannel')
+              .then(function(result) {
+                return typeof result === 'string' ? JSON.parse(result) : result;
+              });
+          },
+          
+          getStatus: function() {
+            return window.flutterInAppWebView.callHandler('agoraGetStatus')
+              .then(function(result) {
+                return typeof result === 'string' ? JSON.parse(result) : result;
+              });
+          },
+          
+          destroy: function() {
+            console.log('[AgoraNative Bridge] destroy called');
+            return window.flutterInAppWebView.callHandler('agoraDestroy')
+              .then(function(result) {
+                return typeof result === 'string' ? JSON.parse(result) : result;
+              });
+          },
+          
+          addListener: function(eventName, callback) {
+            console.log('[AgoraNative Bridge] addListener:', eventName);
+            // 将回调注册到全局，供 Flutter 调用
+            if (!window.__AgoraCallbacks__) {
+              window.__AgoraCallbacks__ = {};
+            }
+            if (!window.__AgoraCallbacks__[eventName]) {
+              window.__AgoraCallbacks__[eventName] = [];
+            }
+            window.__AgoraCallbacks__[eventName].push(callback);
+            
+            return {
+              remove: function() {
+                if (window.__AgoraCallbacks__ && window.__AgoraCallbacks__[eventName]) {
+                  var idx = window.__AgoraCallbacks__[eventName].indexOf(callback);
+                  if (idx > -1) {
+                    window.__AgoraCallbacks__[eventName].splice(idx, 1);
+                  }
+                }
+              }
+            };
+          }
+        };
+        
+        // 全局回调触发函数（供 Flutter 调用）
+        window.triggerAgoraCallback = function(eventName, data) {
+          console.log('[AgoraNative Bridge] Triggering callback:', eventName, data);
+          if (window.__AgoraCallbacks__ && window.__AgoraCallbacks__[eventName]) {
+            window.__AgoraCallbacks__[eventName].forEach(function(callback) {
+              try {
+                callback(data);
+              } catch(e) {
+                console.error('[AgoraNative Bridge] Callback error:', e);
+              }
+            });
+          }
+        };
+        
+        console.log('[OF Bridge] Agora native bridge injected successfully');
+      })();
+    ''');
+    
+    // 注册 Agora 相关的 JavaScript handlers
+    _registerAgoraHandlers(controller);
+  }
+
+  /// 注册 Agora 通话相关的 JavaScript handlers
+  void _registerAgoraHandlers(InAppWebViewController controller) {
+    final callService = CallService();
+    
+    // 初始化 Agora 引擎
+    controller.addJavaScriptHandler(
+      handlerName: 'agoraInitialize',
+      callback: (args) async {
+        try {
+          await callService.initialize();
+          return json.encode({
+            'success': true,
+            'sdkVersion': '6.5.4',
+          });
+        } catch (e) {
+          debugPrint('[WebView Bridge] agoraInitialize error: $e');
+          return json.encode({
+            'success': false,
+            'message': e.toString(),
+          });
+        }
+      },
+    );
+    
+    // 请求权限
+    controller.addJavaScriptHandler(
+      handlerName: 'agoraRequestPermissions',
+      callback: (args) async {
+        try {
+          final micStatus = await Permission.microphone.request();
+          bool granted = micStatus.isGranted;
+          
+          // 如果需要视频，也请求摄像头权限
+          if (args.isNotEmpty && args[0] is Map && args[0]['enableVideo'] == true) {
+            final cameraStatus = await Permission.camera.request();
+            granted = granted && cameraStatus.isGranted;
+          }
+          
+          return json.encode({'granted': granted});
+        } catch (e) {
+          debugPrint('[WebView Bridge] agoraRequestPermissions error: $e');
+          return json.encode({'granted': false});
+        }
+      },
+    );
+    
+    // 启动原生通话
+    controller.addJavaScriptHandler(
+      handlerName: 'agoraStartCall',
+      callback: (args) async {
+        try {
+          if (args.isEmpty || args[0] is! Map) {
+            return json.encode({'success': false, 'message': 'Invalid params'});
+          }
+          
+          final params = args[0] as Map<String, dynamic>;
+          final channelName = params['channelName'] as String;
+          final uid = params['uid'] as int;
+          final token = params['token'] as String;
+          final isVideo = params['isVideo'] as bool? ?? false;
+          
+          debugPrint('[WebView Bridge] Starting native call: channel=$channelName, uid=$uid, video=$isVideo');
+          
+          // 调用 CallService 的 joinChannel
+          await callService.joinChannelFromWebView(
+            channelName: channelName,
+            uid: uid,
+            token: token,
+            isVideo: isVideo,
+          );
+          
+          // 监听通话状态变化，通过 JS 回调通知 Web 端
+          callService.addListener(() {
+            final state = callService.state;
+            _notifyWebCallState(controller, state);
+          });
+          
+          return json.encode({
+            'success': true,
+            'message': 'Call started',
+          });
+        } catch (e) {
+          debugPrint('[WebView Bridge] agoraStartCall error: $e');
+          return json.encode({
+            'success': false,
+            'message': e.toString(),
+          });
+        }
+      },
+    );
+    
+    // 离开频道
+    controller.addJavaScriptHandler(
+      handlerName: 'agoraLeaveChannel',
+      callback: (args) async {
+        try {
+          await callService.leaveChannel();
+          return json.encode({'success': true});
+        } catch (e) {
+          debugPrint('[WebView Bridge] agoraLeaveChannel error: $e');
+          return json.encode({'success': false, 'message': e.toString()});
+        }
+      },
+    );
+    
+    // 获取状态
+    controller.addJavaScriptHandler(
+      handlerName: 'agoraGetStatus',
+      callback: (args) async {
+        final state = callService.state;
+        return json.encode({
+          'initialized': true,
+          'joined': state.status == CallState.connected,
+          'channelName': state.channelName,
+          'remoteUid': state.remoteUid,
+        });
+      },
+    );
+    
+    // 销毁
+    controller.addJavaScriptHandler(
+      handlerName: 'agoraDestroy',
+      callback: (args) async {
+        try {
+          await callService.dispose();
+          return json.encode({'success': true});
+        } catch (e) {
+          return json.encode({'success': false, 'message': e.toString()});
+        }
+      },
+    );
+  }
+
+  /// 通知 Web 端通话状态变化
+  void _notifyWebCallState(InAppWebViewController controller, CallStateData state) {
+    String? eventName;
+    Map<String, dynamic>? data;
+    
+    switch (state.status) {
+      case CallState.connected:
+        eventName = 'onJoinChannelSuccess';
+        data = {
+          'channel': state.channelName,
+          'uid': state.remoteUid,
+        };
+        break;
+      case CallState.disconnected:
+        eventName = 'onUserOffline';
+        data = {
+          'uid': state.remoteUid,
+          'reason': 0,
+        };
+        break;
+      default:
+        return;
+    }
+    
+    if (eventName != null && data != null) {
+      controller.evaluateJavascript(
+        source: 'window.triggerAgoraCallback("$eventName", ${json.encode(data)})',
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -267,7 +575,7 @@ class _WebViewShellState extends State<WebViewShell> {
                 onWebViewCreated: (controller) {
                   _webViewController = controller;
                   
-                  // 注册 JS Bridge handler
+                  // 注册基础 JS Bridge handler
                   controller.addJavaScriptHandler(
                     handlerName: 'getAppVersion',
                     callback: (args) {
@@ -303,47 +611,9 @@ class _WebViewShellState extends State<WebViewShell> {
                 onProgressChanged: (controller, progress) {
                   setState(() => _progress = progress / 100);
                 },
-                onLoadStop: (controller, url) {
+                onLoadStop: (controller, url) async {
                   setState(() => _isLoading = false);
-                  
-                  // 页面加载完成后注入 JS Bridge
-                  controller.evaluateJavascript(source: '''
-                    (function() {
-                      // 注入 APP 版本信息到 window
-                      window.flutterInAppWebView.callHandler('getAppVersion').then(function(result) {
-                        try {
-                          var data = typeof result === 'string' ? JSON.parse(result) : result;
-                          window.__OF_APP_VERSION__ = data.version;
-                          window.__OF_APP_BUILD__ = data.buildNumber;
-                          window.__OF_IS_NATIVE_APP__ = true;
-                          console.log('[OF Bridge] APP version: ' + data.version + ' (build ' + data.buildNumber + ')');
-                          
-                          // 更新页面上显示的版本号
-                          var versionEls = document.querySelectorAll('[class*="version"], [data-version]');
-                          versionEls.forEach(function(el) {
-                            if (el.textContent && el.textContent.includes('版本')) {
-                              el.textContent = el.textContent.replace(/\\d+\\.\\d+\\.\\d+/, data.version);
-                            }
-                          });
-                          
-                          // 拦截"检查版本更新"按钮
-                          var checkBtns = document.querySelectorAll('button');
-                          checkBtns.forEach(function(btn) {
-                            if (btn.textContent && (btn.textContent.includes('检查版本') || btn.textContent.includes('检查更新'))) {
-                              btn.addEventListener('click', function(e) {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                console.log('[OF Bridge] Intercepted version check button');
-                                window.flutterInAppWebView.callHandler('checkForAppUpdate');
-                              }, true);
-                            }
-                          });
-                        } catch(e) {
-                          console.error('[OF Bridge] Error:', e);
-                        }
-                      });
-                    })();
-                  ''');
+                  await _injectJavaScriptBridge(controller);
                 },
                 onLoadError: (controller, url, code, message) {
                   debugPrint('[WebView] Load error: $code $message');
