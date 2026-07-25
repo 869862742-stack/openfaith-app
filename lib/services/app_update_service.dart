@@ -127,6 +127,24 @@ class AppUpdateService {
 
     // 尝试 1: raw GitHub URL
     try {
+    // 优先从 Cloudflare CDN 获取版本信息（全球可访问，包括中国）
+    try {
+      final cdnUrl = 'https://download.openfaithhub.com/version.json';
+      final cdnResponse = await _dio.get(
+        cdnUrl,
+        options: Options(
+          connectTimeout: const Duration(seconds: 5),
+          receiveTimeout: const Duration(seconds: 5),
+        ),
+      );
+      if (cdnResponse.statusCode == 200 && cdnResponse.data != null) {
+        data = _parseVersionData(cdnResponse.data);
+        debugPrint('[AppUpdate] Got version from CDN');
+      }
+    } catch (e) {
+      debugPrint('[AppUpdate] CDN version check failed: $e');
+    }
+
       final rawUrl = 'https://raw.githubusercontent.com/869862742-stack/openfaith-app/main/version.json';
       final response = await _dio.get(
         rawUrl,
