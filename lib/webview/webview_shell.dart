@@ -467,7 +467,7 @@ class _WebViewShellState extends State<WebViewShell> {
       handlerName: 'agoraLeaveChannel',
       callback: (args) async {
         try {
-          await callService.leaveChannel();
+          await callService.endCall();
           return json.encode({'success': true});
         } catch (e) {
           debugPrint('[WebView Bridge] agoraLeaveChannel error: $e');
@@ -495,7 +495,7 @@ class _WebViewShellState extends State<WebViewShell> {
       handlerName: 'agoraDestroy',
       callback: (args) async {
         try {
-          await callService.dispose();
+          callService.dispose();
           return json.encode({'success': true});
         } catch (e) {
           return json.encode({'success': false, 'message': e.toString()});
