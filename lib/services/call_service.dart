@@ -286,13 +286,25 @@ class CallService extends ChangeNotifier {
         token: token,
         channelId: channelName,
         uid: myUid,
-        options: const ChannelMediaOptions(),
+        options: const ChannelMediaOptions(
+          publishMicrophone: true,
+          publishCamera: false,
+          autoSubscribeAudio: true,
+          autoSubscribeVideo: false,
+        ),
       );
     } catch (e) {
       debugPrint('[CallService] joinChannel error: $e');
       _stateData = const CallStateData(status: CallState.idle);
       notifyListeners();
       return;
+    }
+
+    // 确保本地音频流已发布
+    try {
+      await _engine!.muteLocalAudioStream(false);
+    } catch (e) {
+      debugPrint('[CallService] muteLocalAudioStream(false) error: $e');
     }
 
     // 30秒超时自动挂断
@@ -378,13 +390,25 @@ class CallService extends ChangeNotifier {
         token: token,
         channelId: channelName,
         uid: myUid,
-        options: const ChannelMediaOptions(),
+        options: const ChannelMediaOptions(
+          publishMicrophone: true,
+          publishCamera: false,
+          autoSubscribeAudio: true,
+          autoSubscribeVideo: false,
+        ),
       );
     } catch (e) {
       debugPrint('[CallService] joinChannel error: $e');
       _stateData = const CallStateData(status: CallState.idle);
       notifyListeners();
       return;
+    }
+
+    // 确保本地音频流已发布
+    try {
+      await _engine!.muteLocalAudioStream(false);
+    } catch (e) {
+      debugPrint('[CallService] muteLocalAudioStream(false) error: $e');
     }
 
     _startDurationTimer();
@@ -572,9 +596,21 @@ class CallService extends ChangeNotifier {
         token: token,
         channelId: channelName,
         uid: uid,
-        options: const ChannelMediaOptions(),
+        options: ChannelMediaOptions(
+          publishMicrophone: true,
+          publishCamera: isVideo,
+          autoSubscribeAudio: true,
+          autoSubscribeVideo: isVideo,
+        ),
       );
       debugPrint('[CallService] WebView call joined: channel=$channelName, uid=$uid');
+      
+      // 确保本地音频流已发布
+      try {
+        await _engine!.muteLocalAudioStream(false);
+      } catch (e) {
+        debugPrint('[CallService] WebView muteLocalAudioStream error: $e');
+      }
     } catch (e) {
       debugPrint('[CallService] WebView joinChannel error: $e');
       _stateData = const CallStateData(status: CallState.idle);
