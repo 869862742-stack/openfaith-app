@@ -141,15 +141,15 @@ class CallService extends ChangeNotifier {
             debugPrint('[CallService] User $remoteUid mute video: $muted');
             notifyListeners();
           },
-          onRemoteUserPublishTrack: (connection, remoteUid, isAudioPublished, isVideoPublished) {
-            debugPrint('[CallService] Remote user $remoteUid published track: audio=$isAudioPublished, video=$isVideoPublished');
-            if (isAudioPublished) {
-              // 显式订阅远端音频流（修复跨平台通话单边声音问题）
+          onRemoteAudioStateChanged: (connection, remoteUid, state, reason, elapsed) {
+            debugPrint('[CallService] Remote audio state changed: uid=$remoteUid state=$state reason=$reason');
+            if (state == RemoteAudioState.remoteAudioStateDecoding) {
+              // 确保远端音频流未被静音
               try {
-                _engine!.subscribe(connection, mediaType: MediaType.mediaTypeAudioOnly);
-                debugPrint('[CallService] Subscribed to remote audio from $remoteUid');
+                _engine!.muteRemoteAudioStream(remoteUid, false);
+                debugPrint('[CallService] Ensured remote audio unmuted for $remoteUid');
               } catch (e) {
-                debugPrint('[CallService] Subscribe remote audio error: $e');
+                debugPrint('[CallService] Unmute remote audio error: $e');
               }
             }
           },
@@ -308,8 +308,8 @@ class CallService extends ChangeNotifier {
         channelId: channelName,
         uid: myUid,
         options: const ChannelMediaOptions(
-          publishMicrophone: true,
-          publishCamera: false,
+          publishMicrophoneTrack: true,
+          publishCameraTrack: false,
           autoSubscribeAudio: true,
           autoSubscribeVideo: false,
         ),
@@ -330,7 +330,7 @@ class CallService extends ChangeNotifier {
     
     // 显式设置为主播角色（确保可以发布和接收音频）
     try {
-      await _engine!.setClientRole(ClientRoleType.clientRoleBroadcaster);
+      await _engine!.setClientRole(role: ClientRoleType.clientRoleBroadcaster);
       debugPrint('[CallService] Client role set to broadcaster');
     } catch (e) {
       debugPrint('[CallService] setClientRole error: $e');
@@ -420,8 +420,8 @@ class CallService extends ChangeNotifier {
         channelId: channelName,
         uid: myUid,
         options: const ChannelMediaOptions(
-          publishMicrophone: true,
-          publishCamera: false,
+          publishMicrophoneTrack: true,
+          publishCameraTrack: false,
           autoSubscribeAudio: true,
           autoSubscribeVideo: false,
         ),
@@ -442,7 +442,7 @@ class CallService extends ChangeNotifier {
     
     // 显式设置为主播角色（确保可以发布和接收音频）
     try {
-      await _engine!.setClientRole(ClientRoleType.clientRoleBroadcaster);
+      await _engine!.setClientRole(role: ClientRoleType.clientRoleBroadcaster);
       debugPrint('[CallService] Client role set to broadcaster (accept)');
     } catch (e) {
       debugPrint('[CallService] setClientRole error: $e');
@@ -634,8 +634,8 @@ class CallService extends ChangeNotifier {
         channelId: channelName,
         uid: uid,
         options: ChannelMediaOptions(
-          publishMicrophone: true,
-          publishCamera: isVideo,
+          publishMicrophoneTrack: true,
+          publishCameraTrack: isVideo,
           autoSubscribeAudio: true,
           autoSubscribeVideo: isVideo,
         ),
@@ -651,7 +651,7 @@ class CallService extends ChangeNotifier {
       
       // 显式设置为主播角色
       try {
-        await _engine!.setClientRole(ClientRoleType.clientRoleBroadcaster);
+        await _engine!.setClientRole(role: ClientRoleType.clientRoleBroadcaster);
         debugPrint('[CallService] Client role set to broadcaster (WebView)');
       } catch (e) {
         debugPrint('[CallService] setClientRole error: $e');
