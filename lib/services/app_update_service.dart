@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shorebird_code_push/shorebird_code_push.dart';
 
@@ -217,6 +219,32 @@ class AppUpdateService {
     if (_isDownloading) {
       debugPrint('[AppUpdate] Already downloading');
       return false;
+    }
+
+    // Web 平台：用浏览器下载 APK
+    if (kIsWeb) {
+      String url = updateInfo.downloadUrl;
+      if (url.isEmpty && updateInfo.fallbackUrl.isNotEmpty) {
+        url = updateInfo.fallbackUrl;
+      }
+      if (url.isEmpty) {
+        onStatusChange?.call('error', error: 'No download URL');
+        _isDownloading = false;
+        return false;
+      }
+      debugPrint('[AppUpdate] Web platform: opening download URL in browser');
+      onStatusChange?.call('downloading');
+      final launched = await launchUrl(
+        Uri.parse(url),
+        mode: LaunchMode.externalApplication,
+      );
+      if (launched) {
+        onStatusChange?.call('completed');
+      } else {
+        onStatusChange?.call('error', error: 'Failed to open browser');
+      }
+      _isDownloading = false;
+      return launched;
     }
 
     _isDownloading = true;
