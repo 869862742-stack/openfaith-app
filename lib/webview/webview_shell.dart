@@ -1,8 +1,12 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:dio/dio.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:open_filex/open_filex.dart';
 import '../services/app_update_service.dart';
 import '../services/call_service.dart';
 
@@ -19,6 +23,13 @@ class _WebViewShellState extends State<WebViewShell> {
   bool _isLoading = true;
   double _progress = 0;
   String _appVersion = '';
+  
+  // APP 内更新下载状态
+  bool _isApkDownloading = false;
+  double _apkDownloadProgress = 0.0;
+  String _apkDownloadStatus = 'idle'; // idle, downloading, completed, error
+  String _apkDownloadError = '';
+  CancelToken? _apkCancelToken;
 
   static const String _baseUrl = 'https://openfaithhub.com';
 
@@ -363,12 +374,48 @@ class _WebViewShellState extends State<WebViewShell> {
           }
         };
         
+        // ========== 3. APP内更新桥接（AppUpdater 插件模拟）==========
+        window.Capacitor.Plugins.AppUpdater = {
+          getAppVersion: function() {
+            return window.flutterInAppWebView.callHandler('getAppVersion')
+              .then(function(result) {
+                return typeof result === 'string' ? JSON.parse(result) : result;
+              });
+          },
+          checkInstallPermission: function() {
+            return window.flutterInAppWebView.callHandler('checkInstallPermission')
+              .then(function(result) {
+                return typeof result === 'string' ? JSON.parse(result) : result;
+              });
+          },
+          openInstallSettings: function() {
+            return window.flutterInAppWebView.callHandler('openInstallSettings')
+              .then(function(result) {
+                return typeof result === 'string' ? JSON.parse(result) : result;
+              });
+          },
+          downloadAndInstall: function(options) {
+            console.log('[AppUpdater Bridge] downloadAndInstall called', options);
+            return window.flutterInAppWebView.callHandler('downloadApk', options.url || '', options.fileName || '')
+              .then(function(result) {
+                return typeof result === 'string' ? JSON.parse(result) : result;
+              });
+          },
+          getDownloadProgress: function() {
+            return window.flutterInAppWebView.callHandler('getDownloadProgress')
+              .then(function(result) {
+                return typeof result === 'string' ? JSON.parse(result) : result;
+              });
+          }
+        };
+        console.log('[OF Bridge] AppUpdater bridge injected successfully');
         console.log('[OF Bridge] Agora native bridge injected successfully');
       })();
     ''');
     
     // 注册 Agora 相关的 JavaScript handlers
     _registerAgoraHandlers(controller);
+    _registerAppUpdaterHandlers(controller);
   }
 
   /// 注册 Agora 通话相关的 JavaScript handlers
@@ -535,6 +582,171 @@ class _WebViewShellState extends State<WebViewShell> {
     }
   }
 
+
+  /// 处理 APK 下载（从 WebView URL 拦截触发）
+  Future<void> _handleApkDownload(String url) async {
+    debugPrint('[WebView] Handling APK download: $url');
+    
+    // 获取版本信息
+    final packageInfo = await PackageInfo.fromPlatform();
+    final versionInfo = await AppUpdateService().checkForUpdate();
+    
+    if (!mounted) return;
+    
+    if (versionInfo != null) {
+      _showUpdateDialog(versionInfo);
+    } else {
+      // 无法获取版本信息，直接用默认参数下载
+      final updateInfo = AppUpdateInfo(
+        type: UpdateType.fullApk,
+        latestVersion: packageInfo.version,
+        downloadUrl: url,
+        fallbackUrl: url,
+        changelog: '版本更新',
+      );
+      _showUpdateDialog(updateInfo);
+    }
+  }
+
+  /// 注册 AppUpdater 相关的 JavaScript handlers
+  void _registerAppUpdaterHandlers(InAppWebViewController controller) {
+    // 检查安装权限
+    controller.addJavaScriptHandler(
+      handlerName: 'checkInstallPermission',
+      callback: (args) async {
+        try {
+          final status = await Permission.requestInstallPackages.status;
+          final canInstall = status.isGranted;
+          return json.encode({'canInstall': canInstall});
+        } catch (e) {
+          return json.encode({'canInstall': false});
+        }
+      },
+    );
+
+    // 打开安装设置
+    controller.addJavaScriptHandler(
+      handlerName: 'openInstallSettings',
+      callback: (args) async {
+        try {
+          await Permission.requestInstallPackages.request();
+          return json.encode({'success': true});
+        } catch (e) {
+          return json.encode({'success': false, 'message': e.toString()});
+        }
+      },
+    );
+
+    // 下载 APK（核心方法）
+    controller.addJavaScriptHandler(
+      handlerName: 'downloadApk',
+      callback: (args) async {
+        try {
+          final url = args.isNotEmpty ? args[0] as String : '';
+          final fileName = args.length > 1 ? args[0] as String : 'OpenFaith.apk';
+          
+          if (url.isEmpty) {
+            return json.encode({'downloadId': 0, 'status': 'error', 'message': 'No URL'});
+          }
+
+          if (_isApkDownloading) {
+            return json.encode({'downloadId': 1, 'status': 'downloading'});
+          }
+
+          _isApkDownloading = true;
+          _apkDownloadProgress = 0.0;
+          _apkDownloadStatus = 'downloading';
+          _apkDownloadError = '';
+          _apkCancelToken = CancelToken();
+
+          // 异步启动下载
+          _startApkDownload(url, fileName);
+
+          return json.encode({'downloadId': 1, 'status': 'downloading'});
+        } catch (e) {
+          _isApkDownloading = false;
+          _apkDownloadStatus = 'error';
+          _apkDownloadError = e.toString();
+          return json.encode({'downloadId': 0, 'status': 'error', 'message': e.toString()});
+        }
+      },
+    );
+
+    // 获取下载进度
+    controller.addJavaScriptHandler(
+      handlerName: 'getDownloadProgress',
+      callback: (args) async {
+        return json.encode({
+          'progress': (_apkDownloadProgress * 100).toInt(),
+          'status': _apkDownloadStatus,
+          'error': _apkDownloadError,
+        });
+      },
+    );
+  }
+
+  /// 实际执行 APK 下载
+  Future<void> _startApkDownload(String url, String fileName) async {
+    try {
+      final tempDir = await getTemporaryDirectory();
+      final savePath = '${tempDir.path}/$fileName';
+      
+      final file = await File(savePath).exists() 
+          ? File(savePath) 
+          : File(savePath);
+      if (await file.exists()) await file.delete();
+
+      final dio = Dio();
+      await dio.download(
+        url,
+        savePath,
+        cancelToken: _apkCancelToken!,
+        onReceiveProgress: (received, total) {
+          if (total > 0) {
+            _apkDownloadProgress = received / total;
+          }
+        },
+      );
+
+      final downloadedFile = File(savePath);
+      if (!await downloadedFile.exists()) {
+        throw Exception('Downloaded file not found');
+      }
+      final fileSize = await downloadedFile.length();
+      if (fileSize < 1024 * 1024) {
+        throw Exception('File too small: $fileSize bytes');
+      }
+
+      debugPrint('[WebView] APK download complete: ${(fileSize / 1024 / 1024).toStringAsFixed(1)} MB');
+      _apkDownloadStatus = 'completed';
+      _apkDownloadProgress = 1.0;
+      _isApkDownloading = false;
+
+      // 通知 Web 端下载完成
+      if (_webViewController != null) {
+        _webViewController!.evaluateJavascript(
+          source: 'window.dispatchEvent(new CustomEvent("apk-download-complete"))',
+        );
+      }
+
+      // 打开安装界面
+      await OpenFilex.open(savePath, type: 'application/vnd.android.package-archive');
+
+    } catch (e) {
+      debugPrint('[WebView] APK download failed: $e');
+      _apkDownloadStatus = 'error';
+      _apkDownloadError = e.toString();
+      _isApkDownloading = false;
+
+      // 通知 Web 端下载失败
+      if (_webViewController != null) {
+        _webViewController!.evaluateJavascript(
+          source: 'window.dispatchEvent(new CustomEvent("apk-download-failed", {detail: {error: "${e.toString().replaceAll('"', '\\"')}"}}))',
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -571,6 +783,21 @@ class _WebViewShellState extends State<WebViewShell> {
                   allowFileAccessFromFileURLs: true,
                   allowUniversalAccessFromFileURLs: true,
                   verticalScrollbarThumbColor: Colors.white24,
+                  initialUserScripts: [
+                    UserScript(
+                      source: '''
+                        // 提前注入 Capacitor 模拟 + Flutter WebView 标记
+                        window.__OF_FLUTTER_WEBVIEW__ = true;
+                        if (!window.Capacitor) {
+                          window.Capacitor = {
+                            isNativePlatform: function() { return true; },
+                            Plugins: {}
+                          };
+                        }
+                      ''',
+                      injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+                    ),
+                  ],
                 ),
                 onWebViewCreated: (controller) {
                   _webViewController = controller;
@@ -604,6 +831,16 @@ class _WebViewShellState extends State<WebViewShell> {
                     resources: request.resources,
                     action: PermissionResponseAction.GRANT,
                   );
+                },
+                shouldOverrideUrlLoading: (controller, navigationAction) async {
+                  final url = navigationAction.request.url?.toString() ?? '';
+                  // 拦截 APK 下载链接，走原生下载流程
+                  if (url.contains('.apk') || url.contains('/apk/latest') || url.contains('/apk/v')) {
+                    debugPrint('[WebView] Intercepted APK download URL: $url');
+                    _handleApkDownload(url);
+                    return NavigationActionPolicy.CANCEL;
+                  }
+                  return NavigationActionPolicy.ALLOW;
                 },
                 onLoadStart: (controller, url) {
                   setState(() => _isLoading = true);
