@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -784,7 +785,7 @@ class _WebViewShellState extends State<WebViewShell> {
                   allowUniversalAccessFromFileURLs: true,
                   verticalScrollbarThumbColor: Colors.white24,
                 ),
-                initialUserScripts: [
+                initialUserScripts: UnmodifiableListView([
                   UserScript(
                     source: '''
                       // 提前注入 Capacitor 模拟 + Flutter WebView 标记
@@ -798,7 +799,7 @@ class _WebViewShellState extends State<WebViewShell> {
                     ''',
                     injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
                   ),
-                ],
+                ]),
                 onWebViewCreated: (controller) {
                   _webViewController = controller;
                   
