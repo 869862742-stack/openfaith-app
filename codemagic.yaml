@@ -53,6 +53,16 @@ workflows:
           echo "Getting release info for ${RELEASE_TAG}..."
           RELEASE_INFO=$(curl -s -H "Authorization: token ${GITHUB_TOKEN}" \
             "https://api.github.com/repos/${REPO}/releases/tags/${RELEASE_TAG}")
+          
+          # Check if release exists, create if not
+          if echo "$RELEASE_INFO" | grep -q '"message"'; then
+            echo "Release ${RELEASE_TAG} not found, creating..."
+            RELEASE_INFO=$(curl -s -X POST -H "Authorization: token ${GITHUB_TOKEN}" \
+              -H "Content-Type: application/json" \
+              -d "{\"tag_name\":\"${RELEASE_TAG}\",\"name\":\"OpenFaith ${RELEASE_TAG}\",\"body\":\"OpenFaith v${VERSION_NAME}\"}" \
+              "https://api.github.com/repos/${REPO}/releases")
+          fi
+          
           RELEASE_ID=$(echo "$RELEASE_INFO" | python3 -c "import json,sys; print(json.load(sys.stdin)['id'])")
           echo "Release ID: ${RELEASE_ID}"
           
