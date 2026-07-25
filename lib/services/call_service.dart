@@ -141,6 +141,18 @@ class CallService extends ChangeNotifier {
             debugPrint('[CallService] User $remoteUid mute video: $muted');
             notifyListeners();
           },
+          onRemoteUserPublishTrack: (connection, remoteUid, isAudioPublished, isVideoPublished) {
+            debugPrint('[CallService] Remote user $remoteUid published track: audio=$isAudioPublished, video=$isVideoPublished');
+            if (isAudioPublished) {
+              // 显式订阅远端音频流（修复跨平台通话单边声音问题）
+              try {
+                _engine!.subscribe(connection, mediaType: MediaType.mediaTypeAudioOnly);
+                debugPrint('[CallService] Subscribed to remote audio from $remoteUid');
+              } catch (e) {
+                debugPrint('[CallService] Subscribe remote audio error: $e');
+              }
+            }
+          },
           onConnectionLost: (connection) {
             debugPrint('[CallService] Connection lost');
             _stateData = _stateData.copyWith(status: CallState.disconnected);
@@ -155,6 +167,15 @@ class CallService extends ChangeNotifier {
       );
 
       await _engine!.enableAudio();
+      
+      // 设置语音通话场景，优化跨平台音频兼容性
+      try {
+        await _engine!.setAudioScenario(AudioScenarioType.audioScenarioGameStreaming);
+        debugPrint('[CallService] Audio scenario set to gameStreaming (optimized for cross-platform voice)');
+      } catch (e) {
+        debugPrint('[CallService] setAudioScenario error: $e');
+      }
+      
       _engineInitialized = true;
       debugPrint('[CallService] Engine initialized');
     } catch (e) {
@@ -306,6 +327,14 @@ class CallService extends ChangeNotifier {
     } catch (e) {
       debugPrint('[CallService] muteLocalAudioStream(false) error: $e');
     }
+    
+    // 显式设置为主播角色（确保可以发布和接收音频）
+    try {
+      await _engine!.setClientRole(ClientRoleType.clientRoleBroadcaster);
+      debugPrint('[CallService] Client role set to broadcaster');
+    } catch (e) {
+      debugPrint('[CallService] setClientRole error: $e');
+    }
 
     // 30秒超时自动挂断
     _timeoutTimer = Timer(const Duration(seconds: 30), () {
@@ -409,6 +438,14 @@ class CallService extends ChangeNotifier {
       await _engine!.muteLocalAudioStream(false);
     } catch (e) {
       debugPrint('[CallService] muteLocalAudioStream(false) error: $e');
+    }
+    
+    // 显式设置为主播角色（确保可以发布和接收音频）
+    try {
+      await _engine!.setClientRole(ClientRoleType.clientRoleBroadcaster);
+      debugPrint('[CallService] Client role set to broadcaster (accept)');
+    } catch (e) {
+      debugPrint('[CallService] setClientRole error: $e');
     }
 
     _startDurationTimer();
@@ -610,6 +647,14 @@ class CallService extends ChangeNotifier {
         await _engine!.muteLocalAudioStream(false);
       } catch (e) {
         debugPrint('[CallService] WebView muteLocalAudioStream error: $e');
+      }
+      
+      // 显式设置为主播角色
+      try {
+        await _engine!.setClientRole(ClientRoleType.clientRoleBroadcaster);
+        debugPrint('[CallService] Client role set to broadcaster (WebView)');
+      } catch (e) {
+        debugPrint('[CallService] setClientRole error: $e');
       }
     } catch (e) {
       debugPrint('[CallService] WebView joinChannel error: $e');
