@@ -146,7 +146,7 @@ class CallService extends ChangeNotifier {
             if (state == RemoteAudioState.remoteAudioStateDecoding) {
               // 确保远端音频流未被静音
               try {
-                _engine!.muteRemoteAudioStream(remoteUid, false);
+                _engine!.muteRemoteAudioStream(uid: remoteUid, mute: false);
                 debugPrint('[CallService] Ensured remote audio unmuted for $remoteUid');
               } catch (e) {
                 debugPrint('[CallService] Unmute remote audio error: $e');
