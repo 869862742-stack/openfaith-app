@@ -3,5 +3,6 @@
   "versionCode": 40,
   "downloadUrl": "https://download.openfaithhub.com/apk/latest",
   "fallbackUrl": "https://github.com/869862742-stack/openfaith-releases/releases/download/v1.3.12/OpenFaith-v1.3.12.apk",
-  "changelog": "v1.3.13: 修复APP内更新 - 全球CDN下载 + Web平台兼容"
+  "size": "290 MB",
+  "changelog": "v1.3.13: 修复通话单边声音 + 全球CDN下载 + Web平台兼容"
 }
