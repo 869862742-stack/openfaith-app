@@ -783,22 +783,22 @@ class _WebViewShellState extends State<WebViewShell> {
                   allowFileAccessFromFileURLs: true,
                   allowUniversalAccessFromFileURLs: true,
                   verticalScrollbarThumbColor: Colors.white24,
-                  initialUserScripts: [
-                    UserScript(
-                      source: '''
-                        // 提前注入 Capacitor 模拟 + Flutter WebView 标记
-                        window.__OF_FLUTTER_WEBVIEW__ = true;
-                        if (!window.Capacitor) {
-                          window.Capacitor = {
-                            isNativePlatform: function() { return true; },
-                            Plugins: {}
-                          };
-                        }
-                      ''',
-                      injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
-                    ),
-                  ],
                 ),
+                initialUserScripts: [
+                  UserScript(
+                    source: '''
+                      // 提前注入 Capacitor 模拟 + Flutter WebView 标记
+                      window.__OF_FLUTTER_WEBVIEW__ = true;
+                      if (!window.Capacitor) {
+                        window.Capacitor = {
+                          isNativePlatform: function() { return true; },
+                          Plugins: {}
+                        };
+                      }
+                    ''',
+                    injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+                  ),
+                ],
                 onWebViewCreated: (controller) {
                   _webViewController = controller;
                   
