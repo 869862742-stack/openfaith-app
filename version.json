@@ -1,8 +1,8 @@
 {
-  "latestVersion": "1.3.13",
-  "versionCode": 40,
+  "latestVersion": "1.3.14",
+  "versionCode": 41,
   "downloadUrl": "https://download.openfaithhub.com/apk/latest",
-  "fallbackUrl": "https://github.com/869862742-stack/openfaith-releases/releases/download/v1.3.12/OpenFaith-v1.3.12.apk",
+  "fallbackUrl": "https://github.com/869862742-stack/openfaith-releases/releases/download/v1.3.14/OpenFaith-v1.3.14.apk",
   "size": "290 MB",
-  "changelog": "v1.3.13: 修复通话单边声音 + 全球CDN下载 + Web平台兼容"
+  "changelog": "v1.3.14: 通话音频修复 + APP内更新修复"
 }
