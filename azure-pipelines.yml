@@ -1,0 +1,40 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+  - script: |
+      set -e
+      # Use pre-installed JDK 17 and Android SDK
+      export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+      echo "##vso[task.prependpath]/bin"
+      
+      # Install Flutter
+      git clone --depth 1 --branch 3.44.8 https://github.com/flutter/flutter.git C:\Users\ASUS/flutter
+      export PATH="C:\Users\ASUS/flutter/bin:"
+      flutter doctor
+    displayName: 'Setup Flutter'
+
+  - script: |
+      export PATH="C:\Users\ASUS/flutter/bin:"
+      flutter pub get
+    displayName: 'Pub Get'
+
+  - script: |
+      export PATH="C:\Users\ASUS/flutter/bin:"
+      flutter build apk --release --verbose 2>&1 | tail -20
+    displayName: 'Build APK'
+
+  - task: CopyFiles@2
+    inputs:
+      contents: 'build/app/outputs/flutter-apk/app-release.apk'
+      targetFolder: ''
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: ''
+      artifactName: 'apk-release'
