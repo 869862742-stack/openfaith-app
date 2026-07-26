@@ -4,5 +4,5 @@
   "downloadUrl": "https://download.openfaithhub.com/apk/latest",
   "fallbackUrl": "https://github.com/869862742-stack/openfaith-releases/releases/download/v1.3.15/OpenFaith-v1.3.15.apk",
   "size": "290 MB",
-  "changelog": "v1.3.15: 修复通话音频(默认扬声器+语音优化) + 修复APP内更新检测 + 下载超时重试"
+  "changelog": "v1.3.15: 修复通话音频+APP内更新+版本号注入"
 }

@@ -36,7 +36,10 @@ workflows:
           #!/usr/bin/env bash
           set -e
           echo "Building release APK..."
-          flutter build apk --release
+          VERSION_NAME=$(echo "$VERSION" | cut -d'+' -f1)
+          VERSION_CODE=$(echo "$VERSION" | grep -o '+[0-9]*' | tr -d '+' || echo "1")
+          echo "Version: $VERSION_NAME (code: $VERSION_CODE)"
+          flutter build apk --release --build-name="$VERSION_NAME" --build-number="$VERSION_CODE"
           echo "APK built successfully"
       - name: Upload to GitHub Release
         script: |

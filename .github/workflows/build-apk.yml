@@ -64,8 +64,15 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Building version: $VERSION"
 
+      - name: Get build number
+        id: buildnum
+        run: |
+          BUILD_NUM=$(grep '^version:' pubspec.yaml | sed 's/version: //' | tr -d '[:space:]' | cut -d'+' -f2)
+          echo "build_number=$BUILD_NUM" >> $GITHUB_OUTPUT
+          echo "Build number: $BUILD_NUM"
+
       - name: Build release APK
-        run: flutter build apk --release
+        run: flutter build apk --release --build-name="${{ steps.version.outputs.version }}" --build-number="${{ steps.buildnum.outputs.build_number }}"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
