@@ -188,10 +188,10 @@ class CallService extends ChangeNotifier {
       // 设置音频 profile（新增：优化语音通话质量）
       try {
         await _engine!.setAudioProfile(
-          AudioProfileType.speechStandard,
-          AudioScenarioType.audioScenarioDefault,
+          profile: AudioProfileType.audioProfileDefault,
+          scenario: AudioScenarioType.audioScenarioDefault,
         );
-        debugPrint('[CallService] Audio profile set to speechStandard');
+        debugPrint('[CallService] Audio profile set to default');
       } catch (e) {
         debugPrint('[CallService] setAudioProfile error: $e');
       }
