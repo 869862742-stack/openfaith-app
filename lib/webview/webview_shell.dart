@@ -375,6 +375,129 @@ class _WebViewShellState extends State<WebViewShell> {
           }
         };
         
+
+        // ========== 2.5 拦截 AgoraRTC SDK（将通话路由到原生 SDK）==========
+        if (window.__OF_IS_NATIVE_APP__) {
+          var _agoraCheckInterval = setInterval(function() {
+            if (typeof AgoraRTC !== 'undefined' && AgoraRTC && AgoraRTC.createClient) {
+              clearInterval(_agoraCheckInterval);
+              
+              console.log('[OF Bridge] Intercepting AgoraRTC for native call routing');
+              
+              var _origCreateClient = AgoraRTC.createClient;
+              
+              AgoraRTC.createClient = function(config) {
+                console.log('[OF Bridge] Native Agora bridge: createClient intercepted');
+                
+                var _nativeJoined = false;
+                var _eventHandlers = {};
+                
+                var nativeClient = {
+                  setClientRole: function() { return Promise.resolve(); },
+                  setAudioProfile: function() { return Promise.resolve(); },
+                  setAudioSubscriptionOptions: function() { return Promise.resolve(); },
+                  
+                  join: function(appId, channel, token, uid) {
+                    console.log('[OF Bridge] Native join: channel=' + channel + ', uid=' + uid);
+                    return window.flutterInAppWebView.callHandler('agoraStartCall', {
+                      channelName: channel,
+                      uid: typeof uid === 'number' ? uid : parseInt(uid) || 1,
+                      token: token || '',
+                      isVideo: config && config.codec === 'vp8'
+                    }).then(function(result) {
+                      var data = typeof result === 'string' ? JSON.parse(result) : result;
+                      if (data && data.success) {
+                        _nativeJoined = true;
+                        if (_eventHandlers['connection-state-change']) {
+                          _eventHandlers['connection-state-change'].forEach(function(cb) {
+                            try { cb({curState:'CONNECTED',curReason:'JoinSuccess'}); } catch(e){}
+                          });
+                        }
+                      }
+                      return data;
+                    });
+                  },
+                  
+                  publish: function(tracks) {
+                    console.log('[OF Bridge] Native publish: tracks=' + (tracks ? tracks.length : 0));
+                    return Promise.resolve();
+                  },
+                  
+                  unpublish: function() { return Promise.resolve(); },
+                  
+                  subscribe: function(user, mediaType) {
+                    console.log('[OF Bridge] Native subscribe: uid=' + user.uid + ', type=' + mediaType);
+                    return Promise.resolve();
+                  },
+                  
+                  unsubscribe: function() { return Promise.resolve(); },
+                  
+                  leave: function() {
+                    console.log('[OF Bridge] Native leave channel');
+                    _nativeJoined = false;
+                    return window.flutterInAppWebView.callHandler('agoraLeaveChannel')
+                      .then(function(result) {
+                        return typeof result === 'string' ? JSON.parse(result) : result;
+                      });
+                  },
+                  
+                  destroy: function() { return Promise.resolve(); },
+                  
+                  on: function(event, callback) {
+                    if (!_eventHandlers[event]) _eventHandlers[event] = [];
+                    _eventHandlers[event].push(callback);
+                  },
+                  
+                  off: function(event, callback) {
+                    if (!_eventHandlers[event]) return;
+                    if (callback) {
+                      var idx = _eventHandlers[event].indexOf(callback);
+                      if (idx > -1) _eventHandlers[event].splice(idx, 1);
+                    } else {
+                      delete _eventHandlers[event];
+                    }
+                  },
+                  
+                  getConnectionState: function() { return _nativeJoined ? 'CONNECTED' : 'DISCONNECTED'; },
+                  setParameters: function() { return Promise.resolve(); }
+                };
+                
+                return nativeClient;
+              };
+              
+              // 也拦截 createMicrophoneAudioTrack，返回模拟轨道
+              AgoraRTC.createMicrophoneAudioTrack = function() {
+                console.log('[OF Bridge] Native audio track mock created');
+                return Promise.resolve({
+                  _isMock: true,
+                  play: function() {},
+                  stop: function() {},
+                  close: function() {},
+                  enabled: true,
+                  muted: false,
+                  setEnabled: function(v) { this.enabled = v; return Promise.resolve(); },
+                  setMuted: function(v) { this.muted = v; return Promise.resolve(); },
+                  setVolume: function() {},
+                  setFilter: function() {},
+                  setPlayoutVolume: function() {},
+                  getMediaStreamTrack: function() { return null; },
+                  getTrackLabel: function() { return 'Native Microphone'; },
+                  addTrackOperation: function() { return Promise.resolve(); },
+                  pipe: function() { return this; },
+                  on: function() { return this; },
+                  off: function() { return this; },
+                  once: function() { return this; },
+                  getStats: function() { return {}; }
+                });
+              };
+              
+              console.log('[OF Bridge] AgoraRTC intercepted successfully');
+            }
+          }, 200);
+          
+          setTimeout(function() { clearInterval(_agoraCheckInterval); }, 15000);
+        }
+        
         // ========== 3. APP内更新桥接（AppUpdater 插件模拟）==========
         window.Capacitor.Plugins.AppUpdater = {
           getAppVersion: function() {
@@ -457,10 +580,10 @@ class _WebViewShellState extends State<WebViewShell> {
             granted = granted && cameraStatus.isGranted;
           }
           
-          return json.encode({'granted': granted});
+          return json.encode({'granted': granted, 'success': granted});
         } catch (e) {
           debugPrint('[WebView Bridge] agoraRequestPermissions error: $e');
-          return json.encode({'granted': false});
+          return json.encode({'granted': false, 'success': false});
         }
       },
     );
@@ -554,32 +677,32 @@ class _WebViewShellState extends State<WebViewShell> {
 
   /// 通知 Web 端通话状态变化
   void _notifyWebCallState(InAppWebViewController controller, CallStateData state) {
-    String? eventName;
-    Map<String, dynamic>? data;
-    
     switch (state.status) {
       case CallState.connected:
-        eventName = 'onJoinChannelSuccess';
-        data = {
-          'channel': state.channelName,
-          'uid': state.remoteUid,
-        };
+        // 通知 web 端: 远端用户发布音频
+        controller.evaluateJavascript(
+          source: '''
+            window.triggerAgoraCallback("user-published", {
+              "uid": ${state.remoteUid},
+              "audioTrack": {"_isMock": true, "play": function(){}, "stop": function(){}},
+              "videoTrack": null,
+              "mediaType": "audio"
+            })
+          ''',
+        );
         break;
       case CallState.disconnected:
-        eventName = 'onUserOffline';
-        data = {
-          'uid': state.remoteUid,
-          'reason': 0,
-        };
+        controller.evaluateJavascript(
+          source: '''
+            window.triggerAgoraCallback("user-unpublished", {
+              "uid": ${state.remoteUid},
+              "mediaType": "audio"
+            })
+          ''',
+        );
         break;
       default:
         return;
-    }
-    
-    if (eventName != null && data != null) {
-      controller.evaluateJavascript(
-        source: 'window.triggerAgoraCallback("$eventName", ${json.encode(data)})',
-      );
     }
   }
 
