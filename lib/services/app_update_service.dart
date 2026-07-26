@@ -125,9 +125,7 @@ class AppUpdateService {
 
     Map<String, dynamic>? data;
 
-    // 尝试 1: raw GitHub URL
-    try {
-    // 优先从 Cloudflare CDN 获取版本信息（全球可访问，包括中国）
+    // 尝试 1: Cloudflare CDN（全球可访问，包括中国）
     try {
       final cdnUrl = 'https://download.openfaithhub.com/version.json';
       final cdnResponse = await _dio.get(
@@ -145,19 +143,24 @@ class AppUpdateService {
       debugPrint('[AppUpdate] CDN version check failed: $e');
     }
 
-      final rawUrl = 'https://raw.githubusercontent.com/869862742-stack/openfaith-app/main/version.json';
-      final response = await _dio.get(
-        rawUrl,
-        options: Options(
-          connectTimeout: const Duration(seconds: 5),
-          receiveTimeout: const Duration(seconds: 5),
-        ),
-      );
-      if (response.statusCode == 200 && response.data != null) {
-        data = _parseVersionData(response.data);
+    // 尝试 2: raw GitHub URL（仅当 CDN 失败时）
+    if (data == null) {
+      try {
+        final rawUrl = 'https://raw.githubusercontent.com/869862742-stack/openfaith-app/main/version.json';
+        final response = await _dio.get(
+          rawUrl,
+          options: Options(
+            connectTimeout: const Duration(seconds: 5),
+            receiveTimeout: const Duration(seconds: 5),
+          ),
+        );
+        if (response.statusCode == 200 && response.data != null) {
+          data = _parseVersionData(response.data);
+          debugPrint('[AppUpdate] Got version from GitHub raw');
+        }
+      } catch (e) {
+        debugPrint('[AppUpdate] Raw URL failed: $e');
       }
-    } catch (e) {
-      debugPrint('[AppUpdate] Raw URL failed: $e');
     }
 
     // 尝试 2: GitHub API (fallback)
@@ -294,17 +297,38 @@ class AppUpdateService {
 
       debugPrint('[AppUpdate] Downloading APK to: $savePath');
 
-      await _dio.download(
-        url,
-        savePath,
-        cancelToken: _cancelToken!,
-        onReceiveProgress: (received, total) {
-          if (total > 0) {
-            _progress = received / total;
-            onProgressUpdate?.call(_progress);
+      // 大文件下载：增加超时和重试
+      final downloadDio = Dio(BaseOptions(
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 300),
+      ));
+      int retryCount = 0;
+      const maxRetries = 2;
+      while (true) {
+        try {
+          await downloadDio.download(
+            url,
+            savePath,
+            cancelToken: _cancelToken!,
+            options: Options(headers: {'Connection': 'keep-alive'}),
+            onReceiveProgress: (received, total) {
+              if (total > 0) {
+                _progress = received / total;
+                onProgressUpdate?.call(_progress);
+              }
+            },
+          );
+          break;
+        } catch (e) {
+          retryCount++;
+          if (retryCount <= maxRetries) {
+            debugPrint('[AppUpdate] Download retry #$retryCount: $e');
+            await Future.delayed(const Duration(seconds: 2));
+            continue;
           }
-        },
-      );
+          rethrow;
+        }
+      }
 
       if (!await file.exists()) throw Exception('Downloaded file not found');
       final fileSize = await file.length();
