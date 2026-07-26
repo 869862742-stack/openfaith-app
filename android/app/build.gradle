@@ -4,6 +4,29 @@ plugins {
     id "dev.flutter.flutter-gradle-plugin"
 }
 
+// 显式从 pubspec.yaml 读取版本号，确保 APK 版本正确
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withInputStream { localProperties.load(it) }
+}
+def flutterVersionCode = localProperties.getProperty("flutter.versionCode", "1")
+def flutterVersionName = localProperties.getProperty("flutter.versionName", "1.0")
+
+// 如果 Flutter 插件没有注入版本号，则从 pubspec.yaml 显式解析
+if (flutterVersionCode == "1" || flutterVersionName == "1.0") {
+    def pubspecFile = file("../../pubspec.yaml")
+    if (pubspecFile.exists()) {
+        def pubspecContent = pubspecFile.text
+        def versionMatch = (pubspecContent =~ /version:\s*(.+)/)
+        if (versionMatch.find()) {
+            def versionParts = versionMatch.group(1).trim().split("\\+")
+            flutterVersionName = versionParts[0]
+            flutterVersionCode = versionParts.size() > 1 ? versionParts[1] : "1"
+        }
+    }
+}
+
 android {
     namespace = "com.openfaith.openfaith_app"
     compileSdk = 36
@@ -22,8 +45,8 @@ android {
         applicationId = "com.openfaith.openfaith_app"
         minSdk = 24
         targetSdk = 36
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
+        versionCode = flutterVersionCode.toInteger()
+        versionName = flutterVersionName
     }
 
     buildTypes {
