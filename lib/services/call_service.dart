@@ -153,6 +153,15 @@ class CallService extends ChangeNotifier {
               }
             }
           },
+          onLocalAudioStateChanged: (connection, state, error) {
+            debugPrint('[CallService] Local audio state changed: state=$state error=$error');
+          },
+          onAudioVolumeIndication: (connection, speakers, speakerNumber, totalVolume) {
+            // 音频音量指示回调，用于调试
+            if (speakerNumber > 0) {
+              debugPrint('[CallService] Volume indication: speakers=$speakerNumber totalVolume=$totalVolume');
+            }
+          },
           onConnectionLost: (connection) {
             debugPrint('[CallService] Connection lost');
             _stateData = _stateData.copyWith(status: CallState.disconnected);
@@ -168,12 +177,31 @@ class CallService extends ChangeNotifier {
 
       await _engine!.enableAudio();
       
-      // 设置语音通话场景，优化跨平台音频兼容性
+      // 设置语音通话场景（修复：从 gameStreaming 改为 default）
       try {
-        await _engine!.setAudioScenario(AudioScenarioType.audioScenarioGameStreaming);
-        debugPrint('[CallService] Audio scenario set to gameStreaming (optimized for cross-platform voice)');
+        await _engine!.setAudioScenario(AudioScenarioType.audioScenarioDefault);
+        debugPrint('[CallService] Audio scenario set to default');
       } catch (e) {
         debugPrint('[CallService] setAudioScenario error: $e');
+      }
+      
+      // 设置音频 profile（新增：优化语音通话质量）
+      try {
+        await _engine!.setAudioProfile(
+          AudioProfileType.speechStandard,
+          AudioScenarioType.audioScenarioDefault,
+        );
+        debugPrint('[CallService] Audio profile set to speechStandard');
+      } catch (e) {
+        debugPrint('[CallService] setAudioProfile error: $e');
+      }
+      
+      // 启用音频音量指示（新增：用于监控音频流状态）
+      try {
+        await _engine!.enableAudioVolumeIndication(interval: 500, smooth: 3, reportVad: true);
+        debugPrint('[CallService] Audio volume indication enabled');
+      } catch (e) {
+        debugPrint('[CallService] enableAudioVolumeIndication error: $e');
       }
       
       _engineInitialized = true;
@@ -300,40 +328,46 @@ class CallService extends ChangeNotifier {
       debugPrint('[CallService] Failed to send call invite: $e');
     }
 
-    // 加入 Agora 频道
-    final myUid = currentUserId.hashCode.abs() % 100000;
-    try {
-      await _engine!.joinChannel(
-        token: token,
-        channelId: channelName,
-        uid: myUid,
-        options: const ChannelMediaOptions(
-          publishMicrophoneTrack: true,
-          publishCameraTrack: false,
-          autoSubscribeAudio: true,
-          autoSubscribeVideo: false,
-        ),
-      );
-    } catch (e) {
-      debugPrint('[CallService] joinChannel error: $e');
-      _stateData = const CallStateData(status: CallState.idle);
-      notifyListeners();
-      return;
-    }
-
-    // 确保本地音频流已发布
-    try {
-      await _engine!.muteLocalAudioStream(false);
-    } catch (e) {
-      debugPrint('[CallService] muteLocalAudioStream(false) error: $e');
-    }
+    // 生成 UID（修复：确保不为 0）
+    int myUid = currentUserId.hashCode.abs() % 99999 + 1;
+    if (myUid == 0) myUid = 1;
     
-    // 显式设置为主播角色（确保可以发布和接收音频）
+    // 设置主播角色（在 joinChannel 之前）
     try {
       await _engine!.setClientRole(role: ClientRoleType.clientRoleBroadcaster);
       debugPrint('[CallService] Client role set to broadcaster');
     } catch (e) {
       debugPrint('[CallService] setClientRole error: $e');
+    }
+    
+    // 确保本地音频流未静音（在 joinChannel 之前）
+    try {
+      await _engine!.muteLocalAudioStream(false);
+      debugPrint('[CallService] Local audio unmuted');
+    } catch (e) {
+      debugPrint('[CallService] muteLocalAudioStream(false) error: $e');
+    }
+    
+    // 加入 Agora 频道
+    try {
+      await _engine!.joinChannel(
+        token: token,
+        channelId: channelName,
+        uid: myUid,
+        options: ChannelMediaOptions(
+          publishMicrophoneTrack: true,
+          publishCameraTrack: false,
+          autoSubscribeAudio: true,
+          autoSubscribeVideo: false,
+          clientRoleType: ClientRoleType.clientRoleBroadcaster,
+        ),
+      );
+      debugPrint('[CallService] Joined channel: $channelName, uid: $myUid');
+    } catch (e) {
+      debugPrint('[CallService] joinChannel error: $e');
+      _stateData = const CallStateData(status: CallState.idle);
+      notifyListeners();
+      return;
     }
 
     // 30秒超时自动挂断
@@ -410,42 +444,47 @@ class CallService extends ChangeNotifier {
       callId: callId,
     );
 
-    // 加入 Agora 频道
-    final myUid = currentUserId.isNotEmpty
-        ? currentUserId.hashCode.abs() % 100000
-        : 0;
-    try {
-      await _engine!.joinChannel(
-        token: token,
-        channelId: channelName,
-        uid: myUid,
-        options: const ChannelMediaOptions(
-          publishMicrophoneTrack: true,
-          publishCameraTrack: false,
-          autoSubscribeAudio: true,
-          autoSubscribeVideo: false,
-        ),
-      );
-    } catch (e) {
-      debugPrint('[CallService] joinChannel error: $e');
-      _stateData = const CallStateData(status: CallState.idle);
-      notifyListeners();
-      return;
-    }
-
-    // 确保本地音频流已发布
-    try {
-      await _engine!.muteLocalAudioStream(false);
-    } catch (e) {
-      debugPrint('[CallService] muteLocalAudioStream(false) error: $e');
-    }
+    // 生成 UID（修复：确保不为 0）
+    int myUid = currentUserId.isNotEmpty
+        ? currentUserId.hashCode.abs() % 99999 + 1
+        : 1;
     
-    // 显式设置为主播角色（确保可以发布和接收音频）
+    // 设置主播角色（在 joinChannel 之前）
     try {
       await _engine!.setClientRole(role: ClientRoleType.clientRoleBroadcaster);
       debugPrint('[CallService] Client role set to broadcaster (accept)');
     } catch (e) {
       debugPrint('[CallService] setClientRole error: $e');
+    }
+    
+    // 确保本地音频流未静音（在 joinChannel 之前）
+    try {
+      await _engine!.muteLocalAudioStream(false);
+      debugPrint('[CallService] Local audio unmuted (accept)');
+    } catch (e) {
+      debugPrint('[CallService] muteLocalAudioStream(false) error: $e');
+    }
+    
+    // 加入 Agora 频道
+    try {
+      await _engine!.joinChannel(
+        token: token,
+        channelId: channelName,
+        uid: myUid,
+        options: ChannelMediaOptions(
+          publishMicrophoneTrack: true,
+          publishCameraTrack: false,
+          autoSubscribeAudio: true,
+          autoSubscribeVideo: false,
+          clientRoleType: ClientRoleType.clientRoleBroadcaster,
+        ),
+      );
+      debugPrint('[CallService] Joined channel (accept): $channelName, uid: $myUid');
+    } catch (e) {
+      debugPrint('[CallService] joinChannel error: $e');
+      _stateData = const CallStateData(status: CallState.idle);
+      notifyListeners();
+      return;
     }
 
     _startDurationTimer();
