@@ -177,23 +177,31 @@ class CallService extends ChangeNotifier {
 
       await _engine!.enableAudio();
       
-      // 设置语音通话场景（修复：从 gameStreaming 改为 default）
+      // 设置语音通话场景（chatroom 优化实时双向语音）
       try {
-        await _engine!.setAudioScenario(AudioScenarioType.audioScenarioDefault);
-        debugPrint('[CallService] Audio scenario set to default');
+        await _engine!.setAudioScenario(AudioScenarioType.audioScenarioChatroom);
+        debugPrint('[CallService] Audio scenario set to chatroom');
       } catch (e) {
         debugPrint('[CallService] setAudioScenario error: $e');
       }
       
-      // 设置音频 profile（新增：优化语音通话质量）
+      // 设置音频 profile（speechStandard 专门优化语音通话）
       try {
         await _engine!.setAudioProfile(
-          profile: AudioProfileType.audioProfileDefault,
-          scenario: AudioScenarioType.audioScenarioDefault,
+          profile: AudioProfileType.audioProfileSpeechStandard,
+          scenario: AudioScenarioType.audioScenarioChatroom,
         );
-        debugPrint('[CallService] Audio profile set to default');
+        debugPrint('[CallService] Audio profile set to speechStandard');
       } catch (e) {
         debugPrint('[CallService] setAudioProfile error: $e');
+      }
+      
+      // 默认音频路由到扬声器（免提模式）
+      try {
+        await _engine!.setEnableSpeakerphone(true);
+        debugPrint('[CallService] Default to speakerphone');
+      } catch (e) {
+        debugPrint('[CallService] setEnableSpeakerphone error: $e');
       }
       
       // 启用音频音量指示（新增：用于监控音频流状态）
@@ -340,6 +348,19 @@ class CallService extends ChangeNotifier {
       debugPrint('[CallService] setClientRole error: $e');
     }
     
+    // 通话音频配置（每次通话重新设置，确保生效）
+    try {
+      await _engine!.setAudioScenario(AudioScenarioType.audioScenarioChatroom);
+      await _engine!.setAudioProfile(
+        profile: AudioProfileType.audioProfileSpeechStandard,
+        scenario: AudioScenarioType.audioScenarioChatroom,
+      );
+      await _engine!.setEnableSpeakerphone(true);
+      debugPrint('[CallService] Call audio configured: speech + speaker');
+    } catch (e) {
+      debugPrint('[CallService] Call audio config error: $e');
+    }
+    
     // 确保本地音频流未静音（在 joinChannel 之前）
     try {
       await _engine!.muteLocalAudioStream(false);
@@ -363,6 +384,15 @@ class CallService extends ChangeNotifier {
         ),
       );
       debugPrint('[CallService] Joined channel: $channelName, uid: $myUid');
+      
+      // 加入后再次确认扬声器和音频发布
+      try {
+        await _engine!.setEnableSpeakerphone(true);
+        await _engine!.muteLocalAudioStream(false);
+        debugPrint('[CallService] Post-join: speaker on, mic unmuted');
+      } catch (e) {
+        debugPrint('[CallService] Post-join audio config error: $e');
+      }
     } catch (e) {
       debugPrint('[CallService] joinChannel error: $e');
       _stateData = const CallStateData(status: CallState.idle);
@@ -457,6 +487,19 @@ class CallService extends ChangeNotifier {
       debugPrint('[CallService] setClientRole error: $e');
     }
     
+    // 通话音频配置（每次通话重新设置，确保生效）
+    try {
+      await _engine!.setAudioScenario(AudioScenarioType.audioScenarioChatroom);
+      await _engine!.setAudioProfile(
+        profile: AudioProfileType.audioProfileSpeechStandard,
+        scenario: AudioScenarioType.audioScenarioChatroom,
+      );
+      await _engine!.setEnableSpeakerphone(true);
+      debugPrint('[CallService] Accept call audio configured: speech + speaker');
+    } catch (e) {
+      debugPrint('[CallService] Accept call audio config error: $e');
+    }
+    
     // 确保本地音频流未静音（在 joinChannel 之前）
     try {
       await _engine!.muteLocalAudioStream(false);
@@ -480,6 +523,15 @@ class CallService extends ChangeNotifier {
         ),
       );
       debugPrint('[CallService] Joined channel (accept): $channelName, uid: $myUid');
+      
+      // 加入后再次确认扬声器和音频发布
+      try {
+        await _engine!.setEnableSpeakerphone(true);
+        await _engine!.muteLocalAudioStream(false);
+        debugPrint('[CallService] Post-join (accept): speaker on, mic unmuted');
+      } catch (e) {
+        debugPrint('[CallService] Post-join audio config error: $e');
+      }
     } catch (e) {
       debugPrint('[CallService] joinChannel error: $e');
       _stateData = const CallStateData(status: CallState.idle);
@@ -667,6 +719,19 @@ class CallService extends ChangeNotifier {
       isVideoEnabled: isVideo,
     );
 
+    // 通话音频配置
+    try {
+      await _engine!.setAudioScenario(AudioScenarioType.audioScenarioChatroom);
+      await _engine!.setAudioProfile(
+        profile: AudioProfileType.audioProfileSpeechStandard,
+        scenario: AudioScenarioType.audioScenarioChatroom,
+      );
+      await _engine!.setEnableSpeakerphone(true);
+      await _engine!.setClientRole(role: ClientRoleType.clientRoleBroadcaster);
+    } catch (e) {
+      debugPrint('[CallService] WebView pre-join audio config error: $e');
+    }
+    
     try {
       await _engine!.joinChannel(
         token: token,
@@ -677,23 +742,18 @@ class CallService extends ChangeNotifier {
           publishCameraTrack: isVideo,
           autoSubscribeAudio: true,
           autoSubscribeVideo: isVideo,
+          clientRoleType: ClientRoleType.clientRoleBroadcaster,
         ),
       );
       debugPrint('[CallService] WebView call joined: channel=$channelName, uid=$uid');
       
-      // 确保本地音频流已发布
+      // 加入后确认音频配置
       try {
+        await _engine!.setEnableSpeakerphone(true);
         await _engine!.muteLocalAudioStream(false);
+        debugPrint('[CallService] WebView post-join: speaker on, mic unmuted');
       } catch (e) {
-        debugPrint('[CallService] WebView muteLocalAudioStream error: $e');
-      }
-      
-      // 显式设置为主播角色
-      try {
-        await _engine!.setClientRole(role: ClientRoleType.clientRoleBroadcaster);
-        debugPrint('[CallService] Client role set to broadcaster (WebView)');
-      } catch (e) {
-        debugPrint('[CallService] setClientRole error: $e');
+        debugPrint('[CallService] WebView post-join audio error: $e');
       }
     } catch (e) {
       debugPrint('[CallService] WebView joinChannel error: $e');
