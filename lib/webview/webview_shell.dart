@@ -576,13 +576,6 @@ class _WebViewShellState extends State<WebViewShell> {
           // 如果需要视频，也请求摄像头权限
           if (args.isNotEmpty && args[0] is Map && args[0]['enableVideo'] == true) {
             final cameraStatus = await Permission.camera.request();
-    }
-    
-    // 请求安装未知应用权限（用于APP内更新）
-    final installStatus = await Permission.requestInstallPackages.status;
-    if (!installStatus.isGranted) {
-      await Permission.requestInstallPackages.request();
-    }
             granted = granted && cameraStatus.isGranted;
           }
           
@@ -753,19 +746,13 @@ class _WebViewShellState extends State<WebViewShell> {
       },
     );
 
-    // 打开安装设置
+    // 打开安装设置 - 始终跳转到系统设置页面，让用户手动管理权限
     controller.addJavaScriptHandler(
       handlerName: 'openInstallSettings',
       callback: (args) async {
         try {
-          // 先尝试请求权限
-          final status = await Permission.requestInstallPackages.request();
-          
-          // 如果权限未开启，跳转到应用设置页面
-          if (!status.isGranted) {
-            await openAppSettings();
-          }
-          
+          // 直接跳转到应用设置页面，让用户在系统设置中管理安装权限
+          await openAppSettings();
           return json.encode({'success': true});
         } catch (e) {
           return json.encode({'success': false, 'message': e.toString()});
