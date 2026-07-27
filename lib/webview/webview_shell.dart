@@ -563,6 +563,7 @@ class _WebViewShellState extends State<WebViewShell> {
             'message': e.toString(),
           });
         }
+      },
     );
     
     // 请求权限
@@ -629,6 +630,7 @@ class _WebViewShellState extends State<WebViewShell> {
             'message': e.toString(),
           });
         }
+      },
     );
     
     // 离开频道
@@ -868,6 +870,7 @@ class _WebViewShellState extends State<WebViewShell> {
         );
       }
     }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -883,6 +886,7 @@ class _WebViewShellState extends State<WebViewShell> {
             Navigator.of(context).maybePop();
           }
         }
+      },
       child: Scaffold(
         backgroundColor: const Color(0xFF050816),
         body: SafeArea(

@@ -139,7 +139,7 @@ class AppUpdateService {
       );
       if (cdnResponse.statusCode == 200 && cdnResponse.data != null) {
         final cdnData = _parseVersionData(cdnResponse.data);
-        final cdnCode = cdnData['versionCode'] as int? ?? 0;
+        final cdnCode = (cdnData ?? const {})['versionCode'] as int? ?? 0;
         if (cdnCode > bestVersionCode) {
           bestData = cdnData;
           bestVersionCode = cdnCode;
@@ -162,7 +162,7 @@ class AppUpdateService {
       );
       if (response.statusCode == 200 && response.data != null) {
         final ghData = _parseVersionData(response.data);
-        final ghCode = ghData['versionCode'] as int? ?? 0;
+        final ghCode = (ghData ?? const {})['versionCode'] as int? ?? 0;
         if (ghCode > bestVersionCode) {
           bestData = ghData;
           bestVersionCode = ghCode;
@@ -198,7 +198,7 @@ class AppUpdateService {
           if (content != null && content.isNotEmpty) {
             final decoded = utf8.decode(base64.decode(content));
             final apiData = _parseVersionData(decoded);
-            final apiCode = apiData['versionCode'] as int? ?? 0;
+            final apiCode = (apiData ?? const {})['versionCode'] as int? ?? 0;
             if (apiCode > bestVersionCode) {
               bestData = apiData;
               bestVersionCode = apiCode;
