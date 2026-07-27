@@ -60,6 +60,12 @@ class _WebViewShellState extends State<WebViewShell> {
     if (!cameraStatus.isGranted) {
       await Permission.camera.request();
     }
+    
+    // 请求安装未知应用权限（用于APP内更新）
+    final installStatus = await Permission.requestInstallPackages.status;
+    if (!installStatus.isGranted) {
+      await Permission.requestInstallPackages.request();
+    }
   }
 
   /// 启动时检查新版本
@@ -273,7 +279,6 @@ class _WebViewShellState extends State<WebViewShell> {
                   window.flutterInAppWebView.callHandler('checkForAppUpdate');
                 }, true);
               }
-            });
           } catch(e) {
             console.error('[OF Bridge] Version injection error:', e);
           }
@@ -356,9 +361,7 @@ class _WebViewShellState extends State<WebViewShell> {
                     window.__AgoraCallbacks__[eventName].splice(idx, 1);
                   }
                 }
-              }
             };
-          }
         };
         
         // 全局回调触发函数（供 Flutter 调用）
@@ -372,7 +375,6 @@ class _WebViewShellState extends State<WebViewShell> {
                 console.error('[AgoraNative Bridge] Callback error:', e);
               }
             });
-          }
         };
         
 
@@ -413,7 +415,6 @@ class _WebViewShellState extends State<WebViewShell> {
                             try { cb({curState:'CONNECTED',curReason:'JoinSuccess'}); } catch(e){}
                           });
                         }
-                      }
                       return data;
                     });
                   },
@@ -531,7 +532,6 @@ class _WebViewShellState extends State<WebViewShell> {
                 return typeof result === 'string' ? JSON.parse(result) : result;
               });
           }
-        };
         console.log('[OF Bridge] AppUpdater bridge injected successfully');
         console.log('[OF Bridge] Agora native bridge injected successfully');
       })();
@@ -563,7 +563,6 @@ class _WebViewShellState extends State<WebViewShell> {
             'message': e.toString(),
           });
         }
-      },
     );
     
     // 请求权限
@@ -577,6 +576,13 @@ class _WebViewShellState extends State<WebViewShell> {
           // 如果需要视频，也请求摄像头权限
           if (args.isNotEmpty && args[0] is Map && args[0]['enableVideo'] == true) {
             final cameraStatus = await Permission.camera.request();
+    }
+    
+    // 请求安装未知应用权限（用于APP内更新）
+    final installStatus = await Permission.requestInstallPackages.status;
+    if (!installStatus.isGranted) {
+      await Permission.requestInstallPackages.request();
+    }
             granted = granted && cameraStatus.isGranted;
           }
           
@@ -630,7 +636,6 @@ class _WebViewShellState extends State<WebViewShell> {
             'message': e.toString(),
           });
         }
-      },
     );
     
     // 离开频道
@@ -753,7 +758,14 @@ class _WebViewShellState extends State<WebViewShell> {
       handlerName: 'openInstallSettings',
       callback: (args) async {
         try {
-          await Permission.requestInstallPackages.request();
+          // 先尝试请求权限
+          final status = await Permission.requestInstallPackages.request();
+          
+          // 如果权限未开启，跳转到应用设置页面
+          if (!status.isGranted) {
+            await openAppSettings();
+          }
+          
           return json.encode({'success': true});
         } catch (e) {
           return json.encode({'success': false, 'message': e.toString()});
@@ -869,7 +881,6 @@ class _WebViewShellState extends State<WebViewShell> {
         );
       }
     }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -885,7 +896,6 @@ class _WebViewShellState extends State<WebViewShell> {
             Navigator.of(context).maybePop();
           }
         }
-      },
       child: Scaffold(
         backgroundColor: const Color(0xFF050816),
         body: SafeArea(
