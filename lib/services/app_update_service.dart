@@ -123,9 +123,11 @@ class AppUpdateService {
     final packageInfo = await PackageInfo.fromPlatform();
     final currentVersion = packageInfo.version;
 
-    Map<String, dynamic>? data;
+    // 从所有来源获取版本信息，取最高版本
+    Map<String, dynamic>? bestData;
+    int bestVersionCode = 0;
 
-    // 尝试 1: Cloudflare CDN（全球可访问，包括中国）
+    // 来源 1: Cloudflare CDN
     try {
       final cdnUrl = 'https://download.openfaithhub.com/version.json';
       final cdnResponse = await _dio.get(
@@ -136,35 +138,43 @@ class AppUpdateService {
         ),
       );
       if (cdnResponse.statusCode == 200 && cdnResponse.data != null) {
-        data = _parseVersionData(cdnResponse.data);
-        debugPrint('[AppUpdate] Got version from CDN');
+        final cdnData = _parseVersionData(cdnResponse.data);
+        final cdnCode = cdnData['versionCode'] as int? ?? 0;
+        if (cdnCode > bestVersionCode) {
+          bestData = cdnData;
+          bestVersionCode = cdnCode;
+        }
+        debugPrint('[AppUpdate] CDN versionCode: $cdnCode');
       }
     } catch (e) {
       debugPrint('[AppUpdate] CDN version check failed: $e');
     }
 
-    // 尝试 2: raw GitHub URL（仅当 CDN 失败时）
-    if (data == null) {
-      try {
-        final rawUrl = 'https://raw.githubusercontent.com/869862742-stack/openfaith-app/main/version.json';
-        final response = await _dio.get(
-          rawUrl,
-          options: Options(
-            connectTimeout: const Duration(seconds: 5),
-            receiveTimeout: const Duration(seconds: 5),
-          ),
-        );
-        if (response.statusCode == 200 && response.data != null) {
-          data = _parseVersionData(response.data);
-          debugPrint('[AppUpdate] Got version from GitHub raw');
+    // 来源 2: GitHub raw URL（始终检查，取最高版本）
+    try {
+      final rawUrl = 'https://raw.githubusercontent.com/869862742-stack/openfaith-app/main/version.json';
+      final response = await _dio.get(
+        rawUrl,
+        options: Options(
+          connectTimeout: const Duration(seconds: 5),
+          receiveTimeout: const Duration(seconds: 5),
+        ),
+      );
+      if (response.statusCode == 200 && response.data != null) {
+        final ghData = _parseVersionData(response.data);
+        final ghCode = ghData['versionCode'] as int? ?? 0;
+        if (ghCode > bestVersionCode) {
+          bestData = ghData;
+          bestVersionCode = ghCode;
         }
-      } catch (e) {
-        debugPrint('[AppUpdate] Raw URL failed: $e');
+        debugPrint('[AppUpdate] GitHub raw versionCode: $ghCode');
       }
+    } catch (e) {
+      debugPrint('[AppUpdate] GitHub raw failed: $e');
     }
 
-    // 尝试 2: GitHub API (fallback)
-    if (data == null) {
+    // 来源 3: GitHub API (fallback)
+    if (bestData == null) {
       try {
         final apiUrl = 'https://api.github.com/repos/869862742-stack/openfaith-app/contents/version.json';
         final response = await _dio.get(
@@ -187,7 +197,12 @@ class AppUpdateService {
           final content = apiResp['content'] as String?;
           if (content != null && content.isNotEmpty) {
             final decoded = utf8.decode(base64.decode(content));
-            data = _parseVersionData(decoded);
+            final apiData = _parseVersionData(decoded);
+            final apiCode = apiData['versionCode'] as int? ?? 0;
+            if (apiCode > bestVersionCode) {
+              bestData = apiData;
+              bestVersionCode = apiCode;
+            }
           }
         }
       } catch (e) {
@@ -195,6 +210,7 @@ class AppUpdateService {
       }
     }
 
+    final data = bestData;
     if (data == null) {
       return null; // 网络异常时不抛异常，静默处理
     }
