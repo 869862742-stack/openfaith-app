@@ -74,57 +74,57 @@ jobs:
       - name: Build release APK
         run: flutter build apk --release --build-name="${{ steps.version.outputs.version }}" --build-number="${{ steps.buildnum.outputs.build_number }}"
 
-      - name: Rename APK
-        run: |
-          cp build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/OpenFaith-v${{ steps.version.outputs.version }}.apk
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenFaith_v${{ steps.version.outputs.version }}
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
 
-      - name: Upload to openfaith-releases (public repo)
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          repository: 869862742-stack/openfaith-releases
-          tag_name: v${{ steps.version.outputs.version }}
-          name: OpenFaith v${{ steps.version.outputs.version }}
+          tag_name: app-v${{ steps.version.outputs.version }}
+          name: OpenFaith APP v${{ steps.version.outputs.version }}
           body: |
             ## OpenFaith Flutter v${{ steps.version.outputs.version }}
             
             ### 下载
             点击下方 APK 文件下载安装
-            
-            ### 更新日志
-            - 修复APK下载卡在0%的问题
-            - 改进重定向处理
-            - 改进下载进度显示
-          files: build/app/outputs/flutter-apk/OpenFaith-v${{ steps.version.outputs.version }}.apk
+          files: build/app/outputs/flutter-apk/app-release.apk
           draft: false
           prerelease: false
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update version.json in web repo
         if: success()
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          APK_SIZE=$(du -h build/app/outputs/flutter-apk/OpenFaith-v${VERSION}.apk | cut -f1 | tr -d '[:space:]')
+          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //' | tr -d '[:space:]' | cut -d'+' -f1)
+          APK_SIZE=$(du -h build/app/outputs/flutter-apk/app-release.apk | cut -f1 | tr -d '[:space:]')
           
+          # Create new version.json content
           cat > version.json << EOF
           {
             "latestVersion": "${VERSION}",
-            "versionCode": ${{ steps.buildnum.outputs.build_number }},
-            "downloadUrl": "https://download.openfaithhub.com/apk/latest",
-            "fallbackUrl": "https://github.com/869862742-stack/openfaith-releases/releases/download/v${VERSION}/OpenFaith-v${VERSION}.apk",
+            "downloadUrl": "https://openfaith.pages.dev/download/flutter/${VERSION}",
+            "fallbackUrl": "https://github.com/${{ github.repository }}/releases/download/app-v${VERSION}/app-release.apk",
+            "releaseUrl": "https://github.com/${{ github.repository }}/releases/tag/app-v${VERSION}",
             "size": "${APK_SIZE}",
-            "changelog": "v${VERSION}: 修复APK下载卡在0%的问题 / 改进重定向处理 / 改进下载进度显示",
-            "buildTime": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            "publishedAt": "$(date +%Y-%m-%d)",
+            "changelog": "Flutter v${VERSION} - 自动构建"
           }
           EOF
           
-          CURRENT=$(curl -s -H "Authorization: token ${{ secrets.PAT_TOKEN }}" \
+          # Get current file SHA from web repo
+          CURRENT=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             "https://api.github.com/repos/869862742-stack/openfaith-web/contents/public/version.json" | \
             python3 -c "import sys,json; print(json.load(sys.stdin).get('sha',''))")
           
+          # Update version.json in web repo
           CONTENT=$(base64 -w0 version.json)
           curl -s -X PUT \
-            -H "Authorization: token ${{ secrets.PAT_TOKEN }}" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github+json" \
             "https://api.github.com/repos/869862742-stack/openfaith-web/contents/public/version.json" \
-            -d "{\"message\":\"chore: update version.json to v${VERSION}\",\"content\":\"${CONTENT}\",\"sha\":\"${CURRENT}\"}"
+            -d "{\"message\":\"chore: update version.json to Flutter v${VERSION}\",\"content\":\"${CONTENT}\",\"sha\":\"${CURRENT}\"}"
