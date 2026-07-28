@@ -815,25 +815,101 @@ class _WebViewShellState extends State<WebViewShell> {
     );
   }
 
+  /// 解析重定向链，获取最终下载URL
+  Future<String> _resolveFinalDownloadUrl(String url) async {
+    final dio = Dio(BaseOptions(
+      followRedirects: false,
+      validateStatus: (status) => status != null && status < 500,
+      connectTimeout: Duration(seconds: 10),
+      receiveTimeout: Duration(seconds: 10),
+    ));
+    
+    String currentUrl = url;
+    int maxRedirects = 5;
+    
+    for (int i = 0; i < maxRedirects; i++) {
+      try {
+        debugPrint('[WebView] Resolving redirect [$i]: $currentUrl');
+        final response = await dio.head(currentUrl);
+        
+        if (response.statusCode == 301 || response.statusCode == 302 || 
+            response.statusCode == 307 || response.statusCode == 308) {
+          final location = response.headers.value('location');
+          if (location != null && location.isNotEmpty) {
+            // Handle relative URLs
+            if (location.startsWith('http://') || location.startsWith('https://')) {
+              currentUrl = location;
+            } else {
+              final uri = Uri.parse(currentUrl);
+              currentUrl = '${uri.scheme}://${uri.host}$location';
+            }
+            debugPrint('[WebView] Redirect to: $currentUrl');
+            continue;
+          }
+        }
+        
+        // Not a redirect, this is the final URL
+        debugPrint('[WebView] Final URL resolved: $currentUrl');
+        return currentUrl;
+      } catch (e) {
+        debugPrint('[WebView] Redirect resolution failed: $e');
+        // If HEAD fails, return current URL and let download handle it
+        return currentUrl;
+      }
+    }
+    
+    return currentUrl;
+  }
+
   /// 实际执行 APK 下载
   Future<void> _startApkDownload(String url, String fileName) async {
     try {
+      debugPrint('[WebView] Starting APK download: $url');
+      
+      // 先解析最终下载URL（处理重定向链）
+      final directUrl = await _resolveFinalDownloadUrl(url);
+      debugPrint('[WebView] Direct download URL: $directUrl');
+      
       final tempDir = await getTemporaryDirectory();
       final savePath = '${tempDir.path}/$fileName';
       
-      final file = await File(savePath).exists() 
-          ? File(savePath) 
-          : File(savePath);
+      final file = File(savePath);
       if (await file.exists()) await file.delete();
 
-      final dio = Dio();
+      final dio = Dio(BaseOptions(
+        connectTimeout: Duration(seconds: 30),
+        receiveTimeout: Duration(seconds: 300),
+        sendTimeout: Duration(seconds: 30),
+        followRedirects: true,
+        maxRedirects: 5,
+      ));
+      
+      int lastProgressPercent = 0;
       await dio.download(
-        url,
+        directUrl,
         savePath,
         cancelToken: _apkCancelToken!,
         onReceiveProgress: (received, total) {
           if (total > 0) {
-            _apkDownloadProgress = received / total;
+            final progress = received / total;
+            _apkDownloadProgress = progress;
+            
+            // 每10%打印一次日志
+            final percent = (progress * 100).toInt();
+            if (percent >= lastProgressPercent + 10) {
+              lastProgressPercent = percent;
+              debugPrint('[WebView] Download progress: $percent% (${(received / 1024 / 1024).toStringAsFixed(1)} MB / ${(total / 1024 / 1024).toStringAsFixed(1)} MB)');
+            }
+          } else {
+            // total未知时，使用已接收字节数估算（假设290MB）
+            const estimatedTotal = 290 * 1024 * 1024; // 290MB
+            _apkDownloadProgress = received / estimatedTotal;
+            if (received > estimatedTotal) {
+              _apkDownloadProgress = 0.99; // 防止超过100%
+            }
+            
+            final mb = (received / 1024 / 1024).toStringAsFixed(1);
+            debugPrint('[WebView] Downloading: $mb MB (total size unknown)');
           }
         },
       );
