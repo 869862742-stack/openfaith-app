@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/services.dart';
 import 'dart:io';
 import 'dart:collection';
 import 'package:flutter/material.dart';
@@ -748,15 +749,19 @@ class _WebViewShellState extends State<WebViewShell> {
       },
     );
 
-    // 打开安装设置 - 始终跳转到系统设置页面，让用户手动管理权限
+    // 打开安装设置 - 打开"安装未知应用"权限页
     controller.addJavaScriptHandler(
       handlerName: 'openInstallSettings',
       callback: (args) async {
         try {
-          // 直接跳转到应用设置页面，让用户在系统设置中管理安装权限
-          await openAppSettings();
+          const channel = MethodChannel('openfaith/install_settings');
+          await channel.invokeMethod('openInstallSettings');
           return json.encode({'success': true});
         } catch (e) {
+          // 降级方案
+          try {
+            await openAppSettings();
+          } catch (_) {}
           return json.encode({'success': false, 'message': e.toString()});
         }
       },
@@ -768,7 +773,7 @@ class _WebViewShellState extends State<WebViewShell> {
       callback: (args) async {
         try {
           final url = args.isNotEmpty ? args[0] as String : '';
-          final fileName = args.length > 1 ? args[0] as String : 'OpenFaith.apk';
+          final fileName = args.length > 1 ? args[1] as String : 'OpenFaith.apk';
           
           if (url.isEmpty) {
             return json.encode({'downloadId': 0, 'status': 'error', 'message': 'No URL'});
