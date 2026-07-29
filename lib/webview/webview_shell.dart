@@ -411,17 +411,24 @@ class _WebViewShellState extends State<WebViewShell> {
                       var data = typeof result === 'string' ? JSON.parse(result) : result;
                       if (data && data.success) {
                         _nativeJoined = true;
+                        window.__NATIVE_CALL_ACTIVE__ = true;
                         if (_eventHandlers['connection-state-change']) {
                           _eventHandlers['connection-state-change'].forEach(function(cb) {
                             try { cb({curState:'CONNECTED',curReason:'JoinSuccess'}); } catch(e){}
                           });
                         }
-                      return data;
+                        return data;
+                      } else {
+                        console.error('[OF Bridge] Native join failed:', data && data.message);
+                        window.__NATIVE_CALL_ACTIVE__ = false;
+                        return Promise.reject(new Error(data && data.message || 'Native join failed'));
+                      }
                     });
                   },
                   
                   publish: function(tracks) {
-                    console.log('[OF Bridge] Native publish: tracks=' + (tracks ? tracks.length : 0));
+                    console.log('[OF Bridge] Native publish: tracks=' + (tracks ? tracks.length : 0) + ', nativeActive=' + !!window.__NATIVE_CALL_ACTIVE__);
+                    // No-op: native SDK handles audio/video publishing
                     return Promise.resolve();
                   },
                   
@@ -437,6 +444,7 @@ class _WebViewShellState extends State<WebViewShell> {
                   leave: function() {
                     console.log('[OF Bridge] Native leave channel');
                     _nativeJoined = false;
+                    window.__NATIVE_CALL_ACTIVE__ = false;
                     return window.flutterInAppWebView.callHandler('agoraLeaveChannel')
                       .then(function(result) {
                         return typeof result === 'string' ? JSON.parse(result) : result;
@@ -620,6 +628,9 @@ class _WebViewShellState extends State<WebViewShell> {
             _notifyWebCallState(controller, state);
           });
           
+          // Notify Web side that native call is active
+          controller.evaluateJavascript(source: 'window.__NATIVE_CALL_ACTIVE__ = true;');
+          
           return json.encode({
             'success': true,
             'message': 'Call started',
@@ -640,6 +651,7 @@ class _WebViewShellState extends State<WebViewShell> {
       callback: (args) async {
         try {
           await callService.endCall();
+          controller.evaluateJavascript(source: 'window.__NATIVE_CALL_ACTIVE__ = false;');
           return json.encode({'success': true});
         } catch (e) {
           debugPrint('[WebView Bridge] agoraLeaveChannel error: $e');
