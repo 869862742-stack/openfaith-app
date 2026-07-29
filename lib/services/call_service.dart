@@ -728,6 +728,13 @@ class CallService extends ChangeNotifier {
       );
       await _engine!.setEnableSpeakerphone(true);
       await _engine!.setClientRole(role: ClientRoleType.clientRoleBroadcaster);
+      // Ensure echo cancellation and noise suppression at engine level
+      final parameters = {
+        "che.audio.aec.enable": true,
+        "che.audio.ans.enable": true,
+        "che.audio.agc.enable": true,
+      };
+      await _engine!.setParameters(json.encode(parameters));
     } catch (e) {
       debugPrint('[CallService] WebView pre-join audio config error: $e');
     }
@@ -751,7 +758,13 @@ class CallService extends ChangeNotifier {
       try {
         await _engine!.setEnableSpeakerphone(true);
         await _engine!.muteLocalAudioStream(false);
-        debugPrint('[CallService] WebView post-join: speaker on, mic unmuted');
+        // Enable volume indication for better audio monitoring
+        await _engine!.enableAudioVolumeIndication(
+          interval: 250,
+          smooth: 3,
+          reportVad: true,
+        );
+        debugPrint('[CallService] WebView post-join: speaker on, mic unmuted, volume indication enabled');
       } catch (e) {
         debugPrint('[CallService] WebView post-join audio error: $e');
       }
