@@ -11,9 +11,8 @@ class UpdateDialog extends StatefulWidget {
 }
 
 class _UpdateDialogState extends State<UpdateDialog> {
-  double _downloadProgress = 0.0;
   bool _isDownloading = false;
-  String _status = 'info'; // 'info' | 'downloading' | 'error'
+  String _status = 'info';
   String _errorMessage = '';
 
   @override
@@ -24,13 +23,6 @@ class _UpdateDialogState extends State<UpdateDialog> {
 
   void _setupCallbacks() {
     final service = AppUpdateService();
-    service.onProgressUpdate = (progress) {
-      if (mounted) {
-        setState(() {
-          _downloadProgress = progress;
-        });
-      }
-    };
     service.onStatusChange = (status, {error}) {
       if (!mounted) return;
       setState(() {
@@ -40,7 +32,17 @@ class _UpdateDialogState extends State<UpdateDialog> {
           _isDownloading = false;
         }
         if (status == 'completed') {
+          // 系统下载已启动，关闭对话框
           Navigator.of(context).pop();
+          // 显示提示
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('正在下载更新，下载完成后请在通知栏点击安装'),
+                duration: Duration(seconds: 3),
+              ),
+            );
+          }
         }
       });
     };
@@ -50,7 +52,6 @@ class _UpdateDialogState extends State<UpdateDialog> {
     setState(() {
       _isDownloading = true;
       _status = 'downloading';
-      _downloadProgress = 0.0;
       _errorMessage = '';
     });
 
@@ -82,7 +83,7 @@ class _UpdateDialogState extends State<UpdateDialog> {
           Flexible(
             child: Text(
               _isDownloading
-                  ? '正在下载更新'
+                  ? '正在启动下载'
                   : '发现新版本 v${widget.update.latestVersion}',
               style: const TextStyle(
                 color: AppColors.textPrimary,
@@ -99,40 +100,23 @@ class _UpdateDialogState extends State<UpdateDialog> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (_isDownloading) ...[
-            ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: LinearProgressIndicator(
-                value: _downloadProgress,
-                backgroundColor: AppColors.borderColor,
-                valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF9D4EDD)),
-                minHeight: 8,
-              ),
+            const LinearProgressIndicator(
+              backgroundColor: AppColors.borderColor,
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF9D4EDD)),
+              minHeight: 8,
             ),
             const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '${(_downloadProgress * 100).toStringAsFixed(1)}%',
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                Text(
-                  'v${widget.update.latestVersion}',
-                  style: const TextStyle(
-                    color: AppColors.textWeak,
-                    fontSize: 13,
-                  ),
-                ),
-              ],
+            const Text(
+              '正在调用系统下载管理器...',
+              style: TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 14,
+              ),
             ),
             if (_errorMessage.isNotEmpty) ...[
               const SizedBox(height: 8),
               Text(
-                '下载失败: $_errorMessage',
+                '启动失败: $_errorMessage',
                 style: const TextStyle(color: Colors.redAccent, fontSize: 12),
               ),
             ],
@@ -148,7 +132,7 @@ class _UpdateDialogState extends State<UpdateDialog> {
               ),
               const SizedBox(height: 6),
               ConstrainedBox(
-                constraints: const BoxConstraints(maxHeight: 160),
+                constraints: const BoxConstraints(maxHeight: 200),
                 child: SingleChildScrollView(
                   child: Text(
                     widget.update.changelog,
@@ -167,12 +151,9 @@ class _UpdateDialogState extends State<UpdateDialog> {
       actions: [
         if (_isDownloading)
           TextButton(
-            onPressed: () {
-              AppUpdateService().cancelDownload();
-              Navigator.pop(context);
-            },
+            onPressed: () => Navigator.pop(context),
             child: const Text(
-              '取消',
+              '关闭',
               style: TextStyle(color: AppColors.textWeak, fontSize: 14),
             ),
           )
