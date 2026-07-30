@@ -722,32 +722,20 @@ class CallService extends ChangeNotifier {
 
     // 通话音频配置 - 在 join 前完成所有音频设置
     try {
-      // 设置音频场景和配置
-      await _engine!.setAudioScenario(AudioScenarioType.audioScenarioChatroom);
-      await _engine!.setAudioProfile(
-        profile: AudioProfileType.audioProfileDefault,
-        scenario: AudioScenarioType.audioScenarioChatroom,
-      );
-      
       // 设置主播角色（必须在 join 前设置）
       await _engine!.setClientRole(role: ClientRoleType.clientRoleBroadcaster);
+      
+      // 设置语音通话优化配置（与 startCall/acceptCall 保持一致）
+      await _engine!.setAudioScenario(AudioScenarioType.audioScenarioChatroom);
+      await _engine!.setAudioProfile(
+        profile: AudioProfileType.audioProfileSpeechStandard,
+        scenario: AudioScenarioType.audioScenarioChatroom,
+      );
       
       // 默认扬声器模式
       await _engine!.setEnableSpeakerphone(true);
       
-      // 确保音频路由到扬声器
-      await _engine!.setDefaultAudioRouteToSpeakerphone(true);
-      
-      // 启用回声消除、降噪、自动增益
-      final parameters = {
-        "che.audio.aec.enable": true,
-        "che.audio.ans.enable": true,
-        "che.audio.agc.enable": true,
-        "che.audio.keep.audiorecord.alive": true,
-      };
-      await _engine!.setParameters(json.encode(parameters));
-      
-      debugPrint('[CallService] WebView pre-join audio configured: broadcaster, speakerphone, AEC/ANS/AGC');
+      debugPrint('[CallService] WebView pre-join audio configured: broadcaster, speechStandard, speakerphone');
     } catch (e) {
       debugPrint('[CallService] WebView pre-join audio config error: $e');
     }
@@ -768,7 +756,7 @@ class CallService extends ChangeNotifier {
       debugPrint('[CallService] WebView call joined: channel=$channelName, uid=$uid');
       
       // 加入后等待 SDK 稳定，再确认音频发布
-      await Future.delayed(const Duration(milliseconds: 500));
+      await Future.delayed(const Duration(milliseconds: 300));
       
       try {
         // 确保角色是主播（某些 SDK 版本 join 后可能回退到观众）
@@ -778,17 +766,7 @@ class CallService extends ChangeNotifier {
         // 关键：显式取消静音并发布麦克风音频流
         await _engine!.muteLocalAudioStream(false);
         
-        // 确保录制信号音量不为 0（默认 100）
-        await _engine!.adjustRecordingSignalVolume(100);
-        
-        // 启用音量指示用于监控
-        await _engine!.enableAudioVolumeIndication(
-          interval: 250,
-          smooth: 3,
-          reportVad: true,
-        );
-        
-        debugPrint('[CallService] WebView post-join: broadcaster role, speaker on, mic unmuted, volume=100');
+        debugPrint('[CallService] WebView post-join: broadcaster, speaker on, mic unmuted');
       } catch (e) {
         debugPrint('[CallService] WebView post-join audio config error: $e');
       }

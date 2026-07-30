@@ -286,15 +286,28 @@ class _WebViewShellState extends State<WebViewShell> {
         });
         
         // ========== 2. Agora 原生通话桥接（兼容 Capacitor 接口）==========
-        // 模拟 window.Capacitor 对象，让 Web 端的 hasNativeAgoraPlugin() 返回 true
+        // Capacitor 和 AgoraNative 已在 AT_DOCUMENT_START 注入，这里只确保完整性
         if (!window.Capacitor) {
           window.Capacitor = {
             isNativePlatform: function() { return true; },
             Plugins: {}
           };
         }
+        if (!window.Capacitor.Plugins.AgoraNative) {
+          window.Capacitor.Plugins.AgoraNative = {};
+        }
         
-        // 注册 AgoraNative 插件
+        // 注册/更新 AgoraNative 插件方法（确保 handler 可用）
+        var plugin = window.Capacitor.Plugins.AgoraNative;
+        plugin.initialize = plugin.initialize || function() { return Promise.resolve({success: true}); };
+        plugin.requestPermissions = plugin.requestPermissions || function() { return Promise.resolve({granted: true}); };
+        plugin.startNativeCall = plugin.startNativeCall || function() { return Promise.resolve({success: true}); };
+        plugin.leaveChannel = plugin.leaveChannel || function() { return Promise.resolve({success: true}); };
+        plugin.getStatus = plugin.getStatus || function() { return Promise.resolve({initialized: false, joined: false}); };
+        plugin.destroy = plugin.destroy || function() { return Promise.resolve({success: true}); };
+        plugin.addListener = plugin.addListener || function() { return { remove: function(){} }; };
+        
+        // 完整注册（覆盖占位符）
         window.Capacitor.Plugins.AgoraNative = {
           initialize: function(params) {
             console.log('[AgoraNative Bridge] initialize called', params);
@@ -621,10 +634,18 @@ class _WebViewShellState extends State<WebViewShell> {
               console.log('[OF Bridge] Pausing WebView audio for native call');
               // 暂停所有 audio/video 元素
               document.querySelectorAll('audio, video').forEach(function(el) {
-                if (!el.paused) {
-                  el.pause();
-                  el.dataset.wasPlaying = 'true';
-                }
+                try {
+                  if (!el.paused) {
+                    el.pause();
+                    el.dataset.wasPlaying = 'true';
+                  }
+                  // 清空 src 以彻底释放音频资源
+                  if (el.src && el.tagName === 'AUDIO') {
+                    el.dataset.wasSrc = el.src;
+                    el.src = '';
+                    el.load();
+                  }
+                } catch(e) {}
               });
               // 挂起所有 AudioContext
               if (window.__OF_AUDIO_CONTEXTS__ === undefined) {
@@ -637,14 +658,14 @@ class _WebViewShellState extends State<WebViewShell> {
                   window.__OF_AUDIO_CONTEXTS_SAVED__ = window.__audioCtx;
                 }
               } catch(e) {}
-              // 设置原生通话标志
+              // 设置原生通话标志，阻止 web SDK 尝试获取音频
               window.__NATIVE_CALL_ACTIVE__ = true;
-              console.log('[OF Bridge] WebView audio paused, native call active');
+              console.log('[OF Bridge] WebView audio fully released, native call active');
             })();
           ''');
           
-          // 短暂等待 WebView 音频释放
-          await Future.delayed(const Duration(milliseconds: 200));
+          // 等待 WebView 音频完全释放（Android 音频焦点切换需要时间）
+          await Future.delayed(const Duration(milliseconds: 500));
           
           // 调用 CallService 的 joinChannel
           await callService.joinChannelFromWebView(
@@ -688,10 +709,17 @@ class _WebViewShellState extends State<WebViewShell> {
               window.__NATIVE_CALL_ACTIVE__ = false;
               // 恢复之前暂停的 audio/video 元素
               document.querySelectorAll('audio, video').forEach(function(el) {
-                if (el.dataset.wasPlaying === 'true') {
-                  el.play().catch(function(e) { console.log('[OF Bridge] Resume audio failed:', e); });
-                  delete el.dataset.wasPlaying;
-                }
+                try {
+                  if (el.dataset.wasPlaying === 'true') {
+                    // 恢复之前清空的 src
+                    if (el.dataset.wasSrc) {
+                      el.src = el.dataset.wasSrc;
+                      delete el.dataset.wasSrc;
+                    }
+                    el.play().catch(function(e) { console.log('[OF Bridge] Resume audio failed:', e); });
+                    delete el.dataset.wasPlaying;
+                  }
+                } catch(e) {}
               });
               // 恢复 AudioContext
               try {
@@ -1057,6 +1085,7 @@ class _WebViewShellState extends State<WebViewShell> {
                   UserScript(
                     source: '''
                       // 提前注入 Capacitor 模拟 + Flutter WebView 标记
+                      // 必须在所有 JS 加载前执行，确保网页检测到原生环境
                       window.__OF_FLUTTER_WEBVIEW__ = true;
                       if (!window.Capacitor) {
                         window.Capacitor = {
@@ -1064,6 +1093,44 @@ class _WebViewShellState extends State<WebViewShell> {
                           Plugins: {}
                         };
                       }
+                      
+                      // 预注入 AgoraNativeBridge 插件标记，让 hasNativeAgoraPlugin() 尽早返回 true
+                      window.Capacitor.Plugins.AgoraNative = {
+                        initialize: function(p) {
+                          return window.flutterInAppWebView.callHandler('agoraInitialize', p)
+                            .then(function(r) { return typeof r === 'string' ? JSON.parse(r) : r; });
+                        },
+                        requestPermissions: function(p) {
+                          return window.flutterInAppWebView.callHandler('agoraRequestPermissions', p)
+                            .then(function(r) { return typeof r === 'string' ? JSON.parse(r) : r; });
+                        },
+                        startNativeCall: function(p) {
+                          return window.flutterInAppWebView.callHandler('agoraStartCall', p)
+                            .then(function(r) { return typeof r === 'string' ? JSON.parse(r) : r; });
+                        },
+                        leaveChannel: function() {
+                          return window.flutterInAppWebView.callHandler('agoraLeaveChannel')
+                            .then(function(r) { return typeof r === 'string' ? JSON.parse(r) : r; });
+                        },
+                        getStatus: function() {
+                          return window.flutterInAppWebView.callHandler('agoraGetStatus')
+                            .then(function(r) { return typeof r === 'string' ? JSON.parse(r) : r; });
+                        },
+                        destroy: function() {
+                          return window.flutterInAppWebView.callHandler('agoraDestroy')
+                            .then(function(r) { return typeof r === 'string' ? JSON.parse(r) : r; });
+                        },
+                        addListener: function(event, callback) {
+                          if (!window.__AgoraCallbacks__) window.__AgoraCallbacks__ = {};
+                          if (!window.__AgoraCallbacks__[event]) window.__AgoraCallbacks__[event] = [];
+                          window.__AgoraCallbacks__[event].push(callback);
+                          return { remove: function() {
+                            var arr = window.__AgoraCallbacks__ && window.__AgoraCallbacks__[event];
+                            if (arr) { var i = arr.indexOf(callback); if (i > -1) arr.splice(i, 1); }
+                          }};
+                        }
+                      };
+                      console.log('[OF Bridge] Early AgoraNative plugin stub injected');
                     ''',
                     injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
                   ),
