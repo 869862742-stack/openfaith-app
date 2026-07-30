@@ -614,6 +614,38 @@ class _WebViewShellState extends State<WebViewShell> {
           
           debugPrint('[WebView Bridge] Starting native call: channel=$channelName, uid=$uid, video=$isVideo');
           
+          // 关键：暂停 WebView 中所有音频，释放音频焦点给原生 SDK
+          // 这解决了 Android 上 WebView 占用音频焦点导致原生 SDK 无法发布麦克风的问题
+          controller.evaluateJavascript(source: '''
+            (function() {
+              console.log('[OF Bridge] Pausing WebView audio for native call');
+              // 暂停所有 audio/video 元素
+              document.querySelectorAll('audio, video').forEach(function(el) {
+                if (!el.paused) {
+                  el.pause();
+                  el.dataset.wasPlaying = 'true';
+                }
+              });
+              // 挂起所有 AudioContext
+              if (window.__OF_AUDIO_CONTEXTS__ === undefined) {
+                window.__OF_AUDIO_CONTEXTS__ = [];
+              }
+              // 尝试挂起全局 AudioContext
+              try {
+                if (window.__audioCtx && window.__audioCtx.state === 'running') {
+                  window.__audioCtx.suspend();
+                  window.__OF_AUDIO_CONTEXTS_SAVED__ = window.__audioCtx;
+                }
+              } catch(e) {}
+              // 设置原生通话标志
+              window.__NATIVE_CALL_ACTIVE__ = true;
+              console.log('[OF Bridge] WebView audio paused, native call active');
+            })();
+          ''');
+          
+          // 短暂等待 WebView 音频释放
+          await Future.delayed(const Duration(milliseconds: 200));
+          
           // 调用 CallService 的 joinChannel
           await callService.joinChannelFromWebView(
             channelName: channelName,
@@ -627,9 +659,6 @@ class _WebViewShellState extends State<WebViewShell> {
             final state = callService.state;
             _notifyWebCallState(controller, state);
           });
-          
-          // Notify Web side that native call is active
-          controller.evaluateJavascript(source: 'window.__NATIVE_CALL_ACTIVE__ = true;');
           
           return json.encode({
             'success': true,
@@ -651,7 +680,29 @@ class _WebViewShellState extends State<WebViewShell> {
       callback: (args) async {
         try {
           await callService.endCall();
-          controller.evaluateJavascript(source: 'window.__NATIVE_CALL_ACTIVE__ = false;');
+          
+          // 恢复 WebView 音频
+          controller.evaluateJavascript(source: '''
+            (function() {
+              console.log('[OF Bridge] Resuming WebView audio after native call');
+              window.__NATIVE_CALL_ACTIVE__ = false;
+              // 恢复之前暂停的 audio/video 元素
+              document.querySelectorAll('audio, video').forEach(function(el) {
+                if (el.dataset.wasPlaying === 'true') {
+                  el.play().catch(function(e) { console.log('[OF Bridge] Resume audio failed:', e); });
+                  delete el.dataset.wasPlaying;
+                }
+              });
+              // 恢复 AudioContext
+              try {
+                if (window.__OF_AUDIO_CONTEXTS_SAVED__ && window.__OF_AUDIO_CONTEXTS_SAVED__.state === 'suspended') {
+                  window.__OF_AUDIO_CONTEXTS_SAVED__.resume();
+                }
+              } catch(e) {}
+              console.log('[OF Bridge] WebView audio resumed');
+            })();
+          ''');
+          
           return json.encode({'success': true});
         } catch (e) {
           debugPrint('[WebView Bridge] agoraLeaveChannel error: $e');
