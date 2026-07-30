@@ -36,12 +36,13 @@ class AppUpdateInfo {
 /// APP 更新服务
 class AppUpdateService {
   static final AppUpdateService _instance = AppUpdateService._internal();
-  factory AppUpdateService() = _instance;
+  factory AppUpdateService() => _instance;
   AppUpdateService._internal();
 
   final Dio _dio = Dio();
 
   void Function(String status, {String? error})? onStatusChange;
+  void Function(double progress)? onProgressUpdate;
 
   /// 检查是否有新版本
   Future<AppUpdateInfo?> checkForUpdate() async {
