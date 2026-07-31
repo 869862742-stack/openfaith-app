@@ -515,39 +515,67 @@ class _WebViewShellState extends State<WebViewShell> {
           // 这比单纯暂停 WebView 音频更彻底，直接切换 Android 音频路由
           await AudioManagerService.startCallAudioMode(speakerOn: true);
           
-          // 暂停 WebView 中所有音频，释放音频焦点给原生 SDK
+          // 🔑 彻底禁用 WebView 中的所有 WebRTC/音频功能
+          // 根本原因：Android 10+ 对麦克风强独占，原生 Agora SDK 和 WebView WebRTC 无法共存
+          // 解决方案：WebView 完全放弃音频，100% 交给原生 Agora SDK
           controller.evaluateJavascript(source: '''
             (function() {
-              console.log('[OF Bridge] Pausing WebView audio for native call');
-              // 暂停所有 audio/video 元素
+              console.log('[OF Bridge] Disabling ALL WebView audio for native call');
+              
+              // 1. 标记原生通话激活 - 阻止 Web SDK 创建任何音频轨道
+              window.__NATIVE_CALL_ACTIVE__ = true;
+              
+              // 2. 暂停并清空所有 audio/video 元素
               document.querySelectorAll('audio, video').forEach(function(el) {
                 try {
                   if (!el.paused) {
                     el.pause();
                     el.dataset.wasPlaying = 'true';
                   }
-                  // 清空 src 以彻底释放音频资源
-                  if (el.src && el.tagName === 'AUDIO') {
+                  if (el.src) {
                     el.dataset.wasSrc = el.src;
-                    el.src = '';
+                    el.removeAttribute('src');
                     el.load();
                   }
                 } catch(e) {}
               });
-              // 挂起所有 AudioContext
-              if (window.__OF_AUDIO_CONTEXTS__ === undefined) {
-                window.__OF_AUDIO_CONTEXTS__ = [];
-              }
-              // 尝试挂起全局 AudioContext
+              
+              // 3. 挂起所有 AudioContext（WebRTC 使用 AudioContext 处理音频）
               try {
                 if (window.__audioCtx && window.__audioCtx.state === 'running') {
                   window.__audioCtx.suspend();
                   window.__OF_AUDIO_CONTEXTS_SAVED__ = window.__audioCtx;
                 }
               } catch(e) {}
-              // 设置原生通话标志，阻止 web SDK 尝试获取音频
-              window.__NATIVE_CALL_ACTIVE__ = true;
-              console.log('[OF Bridge] WebView audio fully released, native call active');
+              
+              // 4. 劫持 getUserMedia - 阻止 WebView 尝试获取麦克风
+              if (!window.__originalGetUserMedia__) {
+                window.__originalGetUserMedia__ = navigator.mediaDevices.getUserMedia;
+              }
+              navigator.mediaDevices.getUserMedia = function(constraints) {
+                if (window.__NATIVE_CALL_ACTIVE__) {
+                  console.log('[OF Bridge] getUserMedia blocked - native call active');
+                  return Promise.reject(new DOMException('Audio handled by native', 'NotAllowedError'));
+                }
+                return window.__originalGetUserMedia__.call(navigator.mediaDevices, constraints);
+              };
+              
+              // 5. 劫持 AudioContext - 阻止 WebView 创建音频处理节点
+              if (!window.__OriginalAudioContext__) {
+                window.__OriginalAudioContext__ = window.AudioContext || window.webkitAudioContext;
+              }
+              var OrigCtx = window.__OriginalAudioContext__;
+              if (OrigCtx) {
+                window.AudioContext = window.webkitAudioContext = function() {
+                  if (window.__NATIVE_CALL_ACTIVE__) {
+                    console.log('[OF Bridge] AudioContext blocked - native call active');
+                    return { state: 'suspended', createMediaStreamSource: function(){return{}}, createMediaStreamDestination: function(){return{}}, close: function(){return Promise.resolve()} };
+                  }
+                  return new OrigCtx();
+                };
+              }
+              
+              console.log('[OF Bridge] WebView audio completely disabled, native Agora has full control');
             })();
           ''');
           
@@ -592,16 +620,28 @@ class _WebViewShellState extends State<WebViewShell> {
           // 🔑 关键修复：通话结束后恢复音频模式（endCall 内部也会调用，这里做双保险）
           await AudioManagerService.stopCallAudioMode();
           
-          // 恢复 WebView 音频
+          // 恢复 WebView 音频功能
           controller.evaluateJavascript(source: '''
             (function() {
-              console.log('[OF Bridge] Resuming WebView audio after native call');
+              console.log('[OF Bridge] Restoring WebView audio after native call');
               window.__NATIVE_CALL_ACTIVE__ = false;
-              // 恢复之前暂停的 audio/video 元素
+              
+              // 恢复 getUserMedia
+              if (window.__originalGetUserMedia__) {
+                navigator.mediaDevices.getUserMedia = window.__originalGetUserMedia__;
+                delete window.__originalGetUserMedia__;
+              }
+              
+              // 恢复 AudioContext
+              if (window.__OriginalAudioContext__) {
+                window.AudioContext = window.webkitAudioContext = window.__OriginalAudioContext__;
+                delete window.__OriginalAudioContext__;
+              }
+              
+              // 恢复 audio/video 元素
               document.querySelectorAll('audio, video').forEach(function(el) {
                 try {
                   if (el.dataset.wasPlaying === 'true') {
-                    // 恢复之前清空的 src
                     if (el.dataset.wasSrc) {
                       el.src = el.dataset.wasSrc;
                       delete el.dataset.wasSrc;
@@ -611,13 +651,15 @@ class _WebViewShellState extends State<WebViewShell> {
                   }
                 } catch(e) {}
               });
-              // 恢复 AudioContext
+              
+              // 恢复 AudioContext 实例
               try {
                 if (window.__OF_AUDIO_CONTEXTS_SAVED__ && window.__OF_AUDIO_CONTEXTS_SAVED__.state === 'suspended') {
                   window.__OF_AUDIO_CONTEXTS_SAVED__.resume();
                 }
               } catch(e) {}
-              console.log('[OF Bridge] WebView audio resumed');
+              
+              console.log('[OF Bridge] WebView audio fully restored');
             })();
           ''');
           
