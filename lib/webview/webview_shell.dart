@@ -970,8 +970,6 @@ class _WebViewShellState extends State<WebViewShell> {
                   allowFileAccessFromFileURLs: true,
                   allowUniversalAccessFromFileURLs: true,
                   verticalScrollbarThumbColor: Colors.white24,
-                  // 硬件加速确保媒体编解码正常
-                  hardwareAccelerated: true,
                 ),
                 initialUserScripts: UnmodifiableListView([
                   UserScript(
