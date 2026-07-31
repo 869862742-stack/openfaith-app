@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'audio_manager_service.dart';
 
 /// 通话状态枚举
 enum CallState {
@@ -341,6 +342,9 @@ class CallService extends ChangeNotifier {
     int myUid = currentUserId.hashCode.abs() % 99999 + 1;
     if (myUid == 0) myUid = 1;
     
+    // 🔑 关键修复：通过原生 AudioManager 设置通信模式
+    await AudioManagerService.startCallAudioMode(speakerOn: true);
+    
     // 设置主播角色（在 joinChannel 之前）
     try {
       await _engine!.setClientRole(role: ClientRoleType.clientRoleBroadcaster);
@@ -488,6 +492,9 @@ class CallService extends ChangeNotifier {
       debugPrint('[CallService] setClientRole error: $e');
     }
     
+    // 🔑 关键修复：通过原生 AudioManager 设置通信模式
+    await AudioManagerService.startCallAudioMode(speakerOn: true);
+    
     // 通话音频配置（每次通话重新设置，确保生效）
     try {
       await _engine!.setAudioScenario(AudioScenarioType.audioScenarioChatroom);
@@ -597,6 +604,9 @@ class CallService extends ChangeNotifier {
     } catch (e) {
       debugPrint('[CallService] leaveChannel error: $e');
     }
+    
+    // 🔑 关键修复：通话结束后恢复音频模式
+    await AudioManagerService.stopCallAudioMode();
 
     _stateData = const CallStateData(status: CallState.idle);
     _isBusy = false;
@@ -720,6 +730,10 @@ class CallService extends ChangeNotifier {
       isVideoEnabled: isVideo,
     );
 
+    // 🔑 关键修复：通过原生 AudioManager 设置通信模式
+    // 这解决了 WebView 占用音频焦点导致原生 SDK 无法发布/接收音频的问题
+    await AudioManagerService.startCallAudioMode(speakerOn: true);
+    
     // 通话音频配置 - 在 join 前完成所有音频设置
     try {
       // 设置主播角色（必须在 join 前设置）

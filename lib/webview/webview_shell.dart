@@ -10,6 +10,7 @@ import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
 import '../services/app_update_service.dart';
+import '../services/audio_manager_service.dart';
 import '../widgets/update_dialog.dart';
 import '../services/call_service.dart';
 
@@ -510,8 +511,11 @@ class _WebViewShellState extends State<WebViewShell> {
           
           debugPrint('[WebView Bridge] Starting native call: channel=$channelName, uid=$uid, video=$isVideo');
           
-          // 关键：暂停 WebView 中所有音频，释放音频焦点给原生 SDK
-          // 这解决了 Android 上 WebView 占用音频焦点导致原生 SDK 无法发布麦克风的问题
+          // 🔑 关键修复：通过原生 AudioManager 设置通信模式
+          // 这比单纯暂停 WebView 音频更彻底，直接切换 Android 音频路由
+          await AudioManagerService.startCallAudioMode(speakerOn: true);
+          
+          // 暂停 WebView 中所有音频，释放音频焦点给原生 SDK
           controller.evaluateJavascript(source: '''
             (function() {
               console.log('[OF Bridge] Pausing WebView audio for native call');
@@ -584,6 +588,9 @@ class _WebViewShellState extends State<WebViewShell> {
       callback: (args) async {
         try {
           await callService.endCall();
+          
+          // 🔑 关键修复：通话结束后恢复音频模式（endCall 内部也会调用，这里做双保险）
+          await AudioManagerService.stopCallAudioMode();
           
           // 恢复 WebView 音频
           controller.evaluateJavascript(source: '''
@@ -963,6 +970,8 @@ class _WebViewShellState extends State<WebViewShell> {
                   allowFileAccessFromFileURLs: true,
                   allowUniversalAccessFromFileURLs: true,
                   verticalScrollbarThumbColor: Colors.white24,
+                  // 硬件加速确保媒体编解码正常
+                  hardwareAccelerated: true,
                 ),
                 initialUserScripts: UnmodifiableListView([
                   UserScript(
