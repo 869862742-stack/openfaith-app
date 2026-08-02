@@ -95,6 +95,9 @@ class CallService extends ChangeNotifier {
   CallStateData _stateData = const CallStateData();
   Timer? _timeoutTimer;
   Timer? _durationTimer;
+  Timer? _callPollingTimer;
+  Set<String> _processedCallIds = {};
+  String? _currentProfileId; // profiles.id，消息表用的是这个
   bool _isBusy = false;
 
   SupabaseClient get _supabase => Supabase.instance.client;
@@ -216,6 +219,9 @@ class CallService extends ChangeNotifier {
       
       _engineInitialized = true;
       debugPrint('[CallService] Engine initialized');
+      
+      // 启动来电轮询（替代未配置的FCM推送）
+      _startCallPolling();
     } catch (e) {
       debugPrint('[CallService] Init error: $e');
       _engine = null;
@@ -238,7 +244,7 @@ class CallService extends ChangeNotifier {
     return '';
   }
 
-  /// 获取当前用户 ID
+  /// 获取当前用户 ID（Supabase auth user ID）
   String _getCurrentUserId() {
     try {
       final user = _supabase.auth.currentUser;
@@ -247,6 +253,27 @@ class CallService extends ChangeNotifier {
       debugPrint('[CallService] Get current user error: $e');
       return '';
     }
+  }
+
+  /// 获取当前用户的 Profile ID（profiles.id，消息表用的是这个）
+  Future<String> _getProfileId() async {
+    if (_currentProfileId != null) return _currentProfileId!;
+    try {
+      final authUserId = _getCurrentUserId();
+      if (authUserId.isEmpty) return '';
+      final res = await _supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', authUserId)
+          .limit(1);
+      if (res.isNotEmpty) {
+        _currentProfileId = res[0]['id'] as String? ?? '';
+        return _currentProfileId!;
+      }
+    } catch (e) {
+      debugPrint('[CallService] Get profile ID error: $e');
+    }
+    return '';
   }
 
   /// 生成频道名（基于双方ID排序，确保一致）
@@ -320,11 +347,28 @@ class CallService extends ChangeNotifier {
         'timestamp': DateTime.now().millisecondsSinceEpoch,
         'channelName': channelName,
       };
+      final profileId = await _getProfileId();
+      final senderId = profileId.isNotEmpty ? profileId : currentUserId;
+      // 尝试将 peerUserId 转换为 profile ID
+      String receiverId = peerUserId;
+      try {
+        final peerProfile = await _supabase
+            .from('profiles')
+            .select('id')
+            .or('user_id.eq.$peerUserId,id.eq.$peerUserId')
+            .limit(1);
+        if (peerProfile.isNotEmpty) {
+          receiverId = peerProfile[0]['id'] as String;
+        }
+      } catch (e) {
+        debugPrint('[CallService] Peer profile lookup error: $e');
+      }
+      
       final result = await _supabase
           .from('private_messages')
           .insert({
-            'sender_id': currentUserId,
-            'receiver_id': peerUserId,
+            'sender_id': senderId,
+            'receiver_id': receiverId,
             'content': '[CALL_INVITE]${_encodeJson(callData)}',
             'message_type': 'call_invite',
           })
@@ -450,7 +494,18 @@ class CallService extends ChangeNotifier {
       }
     }
 
-    // 更新消息状态为 connected
+    // 先更新状态为 connected（在 join 之前设置，这样 UI 能立即响应）
+    _stateData = CallStateData(
+      status: CallState.connected,
+      callType: type,
+      channelName: channelName,
+      remoteUserId: remoteUserId,
+      callerName: callerName,
+      isVideoEnabled: type == 'video',
+      callId: callId,
+    );
+
+    // 更新消息状态为 connected（通知对方已接听）
     if (callId != null) {
       try {
         await _supabase
@@ -467,17 +522,6 @@ class CallService extends ChangeNotifier {
         debugPrint('[CallService] Failed to update call status: $e');
       }
     }
-
-    // 更新状态
-    _stateData = CallStateData(
-      status: CallState.connected,
-      callType: type,
-      channelName: channelName,
-      remoteUserId: remoteUserId,
-      callerName: callerName,
-      isVideoEnabled: type == 'video',
-      callId: callId,
-    );
 
     // 生成 UID（修复：确保不为 0）
     int myUid = currentUserId.isNotEmpty
@@ -610,6 +654,7 @@ class CallService extends ChangeNotifier {
 
     _stateData = const CallStateData(status: CallState.idle);
     _isBusy = false;
+    _processedCallIds.clear();
     notifyListeners();
   }
 
@@ -793,10 +838,130 @@ class CallService extends ChangeNotifier {
     notifyListeners();
   }
 
+
+  // ========== 来电轮询（替代 FCM 推送）==========
+  
+  /// 启动来电轮询：每3秒检查一次新的来电邀请
+  void _startCallPolling() {
+    _stopCallPolling();
+    _callPollingTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+      _checkIncomingCalls();
+    });
+    debugPrint('[CallService] Incoming call polling started');
+  }
+
+  /// 停止来电轮询
+  void _stopCallPolling() {
+    _callPollingTimer?.cancel();
+    _callPollingTimer = null;
+  }
+
+  /// 检查是否有新的来电邀请（被叫方）+ 状态变更（主叫方）
+  Future<void> _checkIncomingCalls() async {
+    final currentUserId = _getCurrentUserId();
+    if (currentUserId.isEmpty) return;
+    
+    try {
+      // ===== 被叫方：检查新的来电邀请 =====
+      if (_stateData.status == CallState.idle) {
+        final profileId = await _getProfileId();
+        final queryId = profileId.isNotEmpty ? profileId : currentUserId;
+        final thirtySecondsAgo = DateTime.now().millisecondsSinceEpoch - 30000;
+        final result = await _supabase
+            .from('private_messages')
+            .select('id, sender_id, content, inserted_at')
+            .eq('receiver_id', queryId)
+            .eq('message_type', 'call_invite')
+            .gte('inserted_at', DateTime.fromMillisecondsSinceEpoch(thirtySecondsAgo).toIso8601String())
+            .order('inserted_at', ascending: false)
+            .limit(5);
+        
+        for (final row in result) {
+          final callId = row['id']?.toString();
+          if (callId == null || _processedCallIds.contains(callId)) continue;
+          
+          final rawContent = row['content'] as String? ?? '';
+          Map<String, dynamic>? callData;
+          try {
+            var raw = rawContent;
+            for (final prefix in ['[CALL_INVITE]', '[CALL_ANSWER]', '[CALL_HANGUP]', '[CALL_STATUS]']) {
+              if (raw.startsWith(prefix)) {
+                raw = raw.substring(prefix.length);
+                break;
+              }
+            }
+            callData = jsonDecode(raw) as Map<String, dynamic>?;
+          } catch (e) { continue; }
+          
+          final status = callData?['status'];
+          if (status != 'calling') continue;
+          
+          _processedCallIds.add(callId);
+          
+          final channelName = callData?['channelName'] as String? ?? '';
+          final callType = callData?['callType'] as String? ?? 'voice';
+          final callerName = callData?['callerName'] as String? ?? '';
+          final senderId = row['sender_id'] as String? ?? '';
+          
+          debugPrint('[CallService]  Incoming call detected: $callerName, channel=$channelName');
+          
+          setIncomingCall(
+            channelName: channelName,
+            type: callType,
+            callerName: callerName,
+            callId: callId,
+            remoteUserId: senderId,
+          );
+          return;
+        }
+      }
+      
+      // ===== 主叫方：检查被叫方是否已接听 =====
+      if (_stateData.status == CallState.calling && _stateData.callId != null) {
+        final currentCallId = _stateData.callId;
+        final result = await _supabase
+            .from('private_messages')
+            .select('id, content')
+            .eq('id', currentCallId)
+            .single();
+        
+        if (result != null) {
+          final rawContent = result['content'] as String? ?? '';
+          Map<String, dynamic>? callData;
+          try {
+            var raw = rawContent;
+            for (final prefix in ['[CALL_INVITE]', '[CALL_ANSWER]', '[CALL_HANGUP]', '[CALL_STATUS]']) {
+              if (raw.startsWith(prefix)) {
+                raw = raw.substring(prefix.length);
+                break;
+              }
+            }
+            callData = jsonDecode(raw) as Map<String, dynamic>?;
+          } catch (e) {}
+          
+          final status = callData?['status'];
+          if (status == 'connected') {
+            debugPrint('[CallService] ✅ Callee accepted! Updating state to connected');
+            _stateData = _stateData.copyWith(status: CallState.connected);
+            _timeoutTimer?.cancel();
+            _startDurationTimer();
+            notifyListeners();
+          } else if (status == 'rejected' || status == 'cancelled' || status == 'missed') {
+            debugPrint('[CallService]  Call ended by callee: $status');
+            endCall();
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('[CallService] Polling error: $e');
+    }
+  }
+
   @override
   void dispose() {
     _timeoutTimer?.cancel();
     _durationTimer?.cancel();
+    _stopCallPolling();
     // 确保 leaveChannel 完成后再 release，避免 SDK 状态冲突
     () async {
       try {
