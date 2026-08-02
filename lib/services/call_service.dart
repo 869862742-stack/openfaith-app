@@ -918,7 +918,7 @@ class CallService extends ChangeNotifier {
       
       // ===== 主叫方：检查被叫方是否已接听 =====
       if (_stateData.status == CallState.calling && _stateData.callId != null) {
-        final currentCallId = _stateData.callId;
+        final currentCallId = _stateData.callId!;
         final result = await _supabase
             .from('private_messages')
             .select('id, content')
